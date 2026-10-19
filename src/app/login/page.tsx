@@ -70,14 +70,18 @@ export default function LoginPage() {
       <div className="w-full max-w-md relative z-10">
         {/* Classical Collegiate Header Emblem */}
         <div className="text-center mb-8">
-          <div className="inline-flex p-4 rounded-2xl bg-gradient-to-br from-heritage-gold/20 via-black/60 to-black/90 border border-heritage-gold/40 shadow-frameGold mb-4">
-            <Shield className="w-12 h-12 text-heritage-gold" />
+          <div className="inline-flex p-3 rounded-2xl bg-gradient-to-br from-[#1C1408] via-black to-[#0A0703] border-2 border-heritage-gold/50 shadow-2xl mb-4 w-24 h-28 items-center justify-center">
+            <img
+              src="/assets/crests/nkcs-football-crest.svg"
+              alt="NKCS Crest"
+              className="w-full h-full object-contain"
+            />
           </div>
           <h1 className="font-serif font-black text-2xl md:text-3xl tracking-wide text-gold-foil">
             NKCS SPORTSFLOW
           </h1>
           <p className="text-sm font-semibold text-gray-200 mt-1">
-            {isZh ? "球队战术与综合竞技管理平台" : "Team Tactics & Training Hub"}
+            {isZh ? "NKCS 球队战术与综合竞技管理平台" : "Team Tactics & Training Hub"}
           </p>
           <p className="text-xs text-gray-400 mt-0.5 tracking-tight">
             {isZh ? "战术代际传承 · 精确日常训练 · 竞技康复自愈" : "Legacy Tactics · Precision Drills · Athletic Recovery"}
@@ -181,10 +185,10 @@ export default function LoginPage() {
               </button>
               <button
                 type="button"
-                onClick={() => selectPreset("liming", "player123")}
+                onClick={() => selectPreset("songjia", "player123")}
                 className="px-2 py-1.5 rounded bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 hover:text-white text-left transition-colors truncate"
               >
-                <strong className="text-amber-300">🏆 Legend</strong> (liming)
+                <strong className="text-amber-300">🏆 Legend</strong> (songjia)
               </button>
             </div>
           </div>

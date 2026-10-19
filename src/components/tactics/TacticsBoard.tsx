@@ -7,6 +7,7 @@ import {
   TacticToken,
   TacticTrajectory,
   SportChannel,
+  PlayerProfileData,
 } from "@/types";
 import {
   Play,
@@ -28,6 +29,7 @@ import {
 interface TacticsBoardProps {
   sport: SportChannel;
   tactic: TacticData;
+  players?: PlayerProfileData[];
   editable?: boolean;
   onUpdateTactic?: (updated: TacticData) => void;
   onOpenBigScreen?: () => void;
@@ -37,6 +39,7 @@ interface TacticsBoardProps {
 export default function TacticsBoard({
   sport,
   tactic,
+  players = [],
   editable = false,
   onUpdateTactic,
   onOpenBigScreen,
@@ -835,6 +838,15 @@ export default function TacticsBoard({
               badgeFill = "#334155";
             }
 
+            const matchedPlayer = players?.find(
+              (p) =>
+                (token.jerseyNumber && p.jerseyNumber === token.jerseyNumber) ||
+                p.user.nameZh === token.label ||
+                p.user.nameEn === token.label ||
+                (token.label && token.label.includes(p.user.nameZh))
+            );
+            const photo = token.photoUrl || matchedPlayer?.photoUrl;
+
             return (
               <g
                 key={token.id}
@@ -859,29 +871,64 @@ export default function TacticsBoard({
                   />
                 )}
 
-                {/* Base Token Shield / Circle */}
-                <circle
-                  cx="0"
-                  cy="0"
-                  r="21"
-                  fill={badgeFill}
-                  stroke={badgeStroke}
-                  strokeWidth="2.5"
-                  className="filter drop-shadow-xl"
-                />
+                {photo ? (
+                  <g>
+                    <clipPath id={`clip-${token.id}`}>
+                      <circle cx="0" cy="0" r="20" />
+                    </clipPath>
+                    <circle
+                      cx="0"
+                      cy="0"
+                      r="22"
+                      fill={badgeFill}
+                      stroke={badgeStroke}
+                      strokeWidth="2.5"
+                      className="filter drop-shadow-xl"
+                    />
+                    <image
+                      href={photo}
+                      x="-20"
+                      y="-20"
+                      width="40"
+                      height="40"
+                      clipPath={`url(#clip-${token.id})`}
+                      preserveAspectRatio="xMidYMid slice"
+                    />
+                    {/* Miniature Jersey Pill at bottom right */}
+                    <g transform="translate(13, 13)">
+                      <circle cx="0" cy="0" r="8" fill="#000000" stroke={badgeStroke} strokeWidth="1.5" />
+                      <text x="0" y="3" fill="#FFFFFF" fontSize="9" fontWeight="900" textAnchor="middle">
+                        {token.jerseyNumber ?? "•"}
+                      </text>
+                    </g>
+                  </g>
+                ) : (
+                  <g>
+                    {/* Base Token Shield / Circle */}
+                    <circle
+                      cx="0"
+                      cy="0"
+                      r="21"
+                      fill={badgeFill}
+                      stroke={badgeStroke}
+                      strokeWidth="2.5"
+                      className="filter drop-shadow-xl"
+                    />
 
-                {/* Jersey Number */}
-                <text
-                  x="0"
-                  y="4"
-                  fill="#FFFFFF"
-                  fontSize="13"
-                  fontWeight="black"
-                  fontFamily="sans-serif"
-                  textAnchor="middle"
-                >
-                  {token.jerseyNumber ?? token.position ?? "•"}
-                </text>
+                    {/* Jersey Number */}
+                    <text
+                      x="0"
+                      y="4"
+                      fill="#FFFFFF"
+                      fontSize="13"
+                      fontWeight="black"
+                      fontFamily="sans-serif"
+                      textAnchor="middle"
+                    >
+                      {token.jerseyNumber ?? token.position ?? "•"}
+                    </text>
+                  </g>
+                )}
 
                 {/* Captain Badge Ribbon */}
                 {token.isCaptain && (

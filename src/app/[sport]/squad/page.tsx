@@ -171,18 +171,43 @@ export default function SquadPage() {
             </button>
 
             <div className="flex items-center space-x-4 mb-4">
-              <div className="w-16 h-20 rounded-lg bg-black/60 border border-white/15 flex items-center justify-center font-serif text-2xl font-black text-heritage-gold">
-                #{selectedPlayer.jerseyNumber}
+              <div className="w-20 h-24 rounded-xl overflow-hidden bg-black/80 border-2 border-heritage-gold/50 shadow-lg shrink-0 flex items-center justify-center">
+                {selectedPlayer.photoUrl ? (
+                  <img
+                    src={selectedPlayer.photoUrl}
+                    alt={selectedPlayer.user.nameEn}
+                    className="w-full h-full object-cover object-top"
+                  />
+                ) : (
+                  <span className="font-serif text-2xl font-black text-heritage-gold">
+                    #{selectedPlayer.jerseyNumber}
+                  </span>
+                )}
               </div>
               <div>
-                <h3 className="text-xl font-bold text-white">
+                <div className="flex items-center space-x-2">
+                  <span className="font-serif text-xl font-black text-heritage-gold">
+                    #{selectedPlayer.jerseyNumber}
+                  </span>
+                  {selectedPlayer.isCaptain && (
+                    <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/50">
+                      © 队长
+                    </span>
+                  )}
+                  {selectedPlayer.isRetired && (
+                    <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-white/10 text-gray-300 border border-white/20">
+                      {selectedPlayer.alumniTier === "HALL_OF_FAME" ? "🏆 终身名宿" : "🎓 已退役校友"}
+                    </span>
+                  )}
+                </div>
+                <h3 className="text-xl font-serif font-black text-white mt-1">
                   {isZh ? selectedPlayer.user.nameZh : selectedPlayer.user.nameEn}
                 </h3>
                 <p className="text-xs text-gray-400">
                   {isZh ? selectedPlayer.user.nameEn : selectedPlayer.user.nameZh}
                 </p>
                 <p className="text-xs text-emerald-400 font-semibold mt-1">
-                  {selectedPlayer.primaryPosition} · {selectedPlayer.positionGroup || "标准位置组"}
+                  {selectedPlayer.primaryPosition} · {selectedPlayer.positionGroup || "位置组"}
                 </p>
               </div>
             </div>

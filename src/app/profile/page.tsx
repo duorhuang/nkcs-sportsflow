@@ -38,8 +38,16 @@ export default function ProfilePage() {
       <div className="bg-black/70 border border-white/15 rounded-2xl p-6 sm:p-8 shadow-chiseled flex flex-col sm:flex-row items-center sm:items-start justify-between gap-6">
         <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-5 text-center sm:text-left">
           {/* Avatar with classical crest border */}
-          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-heritage-gold/30 via-black to-black border-2 border-heritage-gold/50 flex items-center justify-center font-serif text-3xl font-black text-heritage-gold shadow-frameGold">
-            {user.nameZh.slice(0, 1)}
+          <div className="w-20 h-24 rounded-2xl overflow-hidden bg-gradient-to-br from-heritage-gold/30 via-black to-black border-2 border-heritage-gold/50 flex items-center justify-center font-serif text-3xl font-black text-heritage-gold shadow-frameGold shrink-0">
+            {user.avatarUrl || activeProfileInCurrentSport?.photoUrl ? (
+              <img
+                src={user.avatarUrl || activeProfileInCurrentSport?.photoUrl!}
+                alt={user.nameEn}
+                className="w-full h-full object-cover object-top"
+              />
+            ) : (
+              user.nameZh.slice(0, 1)
+            )}
           </div>
 
           <div>

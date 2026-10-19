@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="100%" height="100%">
+  <defs>
+    <!-- Mown Grass Pitch Pattern -->
+    <linearGradient id="drillTurf" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0F3822" />
+      <stop offset="100%" stop-color="#0B2617" />
+    </linearGradient>
+    <linearGradient id="goldArrow" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#FACC15" />
+      <stop offset="100%" stop-color="#EAB308" />
+    </linearGradient>
+    <filter id="coneGlow">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
+    <marker id="drill-pass-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#FACC15" />
+    </marker>
+    <marker id="drill-run-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#38BDF8" />
+    </marker>
+    <marker id="drill-press-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#EF4444" />
+    </marker>
+  </defs>
+
+  <!-- Pitch Surface with Striped Grass -->
+  <rect width="800" height="500" fill="url(#drillTurf)" rx="16"/>
+  {[0, 80, 160, 240, 320, 400, 480, 560, 640, 720].map((x, i) => (
+    <rect key={x} x={x} y="0" width="40" height="500" fill="#FFFFFF" fill-opacity="0.02"/>
+  ))}
+
+  <!-- Bounded 20m x 20m Training Grid (UEFA Rondo Box) -->
+  <rect x="180" y="70" width="440" height="360" rx="6" fill="#0E4227" fill-opacity="0.4" stroke="#FFFFFF" stroke-width="2" stroke-dasharray="6 4" stroke-opacity="0.8"/>
+
+  <!-- Four Boundary Cones (Orange Slalom Cones) -->
+  <g filter="url(#coneGlow)">
+    <polygon points="180,60 174,75 186,75" fill="#F97316"/>
+    <polygon points="620,60 614,75 626,75" fill="#F97316"/>
+    <polygon points="180,420 174,435 186,435" fill="#F97316"/>
+    <polygon points="620,420 614,435 626,435" fill="#F97316"/>
+  </g>
+
+  <!-- Central Split Line & Press Trap Zone -->
+  <line x1="400" y1="70" x2="400" y2="430" stroke="#FDE047" stroke-width="1.5" stroke-dasharray="4 4" stroke-opacity="0.4"/>
+  <ellipse cx="400" cy="250" rx="90" ry="70" fill="#EF4444" fill-opacity="0.08" stroke="#EF4444" stroke-width="1" stroke-dasharray="3 3"/>
+  <text x="400" y="255" fill="#EF4444" font-size="11" font-weight="bold" letter-spacing="1" text-anchor="middle" opacity="0.85">PRESSING TRAP ZONE (压迫陷阱区)</text>
+
+  <!-- Ball & Movement Trajectories -->
+  <!-- Pass 1: A1 to A2 -->
+  <path d="M 230 110 Q 380 90 570 110" fill="none" stroke="#FACC15" stroke-width="3" marker-end="url(#drill-pass-arrow)"/>
+  <text x="390" y="85" fill="#FACC15" font-size="11" font-weight="bold" text-anchor="middle">① 快速一脚横传转移</text>
+
+  <!-- Pass 2: A2 to A3 -->
+  <path d="M 590 140 Q 615 250 590 380" fill="none" stroke="#FACC15" stroke-width="3" marker-end="url(#drill-pass-arrow)"/>
+  <text x="640" y="255" fill="#FACC15" font-size="11" font-weight="bold" text-anchor="middle">② 直塞边线</text>
+
+  <!-- Defender 1 Pressing Run -->
+  <path d="M 370 230 Q 460 170 540 140" fill="none" stroke="#EF4444" stroke-width="2.5" stroke-dasharray="5 3" marker-end="url(#drill-press-arrow)"/>
+  <text x="430" y="175" fill="#FCA5A5" font-size="10" font-weight="bold" text-anchor="middle">逼抢封堵内切</text>
+
+  <!-- Defender 2 Cover Shift -->
+  <path d="M 430 270 Q 460 300 480 320" fill="none" stroke="#EF4444" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#drill-press-arrow)"/>
+
+  <!-- Attacking Players (Discs with Numbers) -->
+  <!-- A1 (Left Top) -->
+  <g transform="translate(210, 110)">
+    <circle cx="0" cy="0" r="18" fill="#047857" stroke="#34D399" stroke-width="2.5"/>
+    <text x="0" y="5" fill="#FFFFFF" font-size="12" font-weight="bold" text-anchor="middle">4</text>
+    <text x="0" y="32" fill="#FFFFFF" font-size="10" font-weight="bold" text-anchor="middle">张伟 (C)</text>
+  </g>
+
+  <!-- A2 (Right Top) -->
+  <g transform="translate(590, 110)">
+    <circle cx="0" cy="0" r="18" fill="#047857" stroke="#34D399" stroke-width="2.5"/>
+    <text x="0" y="5" fill="#FFFFFF" font-size="12" font-weight="bold" text-anchor="middle">9</text>
+    <text x="0" y="32" fill="#FFFFFF" font-size="10" font-weight="bold" text-anchor="middle">李航</text>
+  </g>
+
+  <!-- A3 (Right Bottom) -->
+  <g transform="translate(590, 390)">
+    <circle cx="0" cy="0" r="18" fill="#047857" stroke="#34D399" stroke-width="2.5"/>
+    <text x="0" y="5" fill="#FFFFFF" font-size="12" font-weight="bold" text-anchor="middle">6</text>
+    <text x="0" y="32" fill="#FFFFFF" font-size="10" font-weight="bold" text-anchor="middle">余鑫</text>
+  </g>
+
+  <!-- A4 (Left Bottom) -->
+  <g transform="translate(210, 390)">
+    <circle cx="0" cy="0" r="18" fill="#047857" stroke="#34D399" stroke-width="2.5"/>
+    <text x="0" y="5" fill="#FFFFFF" font-size="12" font-weight="bold" text-anchor="middle">10</text>
+    <text x="0" y="32" fill="#FFFFFF" font-size="10" font-weight="bold" text-anchor="middle">宋嘉 [名宿]</text>
+  </g>
+
+  <!-- Defending Hunters (Red Discs) -->
+  <!-- D1 -->
+  <g transform="translate(360, 230)">
+    <circle cx="0" cy="0" r="16" fill="#991B1B" stroke="#F87171" stroke-width="2"/>
+    <text x="0" y="5" fill="#FFFFFF" font-size="11" font-weight="bold" text-anchor="middle">X1</text>
+    <text x="0" y="-22" fill="#FCA5A5" font-size="9" font-weight="bold" text-anchor="middle">第一逼抢手</text>
+  </g>
+
+  <!-- D2 -->
+  <g transform="translate(430, 270)">
+    <circle cx="0" cy="0" r="16" fill="#991B1B" stroke="#F87171" stroke-width="2"/>
+    <text x="0" y="5" fill="#FFFFFF" font-size="11" font-weight="bold" text-anchor="middle">X2</text>
+    <text x="0" y="28" fill="#FCA5A5" font-size="9" font-weight="bold" text-anchor="middle">保护封堵手</text>
+  </g>
+
+  <!-- Ball -->
+  <g transform="translate(230, 110)">
+    <circle cx="14" cy="-8" r="9" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+    <polygon points="14,-13 18,-10 16,-5 12,-5 10,-10" fill="#000000"/>
+  </g>
+
+  <!-- Coach Specs Banner (Bottom Right) -->
+  <g transform="translate(30, 30)">
+    <rect x="0" y="0" width="160" height="48" rx="8" fill="#000000" fill-opacity="0.6" stroke="#FFFFFF" stroke-width="1" stroke-opacity="0.2"/>
+    <text x="12" y="20" fill="#34D399" font-size="11" font-weight="bold">UEFA 标准 4v2 抢圈</text>
+    <text x="12" y="38" fill="#D1D5DB" font-size="10">限制两脚出球 • 高频压迫</text>
+  </g>
+</svg>

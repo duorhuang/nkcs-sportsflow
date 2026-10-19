@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 360" width="100%" height="100%">
+  <defs>
+    <linearGradient id="hofGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFF8D6" />
+      <stop offset="25%" stop-color="#F5D061" />
+      <stop offset="50%" stop-color="#C69214" />
+      <stop offset="75%" stop-color="#E5B842" />
+      <stop offset="100%" stop-color="#805908" />
+    </linearGradient>
+    <radialGradient id="hofEnamel" cx="50%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#2D2109" />
+      <stop offset="70%" stop-color="#140E03" />
+      <stop offset="100%" stop-color="#070501" />
+    </radialGradient>
+    <filter id="hofGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#C69214" flood-opacity="0.45"/>
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000000" flood-opacity="0.9"/>
+    </filter>
+  </defs>
+
+  <!-- Ornate Crown of Valor -->
+  <g transform="translate(150, 48)" filter="url(#hofGlow)">
+    <path d="M -45 15 L -55 -15 L -25 -5 L 0 -25 L 25 -5 L 55 -15 L 45 15 Z" fill="url(#hofGold)" stroke="#664606" stroke-width="1.5"/>
+    <circle cx="-55" cy="-17" r="4.5" fill="#FFF5C0"/>
+    <circle cx="-25" cy="-7" r="4" fill="#FFF5C0"/>
+    <circle cx="0" cy="-27" r="6" fill="#FFF5C0"/>
+    <circle cx="25" cy="-7" r="4" fill="#FFF5C0"/>
+    <circle cx="55" cy="-17" r="4.5" fill="#FFF5C0"/>
+    <!-- Rubies on Crown band -->
+    <circle cx="-22" cy="7" r="3" fill="#DC2626"/>
+    <circle cx="0" cy="7" r="3.5" fill="#2563EB"/>
+    <circle cx="22" cy="7" r="3" fill="#DC2626"/>
+  </g>
+
+  <!-- Outer Shield Frame -->
+  <path d="M 150 70 C 235 70 275 90 275 150 C 275 260 210 320 150 345 C 90 320 25 260 25 150 C 25 90 65 70 150 70 Z"
+        fill="url(#hofGold)" filter="url(#hofGlow)"/>
+
+  <!-- Inner Dark Enamel Background -->
+  <path d="M 150 82 C 223 82 258 98 258 150 C 258 245 200 300 150 324 C 100 300 42 245 42 150 C 42 98 77 82 150 82 Z"
+        fill="url(#hofEnamel)" stroke="url(#hofGold)" stroke-width="2"/>
+
+  <!-- Classical Laurel Wreath -->
+  <g fill="url(#hofGold)">
+    <!-- Left Branch -->
+    <ellipse cx="90" cy="190" rx="12" ry="6" transform="rotate(-30 90 190)"/>
+    <ellipse cx="96" cy="160" rx="11" ry="5.5" transform="rotate(-45 96 160)"/>
+    <ellipse cx="108" cy="135" rx="10" ry="5" transform="rotate(-60 108 135)"/>
+    <ellipse cx="95" cy="220" rx="12" ry="6" transform="rotate(-10 95 220)"/>
+    <ellipse cx="110" cy="250" rx="12" ry="6" transform="rotate(15 110 250)"/>
+    <ellipse cx="130" cy="275" rx="12" ry="6" transform="rotate(35 130 275)"/>
+
+    <!-- Right Branch -->
+    <ellipse cx="210" cy="190" rx="12" ry="6" transform="rotate(30 210 190)"/>
+    <ellipse cx="204" cy="160" rx="11" ry="5.5" transform="rotate(45 204 160)"/>
+    <ellipse cx="192" cy="135" rx="10" ry="5" transform="rotate(60 192 135)"/>
+    <ellipse cx="205" cy="220" rx="12" ry="6" transform="rotate(10 205 220)"/>
+    <ellipse cx="190" cy="250" rx="12" ry="6" transform="rotate(-15 190 250)"/>
+    <ellipse cx="170" cy="275" rx="12" ry="6" transform="rotate(-35 170 275)"/>
+  </g>
+
+  <!-- Central Star of Fame & Roman Numeral -->
+  <g transform="translate(150, 180)">
+    <circle cx="0" cy="0" r="42" fill="#1A1204" stroke="url(#hofGold)" stroke-width="3"/>
+    <polygon points="0,-32 9,-10 32,-10 14,4 20,26 0,13 -20,26 -14,4 -32,-10 -9,-10" fill="url(#hofGold)"/>
+    <circle cx="0" cy="3" r="12" fill="#2E1F07" stroke="url(#hofGold)" stroke-width="1.5"/>
+    <text x="0" y="8" font-family="Cinzel, Georgia, serif" font-size="14" font-weight="900" fill="url(#hofGold)" text-anchor="middle">I</text>
+  </g>
+
+  <!-- Hall of Fame Classical Banner -->
+  <g transform="translate(150, 290)">
+    <rect x="-70" y="-12" width="140" height="24" rx="4" fill="#0F0A02" stroke="url(#hofGold)" stroke-width="2"/>
+    <text x="0" y="4"
+          font-family="Cinzel, Georgia, serif"
+          font-size="11"
+          font-weight="900"
+          letter-spacing="2"
+          fill="url(#hofGold)"
+          text-anchor="middle">
+      HALL OF FAME
+    </text>
+  </g>
+</svg>

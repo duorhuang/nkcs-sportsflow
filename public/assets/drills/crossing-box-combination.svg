@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="100%" height="100%">
+  <defs>
+    <linearGradient id="boxTurf" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0F3822" />
+      <stop offset="100%" stop-color="#092114" />
+    </linearGradient>
+    <marker id="cross-pass" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#FACC15" />
+    </marker>
+    <marker id="cross-run" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#38BDF8" />
+    </marker>
+  </defs>
+
+  <!-- Pitch Surface -->
+  <rect width="800" height="500" fill="url(#boxTurf)" rx="16"/>
+
+  <!-- Penalty Box (18-yard box) on the Right Side -->
+  <rect x="520" y="75" width="240" height="350" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-opacity="0.8"/>
+  <!-- 6-yard box -->
+  <rect x="680" y="165" width="80" height="170" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-opacity="0.8"/>
+  <!-- Penalty Spot -->
+  <circle cx="600" cy="250" r="4.5" fill="#FFFFFF"/>
+  <!-- Penalty Arc -->
+  <path d="M 520 180 A 90 90 0 0 0 520 320" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-opacity="0.8"/>
+  <!-- Goal Net Line -->
+  <line x1="760" y1="210" x2="760" y2="290" stroke="#FFFFFF" stroke-width="6"/>
+
+  <!-- Crossing Channel Marker Cones (Yellow Cones) -->
+  <g fill="#EAB308">
+    <polygon points="400,20 395,32 405,32"/>
+    <polygon points="560,20 555,32 565,32"/>
+    <polygon points="720,20 715,32 725,32"/>
+    <line x1="400" y1="26" x2="720" y2="26" stroke="#EAB308" stroke-width="1.5" stroke-dasharray="4 4" stroke-opacity="0.6"/>
+  </g>
+
+  <!-- Combination Move 1: Center to Wing Pass -->
+  <path d="M 240 300 Q 360 200 450 120" fill="none" stroke="#FACC15" stroke-width="3" marker-end="url(#cross-pass)"/>
+  <text x="320" y="210" fill="#FACC15" font-size="11" font-weight="bold">① 斜长传转移至边锋</text>
+
+  <!-- Overlapping Fullback Sprint -->
+  <path d="M 280 180 Q 400 60 520 70" fill="none" stroke="#38BDF8" stroke-width="3" stroke-dasharray="6 3" marker-end="url(#cross-run)"/>
+  <text x="380" y="80" fill="#38BDF8" font-size="11" font-weight="bold">② 边后卫高速套边插上</text>
+
+  <!-- Wing Slip Pass to Overlapping Runner -->
+  <path d="M 460 130 Q 490 90 530 80" fill="none" stroke="#FACC15" stroke-width="2.5" marker-end="url(#cross-pass)"/>
+
+  <!-- High-Precision Cross into 6-yard Box Seam -->
+  <path d="M 550 80 Q 640 100 680 220" fill="none" stroke="#FACC15" stroke-width="3.5" marker-end="url(#cross-pass)"/>
+  <text x="630" y="130" fill="#FEF08A" font-size="11" font-weight="bold">③ 弧线传中砸向门前危险区</text>
+
+  <!-- Runner 1: Near Post Dart -->
+  <path d="M 440 230 Q 560 210 670 210" fill="none" stroke="#38BDF8" stroke-width="3" stroke-dasharray="6 3" marker-end="url(#cross-run)"/>
+  <text x="560" y="195" fill="#38BDF8" font-size="10" font-weight="bold">前点包抄抢点</text>
+
+  <!-- Runner 2: Penalty Spot Cutback Delay -->
+  <path d="M 380 320 Q 500 300 590 260" fill="none" stroke="#38BDF8" stroke-width="3" stroke-dasharray="6 3" marker-end="url(#cross-run)"/>
+  <text x="490" y="280" fill="#38BDF8" font-size="10" font-weight="bold">中路倒三角跟进</text>
+
+  <!-- Mannequin / Opponent Defenders (Orange/Red Dummy silhouettes) -->
+  <g transform="translate(620, 200)">
+    <circle cx="0" cy="0" r="14" fill="#991B1B" stroke="#EF4444" stroke-width="2"/>
+    <text x="0" y="4" fill="#FFFFFF" font-size="10" font-weight="bold" text-anchor="middle">中卫1</text>
+  </g>
+  <g transform="translate(630, 270)">
+    <circle cx="0" cy="0" r="14" fill="#991B1B" stroke="#EF4444" stroke-width="2"/>
+    <text x="0" y="4" fill="#FFFFFF" font-size="10" font-weight="bold" text-anchor="middle">中卫2</text>
+  </g>
+  <!-- Goalkeeper -->
+  <g transform="translate(740, 250)">
+    <circle cx="0" cy="0" r="16" fill="#F59E0B" stroke="#FFFFFF" stroke-width="2"/>
+    <text x="0" y="4" fill="#000000" font-size="10" font-weight="bold" text-anchor="middle">门将</text>
+  </g>
+
+  <!-- Attacking Players -->
+  <g transform="translate(220, 310)">
+    <circle cx="0" cy="0" r="18" fill="#047857" stroke="#34D399" stroke-width="2.5"/>
+    <text x="0" y="5" fill="#FFFFFF" font-size="12" font-weight="bold" text-anchor="middle">4</text>
+    <text x="0" y="30" fill="#FFFFFF" font-size="10" font-weight="bold" text-anchor="middle">张伟 (C)</text>
+  </g>
+  <g transform="translate(450, 130)">
+    <circle cx="0" cy="0" r="18" fill="#047857" stroke="#34D399" stroke-width="2.5"/>
+    <text x="0" y="5" fill="#FFFFFF" font-size="12" font-weight="bold" text-anchor="middle">7</text>
+    <text x="0" y="30" fill="#FFFFFF" font-size="10" font-weight="bold" text-anchor="middle">边锋</text>
+  </g>
+  <g transform="translate(420, 230)">
+    <circle cx="0" cy="0" r="18" fill="#047857" stroke="#34D399" stroke-width="2.5"/>
+    <text x="0" y="5" fill="#FFFFFF" font-size="12" font-weight="bold" text-anchor="middle">9</text>
+    <text x="0" y="30" fill="#FFFFFF" font-size="10" font-weight="bold" text-anchor="middle">李航</text>
+  </g>
+
+  <g transform="translate(30, 30)">
+    <rect x="0" y="0" width="180" height="48" rx="8" fill="#000000" fill-opacity="0.6" stroke="#FFFFFF" stroke-width="1" stroke-opacity="0.2"/>
+    <text x="12" y="20" fill="#FACC15" font-size="11" font-weight="bold">边路套边与禁区三点包抄</text>
+    <text x="12" y="38" fill="#D1D5DB" font-size="10">前点/倒三角/后点抢点机制</text>
+  </g>
+</svg>

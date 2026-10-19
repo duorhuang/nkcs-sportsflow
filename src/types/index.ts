@@ -86,6 +86,7 @@ export interface TacticToken {
   isCaptain?: boolean;
   isRetired?: boolean;
   alumniTier?: AlumniTier | null;
+  photoUrl?: string | null;
   x: number;
   y: number;
   dutyZh?: string;

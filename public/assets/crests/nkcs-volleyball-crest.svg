@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 480" width="100%" height="100%">
+  <defs>
+    <!-- Rich Warm Gold Gradients -->
+    <linearGradient id="vbGoldBevel" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFEBB0" />
+      <stop offset="30%" stop-color="#E5A636" />
+      <stop offset="60%" stop-color="#B26E17" />
+      <stop offset="85%" stop-color="#EAA83B" />
+      <stop offset="100%" stop-color="#6F3908" />
+    </linearGradient>
+    <linearGradient id="vbSheen" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.5"/>
+      <stop offset="50%" stop-color="#E5A636" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.6"/>
+    </linearGradient>
+    <!-- Terracotta / Deep Cognac Enamel -->
+    <radialGradient id="vbShieldEnamel" cx="50%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#7C2D12" />
+      <stop offset="60%" stop-color="#431407" />
+      <stop offset="100%" stop-color="#1F0803" />
+    </radialGradient>
+    <filter id="vbShadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#000000" flood-opacity="0.8"/>
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#E5A636" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <!-- Outer Heraldic Shield -->
+  <path d="M 200 20 C 310 20 370 45 370 120 C 370 280 280 390 200 450 C 120 390 30 280 30 120 C 30 45 90 20 200 20 Z"
+        fill="url(#vbGoldBevel)"
+        filter="url(#vbShadow)" />
+
+  <!-- Shield Step 2 -->
+  <path d="M 200 32 C 298 32 352 54 352 122 C 352 268 270 372 200 430 C 130 372 48 268 48 122 C 48 54 102 32 200 32 Z"
+        fill="#220B04" />
+
+  <!-- Shield Step 3: Cognac Velvet Inlay -->
+  <path d="M 200 42 C 288 42 338 62 338 125 C 338 258 260 356 200 412 C 140 356 62 258 62 125 C 62 62 112 42 200 42 Z"
+        fill="url(#vbShieldEnamel)" />
+  <path d="M 200 42 C 288 42 338 62 338 125 C 338 258 260 356 200 412 C 140 356 62 258 62 125 C 62 62 112 42 200 42 Z"
+        fill="url(#vbSheen)" />
+
+  <!-- Laurel Wreath Around Center -->
+  <g fill="url(#vbGoldBevel)" opacity="0.9">
+    <path d="M 195 330 C 140 320 110 265 110 200 C 110 160 130 120 145 105 C 143 115 142 128 145 138 C 132 150 125 175 127 205 C 130 240 155 285 195 305 Z"/>
+    <ellipse cx="120" cy="180" rx="14" ry="7" transform="rotate(-30 120 180)"/>
+    <ellipse cx="126" cy="145" rx="13" ry="6" transform="rotate(-45 126 145)"/>
+    <ellipse cx="138" cy="115" rx="12" ry="6" transform="rotate(-60 138 115)"/>
+    <ellipse cx="125" cy="220" rx="14" ry="7" transform="rotate(-10 125 220)"/>
+    <ellipse cx="140" cy="260" rx="15" ry="7" transform="rotate(15 140 260)"/>
+    <ellipse cx="165" cy="295" rx="15" ry="7" transform="rotate(35 165 295)"/>
+
+    <path d="M 205 330 C 260 320 290 265 290 200 C 290 160 270 120 255 105 C 257 115 258 128 255 138 C 268 150 275 175 273 205 C 270 240 245 285 205 305 Z"/>
+    <ellipse cx="280" cy="180" rx="14" ry="7" transform="rotate(30 280 180)"/>
+    <ellipse cx="274" cy="145" rx="13" ry="6" transform="rotate(45 274 145)"/>
+    <ellipse cx="262" cy="115" rx="12" ry="6" transform="rotate(60 262 115)"/>
+    <ellipse cx="275" cy="220" rx="14" ry="7" transform="rotate(10 275 220)"/>
+    <ellipse cx="260" cy="260" rx="15" ry="7" transform="rotate(-15 260 260)"/>
+    <ellipse cx="235" cy="295" rx="15" ry="7" transform="rotate(-35 235 295)"/>
+  </g>
+
+  <!-- Central Volleyball Emblem with 18-panel spiral and net lines -->
+  <g transform="translate(200, 195)">
+    <circle cx="0" cy="8" r="46" fill="#000000" fill-opacity="0.6"/>
+    <circle cx="0" cy="0" r="45" fill="#1E3A8A" stroke="url(#vbGoldBevel)" stroke-width="4"/>
+    <circle cx="0" cy="0" r="41" fill="#EAB308" />
+    <!-- 3-panel volleyball pattern -->
+    <path d="M 0 0 C 20 -20 40 0 41 0 C 35 20 20 38 0 41 C 0 20 0 0 0 0 Z" fill="#1D4ED8" stroke="url(#vbGoldBevel)" stroke-width="1.5"/>
+    <path d="M 0 0 C -20 -20 0 -40 0 -41 C 20 -35 38 -20 41 0 C 20 0 0 0 0 0 Z" fill="#FACC15" stroke="url(#vbGoldBevel)" stroke-width="1.5"/>
+    <path d="M 0 0 C -20 20 -40 0 -41 0 C -35 -20 -20 -38 0 -41 C 0 -20 0 0 0 0 Z" fill="#FFFFFF" stroke="url(#vbGoldBevel)" stroke-width="1.5"/>
+    <circle cx="0" cy="0" r="12" fill="#1E3A8A" stroke="url(#vbGoldBevel)" stroke-width="1.5"/>
+    <polygon points="0,-8 2,-2 8,-2 3,1 5,7 0,3 -5,7 -3,1 -8,-2 -2,-2" fill="url(#vbGoldBevel)"/>
+  </g>
+
+  <!-- Banner for Academy Name -->
+  <g transform="translate(0, 310)">
+    <path d="M 50 35 L 75 10 L 105 25 L 295 25 L 325 10 L 350 35 L 330 65 L 305 48 L 95 48 L 70 65 Z"
+          fill="url(#vbGoldBevel)" filter="url(#vbShadow)"/>
+    <path d="M 85 28 L 315 28 L 295 45 L 105 45 Z" fill="#220B04"/>
+    <text x="200" y="40"
+          font-family="Cinzel, Georgia, serif"
+          font-size="13"
+          font-weight="900"
+          letter-spacing="3.5"
+          fill="url(#vbGoldBevel)"
+          text-anchor="middle">
+      NKCS VOLLEYBALL
+    </text>
+  </g>
+
+  <text x="200" y="380"
+        font-family="Cinzel, Georgia, serif"
+        font-size="10"
+        font-weight="700"
+        letter-spacing="2.5"
+        fill="#E5A636"
+        opacity="0.85"
+        text-anchor="middle">
+    VOLATUS ET CONCORDIA • 2018
+  </text>
+</svg>

@@ -1,13 +1,14 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { TacticData, SportChannel } from "@/types";
+import { TacticData, SportChannel, PlayerProfileData } from "@/types";
 import { X, Tv, Shield } from "lucide-react";
 import TacticsBoard from "./TacticsBoard";
 
 interface BigScreenModalProps {
   sport: SportChannel;
   tactic: TacticData;
+  players?: PlayerProfileData[];
   isOpen: boolean;
   onClose: () => void;
 }
@@ -15,6 +16,7 @@ interface BigScreenModalProps {
 export default function BigScreenModal({
   sport,
   tactic,
+  players = [],
   isOpen,
   onClose,
 }: BigScreenModalProps) {
@@ -70,6 +72,7 @@ export default function BigScreenModal({
         <TacticsBoard
           sport={sport}
           tactic={tactic}
+          players={players}
           editable={false}
           onPrintA4={() => window.print()}
         />

@@ -110,8 +110,12 @@ export const Navbar: React.FC = () => {
             href={`/${sportLower}`}
             className="flex items-center space-x-3 shrink-0 group select-none"
           >
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-heritage-gold via-heritage-antiqueGold to-heritage-brass flex items-center justify-center shadow-sm">
-              <Shield className="w-5 h-5 text-black" />
+            <div className="w-9 h-9 rounded-xl overflow-hidden bg-[#140D05] border border-heritage-gold/50 flex items-center justify-center shadow-md p-0.5 group-hover:scale-105 transition-transform">
+              <img
+                src={`/assets/crests/nkcs-${sportLower}-crest.svg`}
+                alt="NKCS Crest"
+                className="w-full h-full object-contain"
+              />
             </div>
             <div>
               <span className="font-serif font-black tracking-wider text-sm lg:text-base text-gold-foil uppercase">
@@ -134,10 +138,10 @@ export const Navbar: React.FC = () => {
                   className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-300 ${
                     isSelected
                       ? item.key === "FOOTBALL"
-                        ? "bg-emerald-600 text-white shadow-[0_0_12px_rgba(16,185,129,0.5)]"
+                        ? "bg-emerald-600 text-white shadow-[0_0_12px_rgba(16,185,129,0.5)] border border-emerald-400"
                         : item.key === "VOLLEYBALL"
-                        ? "bg-orange-600 text-white shadow-[0_0_12px_rgba(249,115,22,0.5)]"
-                        : "bg-amber-600 text-white shadow-[0_0_12px_rgba(217,119,6,0.5)]"
+                        ? "bg-orange-600 text-white shadow-[0_0_12px_rgba(249,115,22,0.5)] border border-orange-400"
+                        : "bg-amber-600 text-white shadow-[0_0_12px_rgba(217,119,6,0.5)] border border-amber-400"
                       : "text-gray-400 hover:text-white hover:bg-white/5"
                   }`}
                 >
@@ -167,9 +171,17 @@ export const Navbar: React.FC = () => {
               <div className="flex items-center space-x-2">
                 <Link
                   href="/profile"
-                  className="flex items-center space-x-2 px-2.5 py-1 rounded-md bg-white/5 hover:bg-white/10 border border-white/10 transition-colors text-xs text-gray-200"
+                  className="flex items-center space-x-2 px-2.5 py-1 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-colors text-xs text-gray-200"
                 >
-                  <User className="w-3.5 h-3.5 text-heritage-antiqueGold" />
+                  {user.avatarUrl ? (
+                    <img
+                      src={user.avatarUrl}
+                      alt="Avatar"
+                      className="w-5 h-5 rounded-full object-cover border border-heritage-gold/50"
+                    />
+                  ) : (
+                    <User className="w-3.5 h-3.5 text-heritage-antiqueGold" />
+                  )}
                   <span className="font-medium hidden md:inline">
                     {isZh ? user.nameZh : user.nameEn}
                   </span>

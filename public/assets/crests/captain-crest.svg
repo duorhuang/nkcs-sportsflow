@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 80" width="100%" height="100%">
+  <defs>
+    <linearGradient id="captGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFBEB" />
+      <stop offset="25%" stop-color="#FDE68A" />
+      <stop offset="50%" stop-color="#D97706" />
+      <stop offset="75%" stop-color="#FBBF24" />
+      <stop offset="100%" stop-color="#78350F" />
+    </linearGradient>
+    <filter id="captShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000000" flood-opacity="0.8"/>
+      <feDropShadow dx="0" dy="1" stdDeviation="1" flood-color="#F59E0B" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+
+  <!-- Brass Armband / Ribbon Shape with Chiseled Ends -->
+  <polygon points="10,12 150,12 142,40 150,68 10,68 18,40" fill="url(#captGold)" filter="url(#captShadow)"/>
+
+  <!-- Inner Inset Border -->
+  <polygon points="18,18 142,18 136,40 142,62 18,62 24,40" fill="#1C1408" stroke="url(#captGold)" stroke-width="1.5"/>
+
+  <!-- Captain 'C' Monogram and Laurel Stars -->
+  <g transform="translate(80, 40)">
+    <!-- Small laurel stars flanking -->
+    <polygon points="-42,-4 -40,-1 -36,-1 -39,1 -38,4 -42,2 -46,4 -45,1 -48,-1 -44,-1" fill="url(#captGold)"/>
+    <polygon points="42,-4 44,-1 48,-1 45,1 46,4 42,2 38,4 39,1 36,-1 40,-1" fill="url(#captGold)"/>
+
+    <!-- Bold Collegiate Serif 'C' -->
+    <text x="-16" y="8"
+          font-family="Cinzel, Georgia, serif"
+          font-size="24"
+          font-weight="900"
+          fill="url(#captGold)"
+          text-anchor="middle">
+      ©
+    </text>
+
+    <!-- 'CAPTAIN' Ribbon text -->
+    <text x="14" y="6"
+          font-family="Cinzel, Georgia, serif"
+          font-size="11"
+          font-weight="900"
+          letter-spacing="2.5"
+          fill="url(#captGold)"
+          text-anchor="middle">
+      CAPTAIN
+    </text>
+  </g>
+</svg>

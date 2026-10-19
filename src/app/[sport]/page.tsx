@@ -74,8 +74,15 @@ export default function ChannelDashboard() {
     <div className="space-y-8 animate-fadeIn">
       {/* ================= 1. 训前 5 分钟极速确认核心大卡 (Pre-Practice Ritual Card) ================= */}
       <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-black/80 via-black/60 to-black/90 border border-heritage-gold/30 p-6 md:p-8 shadow-frameGold">
-        {/* Subtle background glow */}
+        {/* Subtle background glow & Heraldic Crest Watermark */}
         <div className="absolute -top-12 -right-12 w-64 h-64 bg-heritage-gold/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute right-6 top-1/2 -translate-y-1/2 w-52 h-52 opacity-20 pointer-events-none hidden md:block">
+          <img
+            src={`/assets/crests/nkcs-${currentSportParam.toLowerCase()}-crest.svg`}
+            alt="Collegiate Crest"
+            className="w-full h-full object-contain"
+          />
+        </div>
 
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="space-y-3 max-w-2xl">

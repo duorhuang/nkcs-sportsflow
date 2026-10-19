@@ -35,6 +35,7 @@ async function main() {
       role: "ADMIN",
       nameEn: "Director Alexander Vance",
       nameZh: "亚历山大·凡斯 总监",
+      avatarUrl: "/assets/crests/hall-of-fame-crest.svg",
     },
   });
 
@@ -46,6 +47,7 @@ async function main() {
       role: "COACH",
       nameEn: "Coach Marcus Evans",
       nameZh: "马库斯·埃文斯 教练",
+      avatarUrl: "/assets/crests/nkcs-football-crest.svg",
       coachAssignments: {
         create: [{ sport: "FOOTBALL" }],
       },
@@ -59,6 +61,7 @@ async function main() {
       role: "COACH",
       nameEn: "Coach Kenji Takahashi",
       nameZh: "高桥健司 教练",
+      avatarUrl: "/assets/players/coach_volleyball.png",
       coachAssignments: {
         create: [{ sport: "VOLLEYBALL" }],
       },
@@ -72,6 +75,7 @@ async function main() {
       role: "COACH",
       nameEn: "Coach David Sterling",
       nameZh: "大卫·斯特林 教练",
+      avatarUrl: "/assets/players/coach_basketball.png",
       coachAssignments: {
         create: [{ sport: "BASKETBALL" }],
       },
@@ -86,6 +90,7 @@ async function main() {
       role: "PLAYER",
       nameEn: "Zhang Wei",
       nameZh: "张伟",
+      avatarUrl: "/assets/players/zhangwei.png",
       playerProfiles: {
         create: [
           {
@@ -94,23 +99,25 @@ async function main() {
             primaryPosition: "CB",
             secondaryPositions: JSON.stringify(["CDM", "RB"]),
             positionGroup: "Backline (护卫组)",
-            honors: "2024 Cup MVP",
+            honors: "2024 校队年度 MVP · 铁血后防领袖",
             isCaptain: true,
             isViceCaptain: false,
             isRetired: false,
+            photoUrl: "/assets/players/zhangwei.png",
             xpPoints: 340,
             cardTier: "SILVER",
           },
           {
             sport: "VOLLEYBALL",
-            jerseyNumber: 7,
+            jerseyNumber: 10,
             primaryPosition: "OH",
             secondaryPositions: JSON.stringify(["OPP"]),
             positionGroup: "Attackers (主攻组)",
-            honors: "Best Spiker",
+            honors: "最佳主攻手 · 强力后排跳发",
             isCaptain: false,
             isViceCaptain: true,
             isRetired: false,
+            photoUrl: "/assets/players/zhangwei.png",
             xpPoints: 180,
             cardTier: "BRONZE",
           },
@@ -119,14 +126,15 @@ async function main() {
     },
   });
 
-  // 6. Create Football Hall of Fame Legend (Li Ming - Retired 2023)
-  const liMing = await prisma.user.create({
+  // 6. Create Football Hall of Fame Legend (Song Jia - Retired 2023)
+  const songJia = await prisma.user.create({
     data: {
-      username: "liming",
+      username: "songjia",
       passwordHash: playerPass,
       role: "PLAYER",
-      nameEn: "Li Ming",
-      nameZh: "李明",
+      nameEn: "Song Jia",
+      nameZh: "宋嘉",
+      avatarUrl: "/assets/players/songjia.png",
       playerProfiles: {
         create: [
           {
@@ -135,11 +143,12 @@ async function main() {
             primaryPosition: "ST",
             secondaryPositions: JSON.stringify(["CAM"]),
             positionGroup: "Strikers (终结组)",
-            honors: "All-Time Top Scorer · 2023 Champion Captain",
+            honors: "终身荣誉队长 · 创校历史最佳射手 · 2023 冠军杯 MVP",
             isCaptain: true,
             isRetired: true,
             alumniTier: "HALL_OF_FAME",
             graduationYear: 2023,
+            photoUrl: "/assets/players/songjia.png",
             xpPoints: 1200,
             cardTier: "ICON",
           },
@@ -148,14 +157,15 @@ async function main() {
     },
   });
 
-  // 7. Create Football Regular Alumni (Chen Hao - Retired 2024)
-  const chenHao = await prisma.user.create({
+  // 7. Create Football Regular Alumni (Yu Xin - Retired 2024)
+  const yuXin = await prisma.user.create({
     data: {
-      username: "chenhao",
+      username: "yuxin",
       passwordHash: playerPass,
       role: "PLAYER",
-      nameEn: "Chen Hao",
-      nameZh: "陈浩",
+      nameEn: "Yu Xin",
+      nameZh: "余鑫",
+      avatarUrl: "/assets/players/yuxin.png",
       playerProfiles: {
         create: [
           {
@@ -164,10 +174,11 @@ async function main() {
             primaryPosition: "CDM",
             secondaryPositions: JSON.stringify(["CM"]),
             positionGroup: "Midfield (中场组)",
-            honors: "Tough Tackler",
+            honors: "2024 届中场铁闸 · 战术纪律标兵",
             isRetired: true,
             alumniTier: "ALUMNI_REGULAR",
             graduationYear: 2024,
+            photoUrl: "/assets/players/yuxin.png",
             xpPoints: 650,
             cardTier: "GOLD",
           },
@@ -176,14 +187,15 @@ async function main() {
     },
   });
 
-  // 8. Other active football athletes
+  // 8. Football Active Squad: Goalkeeper Chen Kai & Striker Li Hang
   await prisma.user.create({
     data: {
-      username: "wangjun",
+      username: "chenkai",
       passwordHash: playerPass,
       role: "PLAYER",
-      nameEn: "Wang Jun",
-      nameZh: "王俊",
+      nameEn: "Chen Kai",
+      nameZh: "陈凯",
+      avatarUrl: "/assets/players/chenkai.png",
       playerProfiles: {
         create: [
           {
@@ -191,9 +203,10 @@ async function main() {
             jerseyNumber: 1,
             primaryPosition: "GK",
             positionGroup: "Goalkeepers (门将组)",
-            honors: "Golden Glove",
+            honors: "金手套奖 · 现役副队长 · 零封纪录保持者",
             isViceCaptain: true,
             isRetired: false,
+            photoUrl: "/assets/players/chenkai.png",
             xpPoints: 290,
             cardTier: "SILVER",
           },
@@ -204,11 +217,12 @@ async function main() {
 
   await prisma.user.create({
     data: {
-      username: "liufeng",
+      username: "lihang",
       passwordHash: playerPass,
       role: "PLAYER",
-      nameEn: "Liu Feng",
-      nameZh: "刘峰",
+      nameEn: "Li Hang",
+      nameZh: "李航",
+      avatarUrl: "/assets/players/lihang.png",
       playerProfiles: {
         create: [
           {
@@ -216,9 +230,10 @@ async function main() {
             jerseyNumber: 9,
             primaryPosition: "ST",
             positionGroup: "Strikers (终结组)",
-            honors: "Most Improved",
+            honors: "头号锋线尖刀 · 场均进球 1.4 · 速度突破手",
             isRetired: false,
-            xpPoints: 120,
+            photoUrl: "/assets/players/lihang.png",
+            xpPoints: 220,
             cardTier: "BRONZE",
           },
         ],
@@ -226,24 +241,26 @@ async function main() {
     },
   });
 
-  // 9. Active Volleyball athletes
+  // 9. Volleyball: Captain Tian Yu & Legend Han Yang
   await prisma.user.create({
     data: {
-      username: "sunkai",
+      username: "tianyu",
       passwordHash: playerPass,
       role: "PLAYER",
-      nameEn: "Sun Kai",
-      nameZh: "孙凯",
+      nameEn: "Tian Yu",
+      nameZh: "田宇",
+      avatarUrl: "/assets/players/tianyu.png",
       playerProfiles: {
         create: [
           {
             sport: "VOLLEYBALL",
-            jerseyNumber: 1,
+            jerseyNumber: 7,
             primaryPosition: "SETTER",
             positionGroup: "Setters (组织组)",
-            honors: "Master Distributor",
+            honors: "校队队长 · 战术大脑 · 最佳组织奖",
             isCaptain: true,
             isRetired: false,
+            photoUrl: "/assets/players/tianyu.png",
             xpPoints: 410,
             cardTier: "SILVER",
           },
@@ -252,26 +269,113 @@ async function main() {
     },
   });
 
-  // 10. Active Basketball athletes
   await prisma.user.create({
     data: {
-      username: "yangfan",
+      username: "hanyang",
       passwordHash: playerPass,
       role: "PLAYER",
-      nameEn: "Yang Fan",
-      nameZh: "杨帆",
+      nameEn: "Han Yang",
+      nameZh: "韩阳",
+      avatarUrl: "/assets/players/hanyang.png",
+      playerProfiles: {
+        create: [
+          {
+            sport: "VOLLEYBALL",
+            jerseyNumber: 1,
+            primaryPosition: "MB",
+            positionGroup: "Attackers (主攻组)",
+            honors: "终身名宿 · 传奇重炮主攻手 · 3 届省冠军金牌",
+            isCaptain: false,
+            isRetired: true,
+            alumniTier: "HALL_OF_FAME",
+            graduationYear: 2022,
+            photoUrl: "/assets/players/hanyang.png",
+            xpPoints: 1350,
+            cardTier: "ICON",
+          },
+        ],
+      },
+    },
+  });
+
+  // 10. Basketball: Captain Wang Chao, Center Zhao Peng, & Legend Wu Lei
+  await prisma.user.create({
+    data: {
+      username: "wangchao",
+      passwordHash: playerPass,
+      role: "PLAYER",
+      nameEn: "Wang Chao",
+      nameZh: "王超",
+      avatarUrl: "/assets/players/wangchao.png",
+      playerProfiles: {
+        create: [
+          {
+            sport: "BASKETBALL",
+            jerseyNumber: 3,
+            primaryPosition: "PG",
+            positionGroup: "Guards (后卫组)",
+            honors: "校队队长 · 全明星控球后卫 · 绝杀关键先生",
+            isCaptain: true,
+            isRetired: false,
+            photoUrl: "/assets/players/wangchao.png",
+            xpPoints: 520,
+            cardTier: "GOLD",
+          },
+        ],
+      },
+    },
+  });
+
+  await prisma.user.create({
+    data: {
+      username: "zhaopeng",
+      passwordHash: playerPass,
+      role: "PLAYER",
+      nameEn: "Zhao Peng",
+      nameZh: "赵鹏",
+      avatarUrl: "/assets/players/zhaopeng.png",
+      playerProfiles: {
+        create: [
+          {
+            sport: "BASKETBALL",
+            jerseyNumber: 15,
+            primaryPosition: "C",
+            positionGroup: "Bigs (内线组)",
+            honors: "禁区铁塔 · 场均 12 篮板 3.2 盖帽",
+            isCaptain: false,
+            isRetired: false,
+            photoUrl: "/assets/players/zhaopeng.png",
+            xpPoints: 310,
+            cardTier: "SILVER",
+          },
+        ],
+      },
+    },
+  });
+
+  await prisma.user.create({
+    data: {
+      username: "wulei",
+      passwordHash: playerPass,
+      role: "PLAYER",
+      nameEn: "Wu Lei",
+      nameZh: "武磊",
+      avatarUrl: "/assets/players/wulei.png",
       playerProfiles: {
         create: [
           {
             sport: "BASKETBALL",
             jerseyNumber: 23,
-            primaryPosition: "PG",
+            primaryPosition: "SG",
             positionGroup: "Guards (后卫组)",
-            honors: "Finals MVP",
+            honors: "创校历史得分王 · 2021 届终身名宿 · 单场 48 分纪录",
             isCaptain: true,
-            isRetired: false,
-            xpPoints: 520,
-            cardTier: "GOLD",
+            isRetired: true,
+            alumniTier: "HALL_OF_FAME",
+            graduationYear: 2021,
+            photoUrl: "/assets/players/wulei.png",
+            xpPoints: 1500,
+            cardTier: "ICON",
           },
         ],
       },
@@ -320,6 +424,7 @@ async function main() {
             setsAndReps: "3组 x 6分钟，组间间歇 90秒",
             pitchSpecs: "25m x 20m 狭窄场地",
             playerCount: "4红 vs 4蓝 + 3黄（自由人）",
+            diagramUrl: "/assets/drills/rondo-counter-press-4v2.svg",
             coachingCuesEn:
               "1. Immediate 2-man pressure upon losing possession; 2. First pass forward into space; 3. Body angle open to entire field.",
             coachingCuesZh:
@@ -335,6 +440,7 @@ async function main() {
             setsAndReps: "左右侧各 10 次轮转",
             pitchSpecs: "大禁区前沿至角旗区半场",
             playerCount: "中场 + 双边卫 + 双前锋",
+            diagramUrl: "/assets/drills/crossing-box-combination.svg",
             coachingCuesEn:
               "1. Winger cuts inside to drag defender; 2. Fullback overlaps with timed sprint; 3. Near post run clears space for cutback.",
             coachingCuesZh:
@@ -618,6 +724,7 @@ async function main() {
             setsAndReps: "4轮转 x 5分钟",
             pitchSpecs: "18m x 9m 全场室内地板",
             playerCount: "6红 vs 6蓝",
+            diagramUrl: "/assets/drills/setter-penetration-slide-pipe.svg",
             coachingCuesEn: "1. Setter call loud and clear; 2. Middle blocker slide takeoff within 0.8s; 3. Pipe approach behind 3m line.",
             coachingCuesZh: "1. 二传插上声响响亮提示出球方向；2. 副攻背飞在0.8秒内起跳牵扯拦网；3. 6号位主攻严格在3米线外蹬地起跳。",
             sortOrder: 2,
@@ -665,6 +772,7 @@ async function main() {
             setsAndReps: "打满 21 分轮换",
             pitchSpecs: "半场 14m x 15m",
             playerCount: "后卫 + 双内线 vs 对应防守人",
+            diagramUrl: "/assets/drills/horns-spanish-double-screen.svg",
             coachingCuesEn: "1. Solid contact on pick; 2. Back-screener pops to corner; 3. Ball handler reads drop coverage.",
             coachingCuesZh: "1. 挡拆人双脚站定形成坚固掩护面；2. 背掩护完成后射手光速外弹底角三分线；3. 控卫读懂对手沉退深度送空接传球。",
             sortOrder: 2,

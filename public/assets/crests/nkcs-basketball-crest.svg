@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 480" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bbGoldBevel" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFF0C8" />
+      <stop offset="30%" stop-color="#F59E0B" />
+      <stop offset="60%" stop-color="#B45309" />
+      <stop offset="85%" stop-color="#D97706" />
+      <stop offset="100%" stop-color="#78350F" />
+    </linearGradient>
+    <radialGradient id="bbShieldEnamel" cx="50%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#451A03" />
+      <stop offset="60%" stop-color="#280F02" />
+      <stop offset="100%" stop-color="#140601" />
+    </radialGradient>
+    <filter id="bbShadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#000000" flood-opacity="0.8"/>
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#F59E0B" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <path d="M 200 20 C 310 20 370 45 370 120 C 370 280 280 390 200 450 C 120 390 30 280 30 120 C 30 45 90 20 200 20 Z"
+        fill="url(#bbGoldBevel)"
+        filter="url(#bbShadow)" />
+
+  <path d="M 200 32 C 298 32 352 54 352 122 C 352 268 270 372 200 430 C 130 372 48 268 48 122 C 48 54 102 32 200 32 Z"
+        fill="#1C0A02" />
+
+  <path d="M 200 42 C 288 42 338 62 338 125 C 338 258 260 356 200 412 C 140 356 62 258 62 125 C 62 62 112 42 200 42 Z"
+        fill="url(#bbShieldEnamel)" />
+
+  <!-- Laurel Wreath -->
+  <g fill="url(#bbGoldBevel)" opacity="0.9">
+    <path d="M 195 330 C 140 320 110 265 110 200 C 110 160 130 120 145 105 C 143 115 142 128 145 138 C 132 150 125 175 127 205 C 130 240 155 285 195 305 Z"/>
+    <ellipse cx="120" cy="180" rx="14" ry="7" transform="rotate(-30 120 180)"/>
+    <ellipse cx="126" cy="145" rx="13" ry="6" transform="rotate(-45 126 145)"/>
+    <ellipse cx="138" cy="115" rx="12" ry="6" transform="rotate(-60 138 115)"/>
+    <ellipse cx="125" cy="220" rx="14" ry="7" transform="rotate(-10 125 220)"/>
+    <ellipse cx="140" cy="260" rx="15" ry="7" transform="rotate(15 140 260)"/>
+    <ellipse cx="165" cy="295" rx="15" ry="7" transform="rotate(35 165 295)"/>
+
+    <path d="M 205 330 C 260 320 290 265 290 200 C 290 160 270 120 255 105 C 257 115 258 128 255 138 C 268 150 275 175 273 205 C 270 240 245 285 205 305 Z"/>
+    <ellipse cx="280" cy="180" rx="14" ry="7" transform="rotate(30 280 180)"/>
+    <ellipse cx="274" cy="145" rx="13" ry="6" transform="rotate(45 274 145)"/>
+    <ellipse cx="262" cy="115" rx="12" ry="6" transform="rotate(60 262 115)"/>
+    <ellipse cx="275" cy="220" rx="14" ry="7" transform="rotate(10 275 220)"/>
+    <ellipse cx="260" cy="260" rx="15" ry="7" transform="rotate(-15 260 260)"/>
+    <ellipse cx="235" cy="295" rx="15" ry="7" transform="rotate(-35 235 295)"/>
+  </g>
+
+  <!-- Central Basketball Emblem: Antique 8-panel leather basketball with crossed nets -->
+  <g transform="translate(200, 195)">
+    <circle cx="0" cy="8" r="46" fill="#000000" fill-opacity="0.6"/>
+    <circle cx="0" cy="0" r="45" fill="#1C0A02" stroke="url(#bbGoldBevel)" stroke-width="4"/>
+    <circle cx="0" cy="0" r="41" fill="#C2410C" />
+    <!-- Classic basketball black channels with gold embossed border -->
+    <line x1="-41" y1="0" x2="41" y2="0" stroke="#1C0A02" stroke-width="3"/>
+    <line x1="0" y1="-41" x2="0" y2="41" stroke="#1C0A02" stroke-width="3"/>
+    <path d="M -28 -30 C -10 -15 -10 15 -28 30" fill="none" stroke="#1C0A02" stroke-width="3"/>
+    <path d="M 28 -30 C 10 -15 10 15 28 30" fill="none" stroke="#1C0A02" stroke-width="3"/>
+    <!-- Center Gold Hoop Badge -->
+    <circle cx="0" cy="0" r="14" fill="#1C0A02" stroke="url(#bbGoldBevel)" stroke-width="1.8"/>
+    <polygon points="0,-9 2.5,-3 9,-3 3.5,1.5 5.5,8 0,4 -5.5,8 -3.5,1.5 -9,-3 -2.5,-3" fill="url(#bbGoldBevel)"/>
+  </g>
+
+  <!-- Banner for Academy Name -->
+  <g transform="translate(0, 310)">
+    <path d="M 50 35 L 75 10 L 105 25 L 295 25 L 325 10 L 350 35 L 330 65 L 305 48 L 95 48 L 70 65 Z"
+          fill="url(#bbGoldBevel)" filter="url(#bbShadow)"/>
+    <path d="M 85 28 L 315 28 L 295 45 L 105 45 Z" fill="#1C0A02"/>
+    <text x="200" y="40"
+          font-family="Cinzel, Georgia, serif"
+          font-size="13"
+          font-weight="900"
+          letter-spacing="3.5"
+          fill="url(#bbGoldBevel)"
+          text-anchor="middle">
+      NKCS BASKETBALL
+    </text>
+  </g>
+
+  <text x="200" y="380"
+        font-family="Cinzel, Georgia, serif"
+        font-size="10"
+        font-weight="700"
+        letter-spacing="2.5"
+        fill="#F59E0B"
+        opacity="0.85"
+        text-anchor="middle">
+    POTENTIA ET FOCUS • 2018
+  </text>
+</svg>

@@ -364,6 +364,7 @@ export default function TacticsPage() {
             <TacticsBoard
               sport={sport}
               tactic={selectedTactic}
+              players={players}
               editable={isCoachOrAdmin}
               onUpdateTactic={(updated) => setSelectedTactic(updated)}
               onOpenBigScreen={() => setShowBigScreen(true)}
@@ -469,6 +470,7 @@ export default function TacticsPage() {
         <BigScreenModal
           sport={sport}
           tactic={selectedTactic}
+          players={players}
           isOpen={showBigScreen}
           onClose={() => setShowBigScreen(false)}
         />

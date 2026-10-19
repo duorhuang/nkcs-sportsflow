@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="100%" height="100%">
+  <defs>
+    <!-- Hardwood Parquet Gradient -->
+    <linearGradient id="woodFloor" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#2D1A10" />
+      <stop offset="50%" stop-color="#3A2216" />
+      <stop offset="100%" stop-color="#24140D" />
+    </linearGradient>
+    <marker id="bb-pass-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#FACC15" />
+    </marker>
+    <marker id="bb-run-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#38BDF8" />
+    </marker>
+    <marker id="bb-drive-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#F97316" />
+    </marker>
+  </defs>
+
+  <!-- Hardwood Court Background -->
+  <rect width="800" height="500" fill="url(#woodFloor)" rx="16"/>
+
+  <!-- Half Court Line -->
+  <line x1="50" y1="460" x2="750" y2="460" stroke="#E5B842" stroke-width="2.5" stroke-opacity="0.8"/>
+
+  <!-- 3-Point Arc -->
+  <path d="M 120 460 L 120 380 A 320 320 0 0 1 680 380 L 680 460" fill="none" stroke="#E5B842" stroke-width="2.5" stroke-opacity="0.8"/>
+
+  <!-- The Paint / Key (Free Throw Lane) -->
+  <rect x="290" y="80" width="220" height="260" fill="#78350F" fill-opacity="0.25" stroke="#E5B842" stroke-width="2.5" stroke-opacity="0.8"/>
+
+  <!-- Free Throw Circle -->
+  <circle cx="400" cy="340" r="75" fill="none" stroke="#E5B842" stroke-width="2.5" stroke-opacity="0.8"/>
+  <circle cx="400" cy="340" r="75" fill="none" stroke="#E5B842" stroke-width="2.5" stroke-dasharray="6 4" stroke-opacity="0.8"/>
+
+  <!-- Basket Rim & Backboard -->
+  <line x1="360" y1="95" x2="440" y2="95" stroke="#FFFFFF" stroke-width="5"/>
+  <circle cx="400" cy="120" r="14" fill="none" stroke="#EA580C" stroke-width="3"/>
+  <path d="M 370 120 A 30 30 0 0 0 430 120" fill="none" stroke="#E5B842" stroke-width="2" stroke-opacity="0.8"/>
+
+  <!-- Horns Elbow Stations (Left & Right Elbows marked with subtle discs) -->
+  <circle cx="310" cy="320" r="8" fill="#F59E0B" fill-opacity="0.3"/>
+  <circle cx="490" cy="320" r="8" fill="#F59E0B" fill-opacity="0.3"/>
+
+  <!-- Trajectory 1: PG Yang Fan Drive Right -->
+  <path d="M 400 420 Q 450 410 490 380" fill="none" stroke="#F97316" stroke-width="3.5" marker-end="url(#bb-drive-arrow)"/>
+  <text x="470" y="425" fill="#FDBA74" font-size="11" font-weight="bold">① 控卫借掩护突破吸引防守</text>
+
+  <!-- Trajectory 2: Center On-Ball Pick & Hard Roll -->
+  <path d="M 310 320 Q 360 360 410 370" fill="none" stroke="#38BDF8" stroke-width="2.5" stroke-dasharray="4 2"/>
+  <line x1="395" y1="360" x2="425" y2="380" stroke="#38BDF8" stroke-width="4"/> <!-- Screen bar -->
+  <path d="M 410 370 Q 400 240 400 160" fill="none" stroke="#38BDF8" stroke-width="3.5" stroke-dasharray="6 3" marker-end="url(#bb-run-arrow)"/>
+  <text x="360" y="240" fill="#38BDF8" font-size="11" font-weight="bold">② 中锋全速下顺攻筐</text>
+
+  <!-- Trajectory 3: Spanish Blind Back-Screen on recovering Big Man -->
+  <path d="M 490 320 Q 460 300 420 270" fill="none" stroke="#FDE047" stroke-width="3" stroke-dasharray="4 2"/>
+  <line x1="405" y1="260" x2="435" y2="280" stroke="#FDE047" stroke-width="4"/> <!-- Blind back-screen bar -->
+  <text x="475" y="275" fill="#FEF08A" font-size="10" font-weight="bold">③ 西班牙盲区背掩护！</text>
+
+  <!-- Trajectory 4: Back-screener Pops out to Corner 3 -->
+  <path d="M 420 270 Q 560 330 670 410" fill="none" stroke="#A7F3D0" stroke-width="2.5" stroke-dasharray="5 3" marker-end="url(#bb-run-arrow)"/>
+  <text x="590" y="360" fill="#6EE7B7" font-size="10" font-weight="bold">掩护后光速外弹底角</text>
+
+  <!-- Pass Options: Alley-oop Lob or Kickout -->
+  <path d="M 490 380 Q 450 250 405 160" fill="none" stroke="#FACC15" stroke-width="3" stroke-dasharray="4 2" marker-end="url(#bb-pass-arrow)"/>
+  <path d="M 490 380 Q 590 400 660 415" fill="none" stroke="#FACC15" stroke-width="2" stroke-dasharray="2 2" marker-end="url(#bb-pass-arrow)"/>
+
+  <!-- Opponent Defender (D1 on Guard, D2 on Center) -->
+  <g transform="translate(420, 390)">
+    <circle cx="0" cy="0" r="14" fill="#991B1B" stroke="#EF4444" stroke-width="2"/>
+    <text x="0" y="4" fill="#FFFFFF" font-size="10" font-weight="bold" text-anchor="middle">D1</text>
+  </g>
+  <g transform="translate(415, 290)">
+    <circle cx="0" cy="0" r="14" fill="#991B1B" stroke="#EF4444" stroke-width="2"/>
+    <text x="0" y="4" fill="#FFFFFF" font-size="10" font-weight="bold" text-anchor="middle">D2</text>
+    <text x="0" y="-18" fill="#FCA5A5" font-size="9" font-weight="bold" text-anchor="middle">被背掩护挂住</text>
+  </g>
+
+  <!-- Our Players -->
+  <!-- PG -->
+  <g transform="translate(400, 430)">
+    <circle cx="0" cy="0" r="18" fill="#1E3A8A" stroke="#F59E0B" stroke-width="2.5"/>
+    <text x="0" y="5" fill="#FFFFFF" font-size="12" font-weight="bold" text-anchor="middle">3</text>
+    <text x="0" y="32" fill="#FFFFFF" font-size="10" font-weight="bold" text-anchor="middle">王超 (C)</text>
+  </g>
+  <!-- Center -->
+  <g transform="translate(310, 320)">
+    <circle cx="0" cy="0" r="18" fill="#1E3A8A" stroke="#F59E0B" stroke-width="2.5"/>
+    <text x="0" y="5" fill="#FFFFFF" font-size="12" font-weight="bold" text-anchor="middle">15</text>
+    <text x="0" y="32" fill="#FFFFFF" font-size="10" font-weight="bold" text-anchor="middle">赵鹏</text>
+  </g>
+  <!-- Shooter -->
+  <g transform="translate(490, 320)">
+    <circle cx="0" cy="0" r="18" fill="#78350F" stroke="#F59E0B" stroke-width="2.5"/>
+    <text x="0" y="5" fill="#FFFFFF" font-size="12" font-weight="bold" text-anchor="middle">23</text>
+    <text x="0" y="32" fill="#FDE68A" font-size="10" font-weight="bold" text-anchor="middle">武磊 [名宿]</text>
+  </g>
+
+  <!-- Banner -->
+  <g transform="translate(30, 30)">
+    <rect x="0" y="0" width="180" height="48" rx="8" fill="#000000" fill-opacity="0.6" stroke="#FFFFFF" stroke-width="1" stroke-opacity="0.2"/>
+    <text x="12" y="20" fill="#F59E0B" font-size="11" font-weight="bold">牛角高位 + 西班牙二次掩护</text>
+    <text x="12" y="38" fill="#D1D5DB" font-size="10">制造空接暴扣或底角空位三分</text>
+  </g>
+</svg>
