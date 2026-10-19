@@ -50,6 +50,10 @@ export async function middleware(request: NextRequest) {
   // Check authentication for protected routes
   const sessionToken = request.cookies.get("session_token")?.value;
   if (!sessionToken) {
+    // For API routes, allow the API route handlers to return clean JSON (or public GETs)
+    if (pathname.startsWith("/api/")) {
+      return NextResponse.next();
+    }
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(loginUrl);
@@ -57,6 +61,11 @@ export async function middleware(request: NextRequest) {
 
   const session = await verifySessionToken(sessionToken);
   if (!session) {
+    if (pathname.startsWith("/api/")) {
+      const response = NextResponse.json({ error: "Invalid session" }, { status: 401 });
+      response.cookies.delete("session_token");
+      return response;
+    }
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("redirect", pathname);
     const response = NextResponse.redirect(loginUrl);

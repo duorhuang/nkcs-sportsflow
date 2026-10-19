@@ -579,7 +579,277 @@ async function main() {
     }
   });
 
-  console.log("✅ Seed completed successfully with tactics!");
+  // 13. Initial Training Plans for Volleyball and Basketball
+  await prisma.trainingPlan.create({
+    data: {
+      sport: "VOLLEYBALL",
+      trainingDate: today,
+      startTime: "16:00",
+      endTime: "18:00",
+      location: "室内排球馆 1号场地 (Indoor Volleyball Court 1)",
+      titleEn: "5-1 Transition Offense & Setting Connections",
+      titleZh: "5-1 进攻体系网前快变配合与防反起球",
+      contentEn:
+        "Focus on setter penetration speed, quick slide coordination in zone 2, and back-row pipe spike timing.",
+      contentZh:
+        "重点演练二传从后排插上网前速度、副攻2号位背飞掩护、以及6号位3米线后排立体扣杀的起跳时机。",
+      tags: "5-1轮转, 背飞快攻, 梯次强攻",
+      drills: {
+        create: [
+          {
+            sport: "VOLLEYBALL",
+            titleEn: "Dynamic Shoulder & Core Activation",
+            titleZh: "动态肩袖激活与核心深蹲抛球",
+            category: "WARMUP",
+            durationMins: 15,
+            setsAndReps: "2组持续，心率升至 135bpm",
+            pitchSpecs: "9m x 9m 半场",
+            playerCount: "全队分成两组",
+            coachingCuesEn: "1. Rotator cuff elastic band pulls; 2. Ankle landing cushion; 3. Explosive jump arm swing.",
+            coachingCuesZh: "1. 弹力带做肩胛后缩与水平外旋；2. 起跳落地双脚屈膝缓冲；3. 挥臂击球核心收紧锁住腰腹。",
+            sortOrder: 1,
+          },
+          {
+            sport: "VOLLEYBALL",
+            titleEn: "Setter Penetration Multi-Option Attack",
+            titleZh: "二传插上多点快攻攻防对抗",
+            category: "TACTICAL",
+            durationMins: 25,
+            setsAndReps: "4轮转 x 5分钟",
+            pitchSpecs: "18m x 9m 全场室内地板",
+            playerCount: "6红 vs 6蓝",
+            coachingCuesEn: "1. Setter call loud and clear; 2. Middle blocker slide takeoff within 0.8s; 3. Pipe approach behind 3m line.",
+            coachingCuesZh: "1. 二传插上声响响亮提示出球方向；2. 副攻背飞在0.8秒内起跳牵扯拦网；3. 6号位主攻严格在3米线外蹬地起跳。",
+            sortOrder: 2,
+          },
+        ],
+      },
+    },
+  });
+
+  await prisma.trainingPlan.create({
+    data: {
+      sport: "BASKETBALL",
+      trainingDate: today,
+      startTime: "17:00",
+      endTime: "19:00",
+      location: "主体育馆硬木球场 (Main Hardwood Basketball Court)",
+      titleEn: "Horns PnR & Spanish Screening Sets",
+      titleZh: "高位牛角战术挡拆顺下与弱侧二次掩护",
+      contentEn:
+        "Focus on high-post elbow spacing, tight roll angles to rim, and Spanish back-screen timing on recovering big men.",
+      contentZh:
+        "重点演练两侧肘区拉开空间、中锋结实掩护后全速顺下攻筐、以及射手盲区背掩护制造空接或底角三分空位。",
+      tags: "牛角Horns, 西班牙挡拆, 空接终结, 空间拉开",
+      drills: {
+        create: [
+          {
+            sport: "BASKETBALL",
+            titleEn: "Dynamic Dribble Footwork & Hip Activation",
+            titleZh: "行进间动态运球脚步与髋部神经激活",
+            category: "WARMUP",
+            durationMins: 15,
+            setsAndReps: "双球运球 3组 x 30秒",
+            pitchSpecs: "全场折返运球",
+            playerCount: "全员单人单球",
+            coachingCuesEn: "1. Pound ball hard into floor; 2. Eyes up off the ball; 3. Low center of gravity.",
+            coachingCuesZh: "1. 大力拍球产生坚实回弹；2. 抬头观察全场开阔面；3. 降低身体重心随时准备启动变向。",
+            sortOrder: 1,
+          },
+          {
+            sport: "BASKETBALL",
+            titleEn: "Horns Spanish 3v3 Live Scrimmage",
+            titleZh: "牛角高位挡拆与西班牙空切 3v3 实战对抗",
+            category: "TACTICAL",
+            durationMins: 30,
+            setsAndReps: "打满 21 分轮换",
+            pitchSpecs: "半场 14m x 15m",
+            playerCount: "后卫 + 双内线 vs 对应防守人",
+            coachingCuesEn: "1. Solid contact on pick; 2. Back-screener pops to corner; 3. Ball handler reads drop coverage.",
+            coachingCuesZh: "1. 挡拆人双脚站定形成坚固掩护面；2. 背掩护完成后射手光速外弹底角三分线；3. 控卫读懂对手沉退深度送空接传球。",
+            sortOrder: 2,
+          },
+        ],
+      },
+    },
+  });
+
+  // 14. Seed Matches for Football, Volleyball, and Basketball
+  const nextWeek = new Date();
+  nextWeek.setDate(nextWeek.getDate() + 5);
+
+  const lastWeek = new Date();
+  lastWeek.setDate(lastWeek.getDate() - 4);
+
+  // Football Matches
+  await prisma.match.create({
+    data: {
+      sport: "FOOTBALL",
+      matchDate: lastWeek,
+      location: "NKCS 1号天然草坪主场",
+      opponentName: "上海包玉刚实验学校 (YK Pao School)",
+      isHome: true,
+      ourScore: 3,
+      opponentScore: 1,
+      scoreDetails: "上半场 1:0，下半场 2:1",
+    },
+  });
+
+  await prisma.match.create({
+    data: {
+      sport: "FOOTBALL",
+      matchDate: nextWeek,
+      location: "苏州德威国际学校客场",
+      opponentName: "德威国际学校 (Dulwich College)",
+      isHome: false,
+    },
+  });
+
+  // Volleyball Matches
+  await prisma.match.create({
+    data: {
+      sport: "VOLLEYBALL",
+      matchDate: lastWeek,
+      location: "NKCS 室内体育馆",
+      opponentName: "上海美国学校 (SAS Puxi)",
+      isHome: true,
+      ourScore: 3,
+      opponentScore: 0,
+      scoreDetails: "25:19, 25:21, 25:18",
+    },
+  });
+
+  await prisma.match.create({
+    data: {
+      sport: "VOLLEYBALL",
+      matchDate: nextWeek,
+      location: "上海协和双语国际学校客场",
+      opponentName: "协和双语国际高中 (SUIS)",
+      isHome: false,
+    },
+  });
+
+  // Basketball Matches
+  await prisma.match.create({
+    data: {
+      sport: "BASKETBALL",
+      matchDate: lastWeek,
+      location: "NKCS 主球馆",
+      opponentName: "德威英国国际学校 (Dulwich Pudong)",
+      isHome: true,
+      ourScore: 78,
+      opponentScore: 71,
+      scoreDetails: "Q1: 18-16, Q2: 22-19, Q3: 16-20, Q4: 22-16",
+    },
+  });
+
+  await prisma.match.create({
+    data: {
+      sport: "BASKETBALL",
+      matchDate: nextWeek,
+      location: "惠灵顿外籍人员子女学校",
+      opponentName: "惠灵顿国际学校 (Wellington)",
+      isHome: false,
+    },
+  });
+
+  // 15. Seed 1-on-1 Debrief Cards
+  await prisma.debrief.create({
+    data: {
+      sport: "FOOTBALL",
+      targetType: "INDIVIDUAL",
+      summaryZh: "全队高位逼抢执行坚决，后防线造越位纪律严密，攻防转换打出了训练中套边下底的全部预设战术！",
+      summaryEn: "Exceptional collective press and backline offside discipline.",
+      recommendedBodyParts: JSON.stringify(["hamstrings", "calves"]),
+      coachId: coachFootball.id,
+      recipients: {
+        create: [
+          {
+            userId: zhangWei.id,
+            rating: 10,
+            honors: "🏆 全场最佳球员 (MATCH MVP)",
+            quickTags: "后插上轰门, 拦截干净果决, 队长统率力强",
+            privateNoteZh:
+              "张伟：作为队长今天完全统治了后防线！下半场那脚后插上劲射死角极其提振士气！今晚回到宿舍记得用冷冻水瓶深度滚压小腿和足底，早点休息保证充沛体力！",
+            privateNoteEn:
+              "Zhang Wei: Outstanding captaincy and defensive leadership! Late finish sealed the victory. Remember to roll calves and get adequate sleep tonight.",
+            isRead: true,
+            acknowledgedAt: new Date(),
+            actionItemNote: "收到教练！今晚已完成15分钟小腿与腘绳肌放松，下场继续加强左脚出球精度！",
+          },
+        ],
+      },
+    },
+  });
+
+  await prisma.debrief.create({
+    data: {
+      sport: "VOLLEYBALL",
+      targetType: "INDIVIDUAL",
+      summaryZh: "一传起球率高达 82%，二传在网前调度极具隐蔽性，副攻背飞多次拉开对手双人拦网！",
+      summaryEn: "82% passing efficiency, deceptive setting at net opened slide attack lanes.",
+      recommendedBodyParts: JSON.stringify(["shoulders", "calves", "knees"]),
+      coachId: coachVolleyball.id,
+      recipients: {
+        create: [
+          {
+            userId: zhangWei.id,
+            rating: 9,
+            honors: "⭐ 关键扣杀之星 (CLUTCH SPIKER)",
+            quickTags: "后排Pipe重扣, 拦网起跳时机精准",
+            privateNoteZh:
+              "张伟：今天在6号位的后排起跳雷霆扣杀直接击垮了对方心理防线！注意落地时双膝弯曲缓冲，赛后做肩袖十字拉伸与靠墙静蹲。",
+            privateNoteEn:
+              "Zhang Wei: Your pipe attack in zone 6 dismantled their defense! Keep up the knee cushion on landings.",
+            isRead: false,
+          },
+        ],
+      },
+    },
+  });
+
+  // 16. Seed Recovery Guides
+  await prisma.recoveryGuide.create({
+    data: {
+      sport: "FOOTBALL",
+      bodyPartKey: "calves",
+      modality: "ZERO_COST_SUBSTITUTE",
+      titleZh: "宿舍冷冻矿泉水瓶足底与小腿深层肌筋膜松解法",
+      titleEn: "Frozen Water Bottle Deep Myofascial Release for Calves & Plantar",
+      contentZh:
+        "无需购买昂贵筋膜枪：在宿舍取一瓶500ml结冰矿泉水瓶，赤足踩在瓶身上，自足跟至前脚掌缓慢滚动施压3分钟；随后将小腿承山穴架在水瓶上做屈伸脚踝，快速消除赛后足跟酸胀与比目鱼肌痉挛！",
+      contentEn:
+        "No expensive massage gun required: Take a frozen 500ml water bottle in dorm, roll along plantar fascia for 3 minutes, then rest lower calves on bottle while flexing ankles.",
+      durationNotes: "单侧 3 分钟 x 2 组",
+      equipmentNotes: "500ml 冰水瓶或网球",
+      status: "APPROVED",
+      authorId: coachFootball.id,
+      reviewerId: coachFootball.id,
+      reviewedAt: new Date(),
+    },
+  });
+
+  await prisma.recoveryGuide.create({
+    data: {
+      sport: "FOOTBALL",
+      bodyPartKey: "hamstrings",
+      modality: "ZERO_COST_SUBSTITUTE",
+      titleZh: "硬质书桌椅网球激痛点下压与毛巾被动牵拉法",
+      titleEn: "Chair Edge Tennis Ball Ischemic Compression & Towel Stretch",
+      contentZh:
+        "坐在宿舍硬木椅边缘，将网球垫在腘绳肌酸痛硬块处，利用自身坐姿体重垂直下沉施压30秒；随后平躺用长浴巾套住脚掌拉向身体进行被动等长牵引，避免过度剧烈猛拉二次拉伤！",
+      contentEn:
+        "Sit on chair edge with tennis ball under tender hamstring knots, apply bodyweight pressure for 30s. Then lie back and loop bath towel over foot for passive stretch.",
+      durationNotes: "每个压痛点 30 秒，整组 5 分钟",
+      equipmentNotes: "网球 + 宿舍长浴巾",
+      status: "APPROVED",
+      authorId: coachFootball.id,
+      reviewerId: coachFootball.id,
+      reviewedAt: new Date(),
+    },
+  });
+
+  console.log("✅ Seed completed successfully with tactics, training plans, matches, debriefs, and recovery guides!");
 }
 
 main()
