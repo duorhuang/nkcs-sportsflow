@@ -1,0 +1,264 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// 用户核心账号
+model User {
+  id           String        @id @default(uuid())
+  username     String        @unique
+  passwordHash String
+  role         String        @default("PLAYER") // "ADMIN" | "COACH" | "PLAYER"
+  nameEn       String
+  nameZh       String
+  avatarUrl    String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  coachAssignments    CoachAssignment[]
+  playerProfiles      PlayerProfile[]
+  authoredTactics     Tactic[]
+  tacticComments      TacticComment[]
+  authoredGuides      RecoveryGuide[]       @relation("GuideAuthor")
+  reviewedGuides      RecoveryGuide[]       @relation("GuideReviewer")
+  authoredDebriefs    Debrief[]
+  debriefRecipients   DebriefRecipient[]
+  notifications       SystemNotification[]
+}
+
+// 教练所属专区分配
+model CoachAssignment {
+  id      String       @id @default(uuid())
+  userId  String
+  user    User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sport   String       // "FOOTBALL" | "VOLLEYBALL" | "BASKETBALL"
+
+  @@unique([userId, sport])
+}
+
+// 队员在特定专区的花名册档案
+model PlayerProfile {
+  id                 String       @id @default(uuid())
+  userId             String
+  user               User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sport              String       // "FOOTBALL" | "VOLLEYBALL" | "BASKETBALL"
+  jerseyNumber       Int
+  primaryPosition    String       // e.g. "CB", "OH", "PG"
+  secondaryPositions String?      // JSON array: ["CDM", "RB"]
+  positionGroup      String?      // e.g. "Backline", "Attackers"
+  honors             String?      // e.g. "MVP 2024, Top Scorer"
+  isCaptain          Boolean      @default(false)
+  isViceCaptain      Boolean      @default(false)
+  isRetired          Boolean      @default(false)
+  alumniTier         String?      // "HALL_OF_FAME" | "ALUMNI_REGULAR"
+  graduationYear     Int?
+  xpPoints           Int          @default(0)
+  cardTier           String       @default("BRONZE") // "BRONZE" | "SILVER" | "GOLD" | "ICON"
+  photoUrl           String?
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  matchStats         MatchStat[]
+  debriefRecipients  DebriefRecipient[]
+
+  @@unique([userId, sport])
+}
+
+// 战术白皮书
+model Tactic {
+  id            String       @id @default(uuid())
+  sport         String       // "FOOTBALL" | "VOLLEYBALL" | "BASKETBALL"
+  titleEn       String
+  titleZh       String
+  scenario      String       // 常规进攻 / 防反 / 5-1轮转 / 挡拆外弹
+  courtFormat   String       // 7人制 / 11人制 / 6人室内 / 3v3半场 / 5v5全场
+  tags          String       // JSON array: 阵型/赛季/位置等多维标签
+  descriptionEn String?
+  descriptionZh String?
+  videoUrl      String?      // YouTube/Bilibili/本地持久化路径
+  isFeatured    Boolean      @default(false)
+  creatorId     String
+  creator       User         @relation(fields: [creatorId], references: [id])
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  phases        TacticPhase[]
+  comments      TacticComment[]
+}
+
+// 战术分步动画阶段
+model TacticPhase {
+  id               String   @id @default(uuid())
+  tacticId         String
+  tactic           Tactic   @relation(fields: [tacticId], references: [id], onDelete: Cascade)
+  phaseIndex       Int      // 1, 2, 3...
+  titleEn          String?
+  titleZh          String?
+  notesEn          String?
+  notesZh          String?
+  tokensJson       String   // 虚拟标准坐标(1000x1000): 现役/名宿卡牌、对手X、球体及其吸附状态
+  trajectoriesJson String   // 贝塞尔弧线控制点与线条语义
+}
+
+// 战术留言区
+model TacticComment {
+  id        String   @id @default(uuid())
+  tacticId  String
+  tactic    Tactic   @relation(fields: [tacticId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content   String
+  createdAt DateTime @default(now())
+}
+
+// 日常训练计划 (含精细日程与科目编排)
+model TrainingPlan {
+  id            String          @id @default(uuid())
+  sport         String          // "FOOTBALL" | "VOLLEYBALL" | "BASKETBALL"
+  trainingDate  DateTime
+  startTime     String?         // 如 "16:30"
+  endTime       String?         // 如 "18:30"
+  location      String?         // 如 "2号天然草坪 / 室内主球馆"
+  titleEn       String
+  titleZh       String
+  contentEn     String
+  contentZh     String
+  tags          String?         // 训练主题标签
+  createdAt     DateTime        @default(now())
+  drills        TrainingDrill[]
+}
+
+// 高精度训练科目与动作高级卡片 (Premium Drill Cards)
+model TrainingDrill {
+  id             String        @id @default(uuid())
+  sport          String        // "FOOTBALL" | "VOLLEYBALL" | "BASKETBALL"
+  planId         String?
+  plan           TrainingPlan? @relation(fields: [planId], references: [id], onDelete: Cascade)
+  titleEn        String
+  titleZh        String
+  category       String        // "WARMUP" | "TACTICAL" | "TECHNICAL" | "CONDITIONING" | "COOLDOWN"
+  durationMins   Int?          // 训练时长（如 15分钟）
+  setsAndReps    String?       // 组数负荷（如 "2组 x 6分钟，间歇90秒"）
+  pitchSpecs     String?       // 场地要求（如 "30m x 20m 半场"）
+  playerCount    String?       // 人数配置（如 "6人组：3v2 + 1门将"）
+  coachingCuesEn String?       // 教练核心指导要诀（3点核心关键）
+  coachingCuesZh String?
+  diagramUrl     String?       // 跑位示廓图 / 战术走位动图
+  videoUrl       String?       // 动作示范视频 (实拍或精选演示)
+  sortOrder      Int           @default(0)
+  createdAt      DateTime      @default(now())
+}
+
+// 拉伸与身体恢复白皮书 (支持 3D 联动与全民众包审核)
+model RecoveryGuide {
+  id                String           @id @default(uuid())
+  sport             String           // "FOOTBALL" | "VOLLEYBALL" | "BASKETBALL"
+  bodyPartKey       String           // quads, hamstrings, calves, shoulders, lower_back, core, etc.
+  modality          String           // "DYNAMIC_WARMUP" | "STATIC_STRETCH" | "MASSAGE_GUN" | "IASTM_SCRAPER" | "FOAM_ROLLING" | "ZERO_COST_SUBSTITUTE"
+  titleEn           String
+  titleZh           String
+  contentEn         String
+  contentZh         String
+  durationNotes     String?          // e.g. "30s x 3组" or "60秒低频走形"
+  equipmentNotes    String?          // 筋膜枪头类型、筋膜刀角度说明、无器械替代手法
+  contraindications String?          // 禁忌与避开区域
+  imageUrl          String?
+  videoUrl          String?
+  status            String           @default("APPROVED") // "PENDING_REVIEW" | "APPROVED" | "REJECTED"
+  authorId          String
+  author            User             @relation("GuideAuthor", fields: [authorId], references: [id])
+  reviewerId        String?
+  reviewer          User?            @relation("GuideReviewer", fields: [reviewerId], references: [id])
+  reviewedAt        DateTime?
+  rejectionReason   String?
+  sortOrder         Int              @default(0)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+}
+
+// 比赛中心
+model Match {
+  id            String       @id @default(uuid())
+  sport         String       // "FOOTBALL" | "VOLLEYBALL" | "BASKETBALL"
+  matchDate     DateTime
+  location      String
+  opponentName  String
+  isHome        Boolean      @default(true)
+  ourScore      Int?
+  opponentScore Int?
+  scoreDetails  String?      // 排球小分如 "25:18, 25:21"
+  linkedTacticIds String?    // JSON array: 关联战术ID
+  createdAt     DateTime     @default(now())
+
+  stats         MatchStat[]
+  debriefs      Debrief[]
+}
+
+// 队员比赛表现（进球/助攻）
+model MatchStat {
+  id            String        @id @default(uuid())
+  matchId       String
+  match         Match         @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  profileId     String
+  profile       PlayerProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  goals         Int           @default(0)
+  assists       Int           @default(0)
+}
+
+// 全场景复盘与评价
+model Debrief {
+  id              String            @id @default(uuid())
+  sport           String            // "FOOTBALL" | "VOLLEYBALL" | "BASKETBALL"
+  targetType      String            // "TEAM" | "GROUP" | "INDIVIDUAL"
+  targetGroupName String?           // 针对位置群组（如 "Strikers"）
+  matchId         String?
+  match           Match?            @relation(fields: [matchId], references: [id], onDelete: SetNull)
+  trainingDate    DateTime?         // 若无具体比赛可绑定训练或时间
+  summaryEn       String?
+  summaryZh       String?
+  recommendedBodyParts String?      // JSON array: 赛后智能推荐疲劳肌群 ["calves", "quads"]
+  lockerRoomPhotoUrl   String?      // 赛后更衣室纪念合照
+  createdAt       DateTime          @default(now())
+  coachId         String
+  coach           User              @relation(fields: [coachId], references: [id])
+
+  recipients      DebriefRecipient[]
+}
+
+// 复盘评价明细与队员双向回执
+model DebriefRecipient {
+  id            String         @id @default(uuid())
+  debriefId     String
+  debrief       Debrief        @relation(fields: [debriefId], references: [id], onDelete: Cascade)
+  profileId     String?
+  profile       PlayerProfile? @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  userId        String?
+  user          User?          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rating        Int?           // 1-10分
+  honors        String?        // MVP / MOST_IMPROVED / SHINING
+  quickTags     String?        // 跑位积极, 防守到位
+  privateNoteEn String?
+  privateNoteZh String?
+  isRead        Boolean        @default(false)
+  acknowledgedAt DateTime?     // 队员已读领悟时间
+  actionItemNote String?       // 队员一句话自勉行动项
+}
+
+// 站内审核与任务通知
+model SystemNotification {
+  id          String   @id @default(uuid())
+  recipientId String
+  recipient   User     @relation(fields: [recipientId], references: [id], onDelete: Cascade)
+  type        String   // "UGC_REVIEW_PENDING", "DEBRIEF_RECEIVED", "TACTIC_ASSIGNED"
+  titleEn     String
+  titleZh     String
+  contentEn   String
+  contentZh   String
+  targetUrl   String?
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
