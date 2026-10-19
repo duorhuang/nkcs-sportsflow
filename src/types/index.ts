@@ -74,3 +74,74 @@ export interface TrainingPlanData {
   tags?: string | null;
   drills: TrainingDrillItem[];
 }
+
+export type TokenType = "PLAYER" | "OPPONENT" | "BALL" | "CONE";
+
+export interface TacticToken {
+  id: string;
+  type: TokenType;
+  label: string;
+  jerseyNumber?: number;
+  position?: string;
+  isCaptain?: boolean;
+  isRetired?: boolean;
+  alumniTier?: AlumniTier | null;
+  x: number;
+  y: number;
+  dutyZh?: string;
+  dutyEn?: string;
+}
+
+export type TrajectoryType = "RUN" | "PASS" | "DRIBBLE" | "ZONE";
+
+export interface TacticTrajectory {
+  id: string;
+  type: TrajectoryType;
+  startX: number;
+  startY: number;
+  controlX: number;
+  controlY: number;
+  endX: number;
+  endY: number;
+  label?: string;
+}
+
+export interface TacticPhaseData {
+  id?: string;
+  phaseIndex: number;
+  titleZh?: string | null;
+  titleEn?: string | null;
+  notesZh?: string | null;
+  notesEn?: string | null;
+  tokens: TacticToken[];
+  trajectories: TacticTrajectory[];
+}
+
+export interface TacticCommentData {
+  id: string;
+  tacticId: string;
+  userId: string;
+  content: string;
+  createdAt: string;
+  user: UserSummary;
+}
+
+export interface TacticData {
+  id: string;
+  sport: SportChannel;
+  titleZh: string;
+  titleEn: string;
+  scenario: string;
+  courtFormat: string;
+  tags: string[];
+  descriptionZh?: string | null;
+  descriptionEn?: string | null;
+  isFeatured: boolean;
+  creatorId: string;
+  creator: UserSummary;
+  phases: TacticPhaseData[];
+  comments?: TacticCommentData[];
+  createdAt: string;
+  updatedAt: string;
+}
+
