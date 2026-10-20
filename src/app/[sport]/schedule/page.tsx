@@ -117,11 +117,11 @@ export default function SchedulePage() {
       {/* Header & Coach Action */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-serif font-black tracking-wide text-white flex items-center space-x-2.5">
-            <CalendarDays className="w-7 h-7 text-emerald-400" />
+          <h1 className="text-2xl sm:text-3xl font-serif font-black tracking-wide text-stone-100 flex items-center space-x-2.5">
+            <CalendarDays className="w-7 h-7 text-amber-500" />
             <span>{isZh ? `${currentSport} 日常训练计划与动作卡片` : `${currentSport} Training Schedule & Drills`}</span>
           </h1>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-xs text-stone-400 mt-1">
             {isZh
               ? "精确到分钟的科目编排 · 场地要求与人员配比 · 3 点教练指导原则 · 免打卡纯查阅"
               : "Minute-level drill timetable · Pitch specs & personnel · 3 Key coaching principles"}
@@ -131,7 +131,7 @@ export default function SchedulePage() {
         {isCoachOrAdmin && (
           <button
             onClick={() => setShowCreateModal(true)}
-            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-heritage-gold via-heritage-antiqueGold to-heritage-brass text-black font-bold text-xs uppercase tracking-wider hover:brightness-110 transition-all flex items-center space-x-2 shadow-md shrink-0"
+            className="px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold text-xs uppercase tracking-wider transition-all flex items-center space-x-2 shadow-md shrink-0"
           >
             <Plus className="w-4 h-4" />
             <span>{isZh ? "发布新训练计划" : "New Training Session"}</span>

@@ -15,6 +15,13 @@ export const config = {
   ],
 };
 
+function getUserSport(username: string): "football" | "volleyball" | "basketball" {
+  const u = username.toLowerCase();
+  if (u.includes("volleyball")) return "volleyball";
+  if (u.includes("basketball")) return "basketball";
+  return "football";
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -28,13 +35,14 @@ export async function middleware(request: NextRequest) {
     if (sessionToken && pathname === "/login") {
       const session = await verifySessionToken(sessionToken);
       if (session) {
-        return NextResponse.redirect(new URL("/football", request.url));
+        const targetSport = session.role === "ADMIN" ? "football" : getUserSport(session.username);
+        return NextResponse.redirect(new URL(`/${targetSport}`, request.url));
       }
     }
     return NextResponse.next();
   }
 
-  // Root redirect to default football channel or login
+  // Root redirect to user's assigned sport channel or login
   if (pathname === "/") {
     const sessionToken = request.cookies.get("session_token")?.value;
     if (!sessionToken) {
@@ -44,13 +52,13 @@ export async function middleware(request: NextRequest) {
     if (!session) {
       return NextResponse.redirect(new URL("/login", request.url));
     }
-    return NextResponse.redirect(new URL("/football", request.url));
+    const targetSport = session.role === "ADMIN" ? "football" : getUserSport(session.username);
+    return NextResponse.redirect(new URL(`/${targetSport}`, request.url));
   }
 
   // Check authentication for protected routes
   const sessionToken = request.cookies.get("session_token")?.value;
   if (!sessionToken) {
-    // For API routes, allow the API route handlers to return clean JSON (or public GETs)
     if (pathname.startsWith("/api/")) {
       return NextResponse.next();
     }
@@ -75,7 +83,22 @@ export async function middleware(request: NextRequest) {
 
   // Check admin role guard
   if (pathname.startsWith("/admin") && session.role !== "ADMIN") {
-    return NextResponse.redirect(new URL("/football", request.url));
+    const targetSport = getUserSport(session.username);
+    return NextResponse.redirect(new URL(`/${targetSport}`, request.url));
+  }
+
+  // ================= STRICT CHANNEL ISOLATION GUARD =================
+  // Non-admin coaches and players are strictly isolated to their assigned sport channel.
+  if (session.role !== "ADMIN" && !pathname.startsWith("/api/") && !pathname.startsWith("/profile")) {
+    const userSport = getUserSport(session.username);
+    const sportsList = ["football", "volleyball", "basketball"] as const;
+
+    for (const otherSport of sportsList) {
+      if (otherSport !== userSport && pathname.startsWith(`/${otherSport}`)) {
+        const redirectedPath = pathname.replace(`/${otherSport}`, `/${userSport}`);
+        return NextResponse.redirect(new URL(redirectedPath, request.url));
+      }
+    }
   }
 
   // Forward user information in request headers

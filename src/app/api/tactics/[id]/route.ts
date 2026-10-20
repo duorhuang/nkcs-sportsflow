@@ -84,6 +84,8 @@ export async function PUT(
       tags,
       descriptionEn,
       descriptionZh,
+      videoUrl,
+      diagramUrl,
       phases,
     } = body;
 
@@ -120,6 +122,8 @@ export async function PUT(
         ...(tags && { tags: JSON.stringify(tags) }),
         ...(descriptionEn !== undefined && { descriptionEn }),
         ...(descriptionZh !== undefined && { descriptionZh }),
+        ...(videoUrl !== undefined && { videoUrl }),
+        ...(diagramUrl !== undefined && { diagramUrl }),
       },
       include: {
         phases: {

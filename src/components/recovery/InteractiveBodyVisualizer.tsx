@@ -56,7 +56,7 @@ export default function InteractiveBodyVisualizer({
   const mountRef = useRef<HTMLDivElement | null>(null);
   const [viewMode, setViewMode] = useState<"3D" | "2D">("3D");
   const [hoveredPart, setHoveredPart] = useState<BodyPartKey | null>(null);
-  const [autoRotate, setAutoRotate] = useState(false);
+  const [autoRotate, setAutoRotate] = useState(true); // 360° rotation enabled by default for true 3D showcase
   const [currentAngleView, setCurrentAngleView] = useState<"FRONT" | "BACK" | "LEFT" | "RIGHT">("FRONT");
 
   // Sport high-risk parts
@@ -75,6 +75,7 @@ export default function InteractiveBodyVisualizer({
   const interactiveMeshesRef = useRef<Map<BodyPartKey, THREE.Mesh[]>>(new Map());
   const reqAnimRef = useRef<number | null>(null);
   const targetRotationYRef = useRef<number>(0);
+  const targetRotationXRef = useRef<number>(0);
   const isDraggingRef = useRef<boolean>(false);
   const prevMouseXRef = useRef<number>(0);
   const prevMouseYRef = useRef<number>(0);
@@ -127,6 +128,18 @@ export default function InteractiveBodyVisualizer({
     modelGroup.position.y = -0.05;
     scene.add(modelGroup);
     modelGroupRef.current = modelGroup;
+
+    // 3D Circular Ground Shadow Disc (Anchors mannequin in 3D space)
+    const groundGeo = new THREE.CircleGeometry(0.75, 32);
+    groundGeo.rotateX(-Math.PI / 2);
+    const groundMat = new THREE.MeshBasicMaterial({
+      color: 0x050806,
+      transparent: true,
+      opacity: 0.7,
+    });
+    const groundMesh = new THREE.Mesh(groundGeo, groundMat);
+    groundMesh.position.y = -0.88;
+    scene.add(groundMesh);
 
     // Map of interactive meshes
     const partMeshes = new Map<BodyPartKey, THREE.Mesh[]>();
@@ -325,10 +338,12 @@ export default function InteractiveBodyVisualizer({
           modelGroupRef.current.rotation.y += 0.008;
           targetRotationYRef.current = modelGroupRef.current.rotation.y;
         } else {
-          // Smoothly interpolate towards target rotation
+          // Smoothly interpolate towards target rotation (Y and X axes)
           modelGroupRef.current.rotation.y +=
             (targetRotationYRef.current - modelGroupRef.current.rotation.y) * 0.1;
         }
+        modelGroupRef.current.rotation.x +=
+          (targetRotationXRef.current - modelGroupRef.current.rotation.x) * 0.1;
       }
 
       renderer.render(scene, camera);
@@ -429,7 +444,9 @@ export default function InteractiveBodyVisualizer({
   const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     if (isDraggingRef.current) {
       const deltaX = e.clientX - prevMouseXRef.current;
+      const deltaY = e.clientY - prevMouseYRef.current;
       targetRotationYRef.current += deltaX * 0.012;
+      targetRotationXRef.current = Math.max(-0.45, Math.min(0.45, targetRotationXRef.current + deltaY * 0.008));
       prevMouseXRef.current = e.clientX;
       prevMouseYRef.current = e.clientY;
     } else {
@@ -445,6 +462,12 @@ export default function InteractiveBodyVisualizer({
       }
       setHoveredPart(foundPart);
     }
+  };
+
+  const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+    if (!cameraRef.current) return;
+    const newZ = cameraRef.current.position.z + e.deltaY * 0.003;
+    cameraRef.current.position.z = Math.max(2.6, Math.min(6.0, newZ));
   };
 
   const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -563,6 +586,7 @@ export default function InteractiveBodyVisualizer({
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
+        onWheel={handleWheel}
         style={{ display: viewMode === "3D" ? "flex" : "none" }}
         className="relative w-full max-w-[360px] aspect-[360/540] rounded-xl overflow-hidden cursor-grab active:cursor-grabbing bg-radial from-[#1e2722]/60 to-[#0e1411] border border-stone-800/70 shadow-inner items-center justify-center"
       >

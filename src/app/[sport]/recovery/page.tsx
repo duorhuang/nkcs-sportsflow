@@ -302,10 +302,10 @@ export default function RecoveryPage() {
 
         <button
           onClick={() => setShowSubmitModal(true)}
-          className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-white text-xs font-bold flex items-center space-x-1.5 transition-colors self-start sm:self-auto"
+          className="px-3.5 py-2 rounded-xl bg-stone-900 hover:bg-stone-800 border border-stone-700 text-stone-200 text-xs font-bold flex items-center space-x-1.5 transition-colors self-start sm:self-auto"
         >
           <Plus className="w-4 h-4 text-rose-400" />
-          <span>贡献宿舍零成本小妙招</span>
+          <span>{isZh ? "贡献宿舍零成本小妙招" : "Submit Dorm Recovery Tip"}</span>
         </button>
       </div>
 
@@ -320,9 +320,9 @@ export default function RecoveryPage() {
           />
 
           {/* Quick Body Part Selector Pills */}
-          <div className="p-4 rounded-xl bg-black/50 border border-white/10">
-            <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block mb-2">
-              快速点击选择肌群部位
+          <div className="p-4 rounded-xl bg-[#191919] border border-stone-800">
+            <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider block mb-2">
+              {isZh ? "快速点击选择肌群部位" : "Quick Select Target Zone"}
             </span>
             <div className="flex flex-wrap gap-1.5">
               {(Object.keys(clinicalSpecs) as BodyPartKey[]).map((key) => {
@@ -333,11 +333,11 @@ export default function RecoveryPage() {
                     onClick={() => setSelectedPart(key)}
                     className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
                       isSelected
-                        ? "bg-rose-600 text-white font-bold shadow-md"
-                        : "bg-white/5 text-gray-300 hover:bg-white/10 border border-white/5"
+                        ? "bg-rose-700 text-white font-bold shadow-md"
+                        : "bg-stone-900 text-stone-300 hover:bg-stone-800 border border-stone-800"
                     }`}
                   >
-                    {clinicalSpecs[key].nameZh.split("/")[0]}
+                    {isZh ? clinicalSpecs[key].nameZh.split("/")[0] : clinicalSpecs[key].nameEn.split("(")[0]}
                   </button>
                 );
               })}

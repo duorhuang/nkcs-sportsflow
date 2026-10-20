@@ -75,7 +75,7 @@ export interface TrainingPlanData {
   drills: TrainingDrillItem[];
 }
 
-export type TokenType = "PLAYER" | "OPPONENT" | "BALL" | "CONE";
+export type TokenType = "PLAYER" | "OPPONENT" | "BALL" | "CONE" | "TEXT";
 
 export interface TacticToken {
   id: string;
@@ -137,6 +137,8 @@ export interface TacticData {
   tags: string[];
   descriptionZh?: string | null;
   descriptionEn?: string | null;
+  videoUrl?: string | null;
+  diagramUrl?: string | null;
   isFeatured: boolean;
   creatorId: string;
   creator: UserSummary;

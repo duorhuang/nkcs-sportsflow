@@ -129,6 +129,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, [pathname]);
 
+  // Channel Isolation: Lock non-admin users strictly to their assigned sport
+  useEffect(() => {
+    if (user && user.role !== "ADMIN") {
+      let allowedSport: SportChannel = "FOOTBALL";
+      if (user.username === "volleyball") allowedSport = "VOLLEYBALL";
+      else if (user.username === "basketball") allowedSport = "BASKETBALL";
+      else if (user.username === "football") allowedSport = "FOOTBALL";
+      else if (user.playerProfiles?.[0]?.sport) allowedSport = user.playerProfiles[0].sport;
+
+      if (sport !== allowedSport) {
+        setSport(allowedSport);
+      }
+    }
+  }, [user]);
+
   return (
     <AppContext.Provider
       value={{

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useApp } from "@/context/AppContext";
 import { SportChannel, PlayerProfileData } from "@/types";
@@ -17,13 +18,18 @@ import {
   MapPin,
   Flame,
   Crown,
+  Sparkles,
+  ChevronRight,
+  UserPlus,
 } from "lucide-react";
 
 export default function SquadPage() {
   const params = useParams();
   const currentSport = (params.sport as string)?.toUpperCase() as SportChannel;
-  const { locale, t } = useApp();
+  const { user, locale, t } = useApp();
   const isZh = locale === "zh";
+
+  const isCoachOrAdmin = user?.role === "COACH" || user?.role === "ADMIN";
 
   const [players, setPlayers] = useState<PlayerProfileData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -129,8 +135,8 @@ export default function SquadPage() {
           </h1>
           <p className="text-xs text-stone-400 mt-1">
             {isZh
-              ? "收录历届建队功勋与现役生力军 · 赛后与推演随时调取 · 阵型站位俯瞰与卡牌合辑"
-              : "Active varsity lineup, legend hall of fame, and interactive pitch formation view"}
+              ? "收录历届建队功勋与现役生力军 · 阵型站位俯瞰与 FC Mobile 风格球员卡合辑"
+              : "Active varsity lineup, legend hall of fame, and authentic FC Mobile card collection"}
           </p>
         </div>
 
@@ -174,6 +180,37 @@ export default function SquadPage() {
         </div>
       </div>
 
+      {/* Notion-Style Clean Banner when roster is empty */}
+      {players.length === 0 && !loading && (
+        <div className="p-4 rounded-xl bg-[#191919] border border-stone-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-md">
+          <div className="flex items-center space-x-3">
+            <div className="w-9 h-9 rounded-lg bg-amber-600/20 border border-amber-600/40 flex items-center justify-center shrink-0">
+              <Shield className="w-5 h-5 text-amber-400" />
+            </div>
+            <div>
+              <h4 className="text-xs font-bold text-stone-200">
+                {isZh ? "当前专区无虚构队员 · 名录处于真实空白待录入状态" : "Authentic Roster · No Fabricated Student Accounts"}
+              </h4>
+              <p className="text-[11px] text-stone-400 mt-0.5">
+                {isZh
+                  ? "系统未捏造任何虚假学员。主教练或管理员可前往花名册管理录入真实校队队员。"
+                  : "Zero fake student accounts created. Coaches can register authentic athletes via Roster Admin."}
+              </p>
+            </div>
+          </div>
+          {isCoachOrAdmin && (
+            <Link
+              href="/admin/roster"
+              className="px-3.5 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold text-xs shrink-0 flex items-center space-x-1 transition-colors shadow-sm"
+            >
+              <UserPlus className="w-3.5 h-3.5" />
+              <span>{isZh ? "前往录入校队正式队员" : "Go to Roster Admin"}</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </Link>
+          )}
+        </div>
+      )}
+
       {/* ================= 1. PITCH FORMATION VIEW (俯瞰球场阵容视图) ================= */}
       {displayMode === "PITCH" && (
         <div className="space-y-3">
@@ -187,10 +224,12 @@ export default function SquadPage() {
                   : "🏀 1-2-2 阵地突破攻防站位"}
               </span>
               <span className="text-[11px] text-amber-400 font-mono">
-                {activeSquad.length} 名现役主力已落位
+                {activeSquad.length} {isZh ? "名现役主力已落位" : "Athletes Deployed"}
               </span>
             </div>
-            <span className="text-stone-400 text-[11px]">点击场上任意球员弹出详细档案</span>
+            <span className="text-stone-400 text-[11px]">
+              {isZh ? "点击场上任意球员弹出详细档案" : "Click athlete for dossier"}
+            </span>
           </div>
 
           <div className="relative w-full aspect-[16/10] sm:aspect-[16/9] rounded-2xl overflow-hidden border border-stone-800 shadow-2xl bg-[#0F241A] select-none">
@@ -232,62 +271,88 @@ export default function SquadPage() {
               )}
             </svg>
 
-            {/* Positioned Athlete Tokens */}
-            <div className="absolute inset-0">
-              {activeSquad.slice(0, currentSport === "FOOTBALL" ? 11 : currentSport === "VOLLEYBALL" ? 6 : 5).map((player, idx) => {
-                const pos = getFormationCoordinates(idx, activeSquad.length);
-
-                return (
-                  <div
-                    key={player.id}
-                    onClick={() => setSelectedPlayer(player)}
-                    style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
-                    className="absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer group flex flex-col items-center transition-transform hover:scale-110 z-20"
+            {/* If no players rostered yet, show clean guidance overlay */}
+            {activeSquad.length === 0 ? (
+              <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-black/55 backdrop-blur-[2px] z-20">
+                <div className="w-12 h-12 rounded-full bg-amber-600/20 border border-amber-600/40 flex items-center justify-center mb-3">
+                  <Shield className="w-6 h-6 text-amber-400" />
+                </div>
+                <h4 className="text-sm font-bold text-stone-200">
+                  {isZh ? "球场阵型框架就绪 · 待录入首发成员" : "Pitch Formation Ready · Awaiting Athlete Roster"}
+                </h4>
+                <p className="text-xs text-stone-400 max-w-md mt-1 leading-relaxed">
+                  {isZh
+                    ? "数据库当前无任何虚构学生名单。主教练录入队员并指派主力位置后，队员将以 FC Mobile 头像卡自动落位展示。"
+                    : "Zero fake student accounts created. Once coaches register athletes and assign positions, cards will automatically deploy here."}
+                </p>
+                {isCoachOrAdmin && (
+                  <Link
+                    href="/admin/roster"
+                    className="mt-3.5 px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold text-xs flex items-center space-x-1.5 transition-colors shadow-md"
                   >
-                    <div className="relative">
-                      {/* Athlete Circular Avatar */}
-                      <div className="w-11 h-11 sm:w-13 sm:h-13 rounded-full overflow-hidden bg-stone-950 border-2 border-stone-300 group-hover:border-amber-400 shadow-xl flex items-center justify-center">
-                        {player.photoUrl ? (
-                          <img
-                            src={player.photoUrl}
-                            alt={player.user.nameEn}
-                            className="w-full h-full object-cover object-top"
-                          />
-                        ) : (
-                          <span className="font-serif font-black text-amber-400 text-sm">
-                            #{player.jerseyNumber}
+                    <UserPlus className="w-4 h-4" />
+                    <span>{isZh ? "进入花名册管理录入队员" : "Add Athletes in Roster Admin"}</span>
+                  </Link>
+                )}
+              </div>
+            ) : (
+              /* Positioned Athlete Tokens */
+              <div className="absolute inset-0">
+                {activeSquad.slice(0, currentSport === "FOOTBALL" ? 11 : currentSport === "VOLLEYBALL" ? 6 : 5).map((player, idx) => {
+                  const pos = getFormationCoordinates(idx, activeSquad.length);
+
+                  return (
+                    <div
+                      key={player.id}
+                      onClick={() => setSelectedPlayer(player)}
+                      style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
+                      className="absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer group flex flex-col items-center transition-transform hover:scale-110 z-20"
+                    >
+                      <div className="relative">
+                        {/* Athlete Circular Avatar */}
+                        <div className="w-11 h-11 sm:w-13 sm:h-13 rounded-full overflow-hidden bg-stone-950 border-2 border-stone-300 group-hover:border-amber-400 shadow-xl flex items-center justify-center">
+                          {player.photoUrl ? (
+                            <img
+                              src={player.photoUrl}
+                              alt={player.user.nameEn}
+                              className="w-full h-full object-cover object-top"
+                            />
+                          ) : (
+                            <span className="font-serif font-black text-amber-400 text-sm">
+                              #{player.jerseyNumber}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Captain Badge */}
+                        {player.isCaptain && (
+                          <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-amber-500 text-stone-950 font-black text-[9px] flex items-center justify-center border border-stone-900 shadow-sm">
+                            C
                           </span>
                         )}
+
+                        {/* Number Tag */}
+                        <span className="absolute -bottom-1 -right-1 px-1 rounded bg-stone-900 text-white font-mono font-bold text-[9px] border border-stone-700">
+                          #{player.jerseyNumber}
+                        </span>
                       </div>
 
-                      {/* Captain Badge */}
-                      {player.isCaptain && (
-                        <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-amber-500 text-stone-950 font-black text-[9px] flex items-center justify-center border border-stone-900 shadow-sm">
-                          C
-                        </span>
-                      )}
-
-                      {/* Number Tag */}
-                      <span className="absolute -bottom-1 -right-1 px-1 rounded bg-stone-900 text-white font-mono font-bold text-[9px] border border-stone-700">
-                        #{player.jerseyNumber}
-                      </span>
+                      {/* Name Pill */}
+                      <div className="mt-1 px-2 py-0.5 rounded-md bg-stone-950/90 border border-stone-800 text-[10px] text-stone-200 font-bold whitespace-nowrap shadow-md group-hover:bg-amber-600 group-hover:text-stone-950 transition-colors">
+                        {isZh ? player.user.nameZh : player.user.nameEn} · {player.primaryPosition}
+                      </div>
                     </div>
-
-                    {/* Name Pill */}
-                    <div className="mt-1 px-2 py-0.5 rounded-md bg-stone-950/90 border border-stone-800 text-[10px] text-stone-200 font-bold whitespace-nowrap shadow-md group-hover:bg-amber-600 group-hover:text-stone-950 transition-colors">
-                      {player.user.nameZh} · {player.primaryPosition}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       )}
 
       {/* ================= 2. CARDS GRID VIEW (名宿与阵容切换栏) ================= */}
       {displayMode === "CARDS" && (
-        <div className="space-y-4">
+        <div className="space-y-6">
           {/* Filter Tabs: 全部 | 现役主力 | 校队名宿 | 毕业校友 */}
           <div className="flex flex-wrap items-center gap-2">
             <button
@@ -310,7 +375,7 @@ export default function SquadPage() {
               }`}
             >
               <Shield className="w-3.5 h-3.5" />
-              <span>{isZh ? "现役主力 (Active)" : "Active Squad"}</span>
+              <span>{isZh ? "现役主力" : "Active Squad"}</span>
             </button>
 
             <button
@@ -322,7 +387,7 @@ export default function SquadPage() {
               }`}
             >
               <Award className="w-3.5 h-3.5 text-amber-400" />
-              <span>{isZh ? "🏆 校队名宿 (Hall of Fame)" : "Hall of Fame"}</span>
+              <span>{isZh ? "🏆 校队名宿" : "Hall of Fame"}</span>
             </button>
 
             <button
@@ -334,21 +399,13 @@ export default function SquadPage() {
               }`}
             >
               <GraduationCap className="w-3.5 h-3.5" />
-              <span>{isZh ? "🎓 毕业校友 (Alumni)" : "Alumni"}</span>
+              <span>{isZh ? "🎓 毕业校友" : "Alumni"}</span>
             </button>
           </div>
 
-          {/* Grid of Classical Player Cards */}
-          {loading ? (
-            <div className="py-20 text-center text-stone-400 text-sm">
-              {isZh ? "正在加载校队阵容..." : "Loading squad roster..."}
-            </div>
-          ) : filteredPlayers.length === 0 ? (
-            <div className="py-16 text-center text-stone-400 text-sm bg-stone-900/40 rounded-xl border border-stone-800">
-              {isZh ? "未检索到匹配的队员记录" : "No players match the criteria"}
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {/* If there are real players in DB */}
+          {filteredPlayers.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {filteredPlayers.map((player) => (
                 <PlayerCard
                   key={player.id}
@@ -357,6 +414,101 @@ export default function SquadPage() {
                 />
               ))}
             </div>
+          ) : (
+            /* When empty: show authentic FC Mobile 4-Tier Card Showcase */
+            <div className="space-y-6">
+              <div className="p-4 rounded-xl bg-[#191919] border border-stone-800 text-center">
+                <p className="text-xs text-stone-400 font-medium leading-relaxed">
+                  {isZh
+                    ? "数据库当前无任何虚构学生名单。下方为您呈现正式实装的 EA FC Mobile / FUT 风格卡片架构与四阶金属质感实机渲染效果："
+                    : "No fake profiles created. Previewing authentic EA FC Mobile / FUT shield card architecture and 4 metallic tier renders below:"}
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-center justify-between border-b border-stone-800 pb-2.5">
+                  <div className="flex items-center space-x-2">
+                    <Sparkles className="w-4 h-4 text-amber-400" />
+                    <h3 className="text-sm font-serif font-black tracking-wide text-stone-100">
+                      {isZh ? "FC Mobile 风格球员卡片架构与渲染实机展示" : "FC Mobile Card Architecture & Foil Tiers Preview"}
+                    </h3>
+                  </div>
+                  <span className="text-[11px] text-stone-400 font-mono">
+                    {isZh ? "4 阶金属盾形卡牌" : "4 Metallic Shield Tiers"}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pt-2">
+                  {/* 1. Gold Rare Tier */}
+                  <div className="space-y-2">
+                    <PlayerCard
+                      demoTier="GOLD"
+                      demoName={isZh ? "黄金主力示范" : "Gold Rare Demo"}
+                      demoPosition={currentSport === "FOOTBALL" ? "ST" : currentSport === "VOLLEYBALL" ? "OH" : "SF"}
+                      demoJersey={9}
+                      demoOvr={91}
+                    />
+                    <div className="p-2.5 rounded-lg bg-[#191919] border border-stone-800 text-center text-[11px]">
+                      <span className="font-bold text-amber-400">🌟 Gold Rare ({isZh ? "黄金稀有" : "Gold Rare"})</span>
+                      <p className="text-stone-400 text-[10px] mt-0.5">
+                        {isZh ? "现役主力核心 · 91 OVR · 哑光金箔盾" : "Starting Ace · 91 OVR · Matte Gold Shield"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* 2. Silver Tier */}
+                  <div className="space-y-2">
+                    <PlayerCard
+                      demoTier="SILVER"
+                      demoName={isZh ? "白银轮换示范" : "Silver Starter Demo"}
+                      demoPosition={currentSport === "FOOTBALL" ? "CM" : currentSport === "VOLLEYBALL" ? "MB" : "PG"}
+                      demoJersey={8}
+                      demoOvr={79}
+                    />
+                    <div className="p-2.5 rounded-lg bg-[#191919] border border-stone-800 text-center text-[11px]">
+                      <span className="font-bold text-slate-300">🥈 Silver ({isZh ? "白银轮换" : "Silver Tier"})</span>
+                      <p className="text-stone-400 text-[10px] mt-0.5">
+                        {isZh ? "常规轮换阵容 · 79 OVR · 钛银金属盾" : "Squad Rotation · 79 OVR · Titanium Silver"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* 3. Bronze Tier */}
+                  <div className="space-y-2">
+                    <PlayerCard
+                      demoTier="BRONZE"
+                      demoName={isZh ? "青铜新锐示范" : "Bronze Prospect Demo"}
+                      demoPosition={currentSport === "FOOTBALL" ? "RB" : currentSport === "VOLLEYBALL" ? "LIBERO" : "SG"}
+                      demoJersey={2}
+                      demoOvr={68}
+                    />
+                    <div className="p-2.5 rounded-lg bg-[#191919] border border-stone-800 text-center text-[11px]">
+                      <span className="font-bold text-amber-600">🥉 Bronze ({isZh ? "青铜新锐" : "Bronze Tier"})</span>
+                      <p className="text-stone-400 text-[10px] mt-0.5">
+                        {isZh ? "梯队潜力新星 · 68 OVR · 暖铜质感盾" : "Academy Prospect · 68 OVR · Bronze Shield"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* 4. Icon Tier */}
+                  <div className="space-y-2">
+                    <PlayerCard
+                      demoTier="ICON"
+                      demoName={isZh ? "殿堂名宿示范" : "Icon Legend Demo"}
+                      demoPosition={currentSport === "FOOTBALL" ? "CB" : currentSport === "VOLLEYBALL" ? "SETTER" : "C"}
+                      demoJersey={4}
+                      demoOvr={94}
+                    />
+                    <div className="p-2.5 rounded-lg bg-[#191919] border border-stone-800 text-center text-[11px]">
+                      <span className="font-bold text-amber-300">👑 Icon Legend ({isZh ? "传奇名宿" : "Hall of Fame"})</span>
+                      <p className="text-stone-400 text-[10px] mt-0.5">
+                        {isZh ? "终身荣誉名人堂 · 94 OVR · 桂冠耀金盾" : "Hall of Fame Legend · 94 OVR · Laurel Gold"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           )}
         </div>
       )}
@@ -364,7 +516,7 @@ export default function SquadPage() {
       {/* ================= 3. PLAYER DOSSIER MODAL (球员档案弹窗) ================= */}
       {selectedPlayer && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-[#141B18] border border-stone-800 rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
+          <div className="bg-[#1C1C1C] border border-stone-700 rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
             <button
               onClick={() => setSelectedPlayer(null)}
               className="absolute top-4 right-4 p-1.5 rounded-full bg-stone-900 hover:bg-stone-800 text-stone-400 hover:text-white transition-colors"
@@ -393,12 +545,12 @@ export default function SquadPage() {
                   </span>
                   {selectedPlayer.isCaptain && (
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-950/80 text-amber-200 border border-amber-700/80">
-                      © 队长
+                      © {isZh ? "队长" : "Captain"}
                     </span>
                   )}
                   {selectedPlayer.isRetired && (
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-stone-800 text-stone-300 border border-stone-700">
-                      {selectedPlayer.alumniTier === "HALL_OF_FAME" ? "🏆 终身名宿" : "🎓 毕业校友"}
+                      {selectedPlayer.alumniTier === "HALL_OF_FAME" ? (isZh ? "🏆 终身名宿" : "🏆 Hall of Fame") : (isZh ? "🎓 毕业校友" : "🎓 Alumni")}
                     </span>
                   )}
                 </div>
@@ -409,7 +561,7 @@ export default function SquadPage() {
                   {isZh ? selectedPlayer.user.nameEn : selectedPlayer.user.nameZh}
                 </p>
                 <p className="text-xs text-amber-300 font-semibold mt-1">
-                  {selectedPlayer.primaryPosition} · {selectedPlayer.positionGroup || "主力位置组"}
+                  {selectedPlayer.primaryPosition} · {selectedPlayer.positionGroup || (isZh ? "主力位置组" : "Position Group")}
                 </p>
               </div>
             </div>
@@ -420,15 +572,15 @@ export default function SquadPage() {
                 <span className="font-bold text-stone-100">
                   {selectedPlayer.isRetired
                     ? selectedPlayer.alumniTier === "HALL_OF_FAME"
-                      ? "🏆 校队名宿 (Hall of Fame)"
-                      : "🎓 毕业校友"
-                    : "现役主力队员"}
+                      ? (isZh ? "🏆 校队名宿 (Hall of Fame)" : "🏆 Hall of Fame")
+                      : (isZh ? "🎓 毕业校友" : "🎓 Alumni")
+                    : (isZh ? "现役主力队员" : "Active Varsity")}
                 </span>
               </div>
               {selectedPlayer.graduationYear && (
                 <div className="flex justify-between py-1 border-b border-stone-800/80">
                   <span className="text-stone-400">{isZh ? "毕业届次" : "Class of"}</span>
-                  <span className="font-bold text-stone-100">{selectedPlayer.graduationYear} 届</span>
+                  <span className="font-bold text-stone-100">{selectedPlayer.graduationYear} {isZh ? "届" : ""}</span>
                 </div>
               )}
               {selectedPlayer.honors && (

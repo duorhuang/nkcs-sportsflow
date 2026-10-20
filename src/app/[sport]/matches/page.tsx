@@ -221,21 +221,21 @@ export default function MatchesPage() {
   return (
     <div className="space-y-6 animate-fadeIn">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-stone-800">
         <div>
           <div className="flex items-center space-x-2 mb-1">
-            <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-bold border border-amber-500/30 uppercase tracking-wider">
+            <span className="px-2.5 py-0.5 rounded-full bg-stone-900 text-amber-400 text-[10px] font-bold border border-stone-800 uppercase tracking-wider font-mono">
               {sport} MATCH CENTER & DEBRIEFS
             </span>
-            <span className="text-xs text-gray-400">
-              赛程战绩 · 1对1 专属复盘卡 · 疲劳恢复处方
+            <span className="text-xs text-stone-400">
+              {isZh ? "赛程战绩 · 1对1 专属复盘卡 · 疲劳恢复处方" : "Fixtures, Debriefs & Prescriptions"}
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-serif font-black tracking-wide text-white flex items-center space-x-2.5">
-            <Trophy className="w-7 h-7 text-amber-400" />
+          <h1 className="text-2xl sm:text-3xl font-serif font-black tracking-wide text-stone-100 flex items-center space-x-2.5">
+            <Trophy className="w-7 h-7 text-amber-500" />
             <span>{isZh ? `${sport} 比赛中心与全场景即时复盘` : `${sport} Match Center & Debriefs`}</span>
           </h1>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-xs text-stone-400 mt-1">
             {isZh
               ? "赛程预告 · 极简比分战报 · 主教练 1对1 私密评价回执 · 战术复盘行动项自勉"
               : "Fixtures & Results · 1-on-1 private debrief cards · Fatigue prescription · Athlete self-reflection"}
@@ -246,18 +246,18 @@ export default function MatchesPage() {
           <div className="flex items-center space-x-2">
             <button
               onClick={() => setShowAddMatch(true)}
-              className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-white text-xs font-bold flex items-center space-x-1.5 transition-colors"
+              className="px-3.5 py-2 rounded-xl bg-stone-900 hover:bg-stone-800 border border-stone-700 text-stone-200 text-xs font-bold flex items-center space-x-1.5 transition-colors"
             >
               <Plus className="w-4 h-4 text-amber-400" />
-              <span>录入赛程/比分</span>
+              <span>{isZh ? "录入赛程/比分" : "New Match / Score"}</span>
             </button>
 
             <button
               onClick={() => setShowDebriefModal(true)}
-              className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white text-xs font-bold flex items-center space-x-1.5 shadow-frameGold transition-all"
+              className="px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-stone-950 text-xs font-bold flex items-center space-x-1.5 transition-all shadow-sm"
             >
               <Award className="w-4 h-4" />
-              <span>发放专属复盘卡</span>
+              <span>{isZh ? "发放专属复盘卡" : "Issue Debrief Card"}</span>
             </button>
           </div>
         )}

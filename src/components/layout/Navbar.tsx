@@ -130,32 +130,46 @@ export const Navbar: React.FC = () => {
             </div>
           </Link>
 
-          {/* Center: 3-Sport Classical Channel Switchers */}
-          <nav className="flex items-center space-x-1.5 md:space-x-2 bg-white/5 p-1 rounded-full border border-white/10">
-            {sports.map((item) => {
-              const isSelected = sport === item.key;
-              return (
-                <button
-                  key={item.key}
-                  onClick={() => setSport(item.key)}
-                  className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-200 ${
-                    isSelected
-                      ? item.key === "FOOTBALL"
-                        ? "bg-emerald-800 text-stone-100 border border-emerald-700/80 shadow-sm"
-                        : item.key === "VOLLEYBALL"
-                        ? "bg-amber-800 text-stone-100 border border-amber-700/80 shadow-sm"
-                        : "bg-amber-700 text-stone-100 border border-amber-600/80 shadow-sm"
-                      : "text-stone-400 hover:text-stone-200 hover:bg-white/5"
-                  }`}
-                >
-                  <span className="text-sm">{item.icon}</span>
-                  <span className="hidden sm:inline">
-                    {isZh ? item.labelZh : item.labelEn}
-                  </span>
-                </button>
-              );
-            })}
-          </nav>
+          {/* Center: 3-Sport Classical Channel Switchers (ADMIN ONLY) vs Dedicated Sport Lock (COACH / ATHLETE) */}
+          {user?.role === "ADMIN" ? (
+            <nav className="flex items-center space-x-1.5 md:space-x-2 bg-stone-900/90 p-1 rounded-full border border-stone-800">
+              {sports.map((item) => {
+                const isSelected = sport === item.key;
+                return (
+                  <button
+                    key={item.key}
+                    onClick={() => setSport(item.key)}
+                    className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-200 ${
+                      isSelected
+                        ? item.key === "FOOTBALL"
+                          ? "bg-emerald-800 text-stone-100 border border-emerald-700/80 shadow-sm"
+                          : item.key === "VOLLEYBALL"
+                          ? "bg-amber-800 text-stone-100 border border-amber-700/80 shadow-sm"
+                          : "bg-amber-700 text-stone-100 border border-amber-600/80 shadow-sm"
+                        : "text-stone-400 hover:text-stone-200 hover:bg-stone-800/50"
+                    }`}
+                  >
+                    <span className="text-sm">{item.icon}</span>
+                    <span className="hidden sm:inline">
+                      {isZh ? item.labelZh : item.labelEn}
+                    </span>
+                  </button>
+                );
+              })}
+            </nav>
+          ) : (
+            <div className="flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-stone-900 border border-stone-800 text-xs font-bold text-stone-200 shadow-sm">
+              <span className="text-base">
+                {sport === "FOOTBALL" ? "⚽" : sport === "VOLLEYBALL" ? "🏐" : "🏀"}
+              </span>
+              <span className="tracking-wide uppercase text-amber-400 font-serif font-black">
+                {sport} VARSITY
+              </span>
+              <span className="hidden sm:inline text-stone-400 text-[10px] font-mono">
+                {isZh ? "独立专区已锁定" : "Channel Locked"}
+              </span>
+            </div>
+          )}
 
           {/* Right Tools: Language Toggle & Profile/Logout */}
           <div className="flex items-center space-x-2.5 shrink-0">

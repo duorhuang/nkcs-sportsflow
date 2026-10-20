@@ -34,10 +34,11 @@ import {
   Shield,
   Flag,
   Undo2,
+  Type,
 } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 
-export type BoardTool = "SELECT" | "PASS" | "RUN" | "DRIBBLE" | "ERASE";
+export type BoardTool = "SELECT" | "PASS" | "RUN" | "DRIBBLE" | "TEXT" | "ERASE";
 
 interface TacticsBoardProps {
   sport: SportChannel;
@@ -247,6 +248,30 @@ export default function TacticsBoard({
         setSelectedTokenId(clickedToken.id);
       } else {
         setSelectedTokenId(null);
+      }
+      return;
+    }
+
+    // Text Annotation Placement Tool
+    if (activeTool === "TEXT") {
+      const defaultText = isZh ? "高位压迫" : "High Press";
+      const userText = window.prompt(
+        isZh ? "请输入战术文字标注 (如: 肋部穿插、后排梯次攻、挡拆顺下):" : "Enter tactical pitch label:",
+        defaultText
+      );
+      if (userText && userText.trim()) {
+        const textToken: TacticToken = {
+          id: `text_${Date.now()}_${Math.random().toString(36).substring(2, 5)}`,
+          type: "TEXT",
+          label: userText.trim(),
+          x: coords.x,
+          y: coords.y,
+          dutyZh: userText.trim(),
+          dutyEn: userText.trim(),
+        };
+        commitPhaseUpdate([...currentPhase.tokens, textToken], currentPhase.trajectories || []);
+        setSelectedTokenId(textToken.id);
+        setActiveTool("SELECT");
       }
       return;
     }
@@ -551,6 +576,19 @@ export default function TacticsBoard({
             >
               <Zap className="w-3.5 h-3.5 text-orange-400" />
               <span>⚡ 运球突破</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTool("TEXT")}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1.5 transition-all ${
+                activeTool === "TEXT"
+                  ? "bg-purple-600 text-white font-black shadow-sm"
+                  : "bg-stone-800/80 text-purple-300/90 hover:bg-stone-700"
+              }`}
+              title={isZh ? "在球场上任意位置添加文字战术标注" : "Click pitch to add text annotation"}
+            >
+              <Type className="w-3.5 h-3.5 text-purple-400" />
+              <span>🔤 文字标注</span>
             </button>
 
             <button
@@ -1100,10 +1138,57 @@ export default function TacticsBoard({
             </g>
           )}
 
-          {/* ================= 5. TACTICAL TOKENS (ATHLETES, BALL, CONES) ================= */}
+          {/* ================= 5. TACTICAL TOKENS (ATHLETES, BALL, CONES, TEXT) ================= */}
           {displayedTokens.map((token) => {
             const isSelected = token.id === selectedTokenId;
             const isDragging = token.id === draggingTokenId;
+
+            // Tactical Text Annotation Token
+            if (token.type === "TEXT" || token.id.startsWith("text_")) {
+              const textWidth = Math.max(68, (token.label || "").length * 12 + 22);
+              return (
+                <g
+                  key={token.id}
+                  transform={`translate(${token.x}, ${token.y})`}
+                  className={`${
+                    canEdit && activeTool === "SELECT" ? "cursor-grab active:cursor-grabbing" : "cursor-pointer"
+                  } ${isSelected ? "scale-105" : ""} transition-transform duration-150`}
+                  onClick={(e) => {
+                    if (activeTool === "ERASE") {
+                      e.stopPropagation();
+                      const remaining = currentPhase.tokens.filter((t) => t.id !== token.id);
+                      commitPhaseUpdate(remaining, currentPhase.trajectories || []);
+                    }
+                  }}
+                >
+                  <rect
+                    x={-textWidth / 2}
+                    y="-14"
+                    width={textWidth}
+                    height="28"
+                    rx="6"
+                    fill="#1C1F1D"
+                    stroke={isSelected ? "#F59E0B" : "#C5A059"}
+                    strokeWidth="1.5"
+                    strokeDasharray={isSelected ? "none" : "3 2"}
+                    fillOpacity="0.95"
+                    className="filter drop-shadow-md"
+                  />
+                  <text
+                    x="0"
+                    y="4.5"
+                    fill="#F8FAFC"
+                    fontSize="11.5"
+                    fontWeight="bold"
+                    textAnchor="middle"
+                    fontFamily="sans-serif"
+                    className="pointer-events-none select-none"
+                  >
+                    {token.label}
+                  </text>
+                </g>
+              );
+            }
 
             // Ball Token
             if (token.type === "BALL") {

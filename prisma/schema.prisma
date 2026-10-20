@@ -80,6 +80,7 @@ model Tactic {
   descriptionEn String?
   descriptionZh String?
   videoUrl      String?      // YouTube/Bilibili/本地持久化路径
+  diagramUrl    String?      // 战术示意照片 / 实战图解
   isFeatured    Boolean      @default(false)
   creatorId     String
   creator       User         @relation(fields: [creatorId], references: [id])

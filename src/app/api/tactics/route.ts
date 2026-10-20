@@ -79,6 +79,8 @@ export async function POST(request: NextRequest) {
       tags,
       descriptionEn,
       descriptionZh,
+      videoUrl,
+      diagramUrl,
       phases,
     } = body;
 
@@ -96,6 +98,8 @@ export async function POST(request: NextRequest) {
         tags: JSON.stringify(tags || []),
         descriptionEn: descriptionEn || null,
         descriptionZh: descriptionZh || null,
+        videoUrl: videoUrl || null,
+        diagramUrl: diagramUrl || null,
         creatorId: session.userId,
         phases: {
           create: (phases || []).map((p: any, idx: number) => ({

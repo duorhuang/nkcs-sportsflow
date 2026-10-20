@@ -3,57 +3,57 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 245, 240, 230;
-  --background-start-rgb: 14, 28, 21;
-  --background-end-rgb: 10, 20, 15;
+  --foreground-rgb: 237, 237, 237;
+  --background-start-rgb: 25, 25, 25;
+  --background-end-rgb: 20, 20, 20;
 }
 
 body {
-  color: #F3F4F6;
-  background-color: #0E1A14;
+  color: #EDEDED;
+  background-color: #191919;
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Authentic Collegiate Sports Heritage Textures (Natural, Non-Cyberpunk) */
+/* Notion Dark Surfaces with Subtle Sports Elements (Zero Neon) */
 .texture-pitch {
-  background-color: #0D1C15;
+  background-color: #191919;
   background-image: 
     repeating-linear-gradient(
       90deg,
-      rgba(255, 255, 255, 0.015) 0px,
-      rgba(255, 255, 255, 0.015) 80px,
-      rgba(0, 0, 0, 0.06) 80px,
-      rgba(0, 0, 0, 0.06) 160px
+      rgba(255, 255, 255, 0.012) 0px,
+      rgba(255, 255, 255, 0.012) 80px,
+      rgba(22, 40, 30, 0.25) 80px,
+      rgba(22, 40, 30, 0.25) 160px
     );
 }
 
 .texture-maple {
-  background-color: #17120E;
+  background-color: #191919;
   background-image: 
     repeating-linear-gradient(
       0deg,
       rgba(255, 255, 255, 0.012) 0px,
       rgba(255, 255, 255, 0.012) 50px,
-      rgba(0, 0, 0, 0.08) 50px,
-      rgba(0, 0, 0, 0.08) 100px
+      rgba(42, 30, 20, 0.22) 50px,
+      rgba(42, 30, 20, 0.22) 100px
     );
 }
 
 .texture-hardwood {
-  background-color: #1A120E;
+  background-color: #191919;
   background-image: 
     repeating-linear-gradient(
       45deg,
-      rgba(255, 255, 255, 0.015) 0px,
-      rgba(255, 255, 255, 0.015) 40px,
-      rgba(0, 0, 0, 0.1) 40px,
-      rgba(0, 0, 0, 0.1) 80px
+      rgba(255, 255, 255, 0.012) 0px,
+      rgba(255, 255, 255, 0.012) 40px,
+      rgba(45, 28, 18, 0.25) 40px,
+      rgba(45, 28, 18, 0.25) 80px
     );
 }
 
-/* Classical Matte Gold / Silver Varsity Typography */
+/* Classical Matte Gold / Silver Varsity Foil Typography */
 .text-gold-foil {
   color: #D4AF37;
 }
@@ -62,18 +62,18 @@ body {
   color: #CBD5E1;
 }
 
-/* Custom classical scrollbar */
+/* Notion-style subtle scrollbar */
 ::-webkit-scrollbar {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
   background: rgba(0, 0, 0, 0.2);
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(197, 160, 89, 0.35);
-  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(197, 160, 89, 0.65);
+  background: rgba(212, 175, 55, 0.4);
 }
