@@ -150,12 +150,12 @@ export default function SchedulePage() {
                 onClick={() => setSelectedPlanIndex(idx)}
                 className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center space-x-2 ${
                   isSelected
-                    ? "bg-emerald-600 text-white shadow-md border border-emerald-400"
-                    : "bg-black/40 text-gray-400 hover:text-white border border-white/10"
+                    ? "bg-amber-600 text-stone-950 font-black shadow-sm"
+                    : "bg-stone-900 text-stone-400 hover:text-stone-200 border border-stone-800"
                 }`}
               >
                 <span>{new Date(p.trainingDate).toLocaleDateString(isZh ? "zh-CN" : "en-US", { month: "short", day: "numeric" })}</span>
-                <span className="text-[11px] font-normal opacity-80 truncate max-w-[140px]">
+                <span className="text-[11px] font-normal opacity-90 truncate max-w-[140px]">
                   {isZh ? p.titleZh : p.titleEn}
                 </span>
               </button>
@@ -166,19 +166,19 @@ export default function SchedulePage() {
 
       {/* Selected Session Detail Card */}
       {loading ? (
-        <div className="py-20 text-center text-gray-400 text-sm">
+        <div className="py-20 text-center text-stone-400 text-sm">
           {isZh ? "正在加载训练计划..." : "Loading training schedule..."}
         </div>
       ) : activePlan ? (
         <div className="space-y-6">
           {/* Practice Overview Banner */}
-          <div className="bg-black/60 border border-white/15 rounded-2xl p-6 shadow-chiseled">
+          <div className="bg-[#121815] border border-stone-800 rounded-2xl p-6 shadow-md">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-emerald-400 bg-emerald-950/40 border border-emerald-500/30 px-2.5 py-1 rounded-md">
+                <span className="text-xs font-bold uppercase tracking-wider text-amber-400 bg-stone-900 border border-stone-800 px-2.5 py-1 rounded-md">
                   {isZh ? "训练课重点概览" : "Session Overview"}
                 </span>
-                <h2 className="text-xl sm:text-2xl font-bold text-white mt-2">
+                <h2 className="text-xl sm:text-2xl font-serif font-black text-stone-100 mt-2">
                   {isZh ? activePlan.titleZh : activePlan.titleEn}
                 </h2>
                 <p className="text-xs text-gray-400 mt-1">

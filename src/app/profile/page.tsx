@@ -35,7 +35,7 @@ export default function ProfilePage() {
   return (
     <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn">
       {/* User Header Card */}
-      <div className="bg-black/70 border border-white/15 rounded-2xl p-6 sm:p-8 shadow-chiseled flex flex-col sm:flex-row items-center sm:items-start justify-between gap-6">
+      <div className="bg-[#121815] border border-stone-800 rounded-2xl p-6 sm:p-8 shadow-md flex flex-col sm:flex-row items-center sm:items-start justify-between gap-6">
         <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-5 text-center sm:text-left">
           {/* Avatar with classical crest border */}
           <div className="w-20 h-24 rounded-2xl overflow-hidden bg-gradient-to-br from-heritage-gold/30 via-black to-black border-2 border-heritage-gold/50 flex items-center justify-center font-serif text-3xl font-black text-heritage-gold shadow-frameGold shrink-0">
@@ -97,51 +97,51 @@ export default function ProfilePage() {
       {activeProfileInCurrentSport && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Card Progression Box */}
-          <div className="bg-black/50 border border-white/10 rounded-2xl p-6 shadow-chiseled space-y-4">
+          <div className="bg-[#121815] border border-stone-800 rounded-2xl p-6 shadow-md space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold text-white flex items-center space-x-2">
                 <Flame className="w-4 h-4 text-heritage-antiqueGold" />
                 <span>{isZh ? "竞技卡牌经验成长 (XP Growth)" : "Athletic XP Progression"}</span>
               </h3>
-              <span className="text-xs font-black uppercase px-2 py-0.5 rounded bg-heritage-gold/20 text-heritage-gold border border-heritage-gold/40">
+              <span className="text-xs font-black uppercase px-2 py-0.5 rounded bg-amber-950/70 text-amber-300 border border-amber-700/60">
                 {activeProfileInCurrentSport.cardTier} TIER
               </span>
             </div>
 
             <div className="space-y-2">
               <div className="flex justify-between text-xs">
-                <span className="text-gray-400">{isZh ? "当前经验值" : "Total XP"}</span>
-                <span className="font-bold text-emerald-400">{activeProfileInCurrentSport.xpPoints} XP</span>
+                <span className="text-stone-400">{isZh ? "当前经验值" : "Total XP"}</span>
+                <span className="font-bold text-amber-400">{activeProfileInCurrentSport.xpPoints} XP</span>
               </div>
-              <div className="w-full bg-black/60 h-2.5 rounded-full overflow-hidden border border-white/10">
+              <div className="w-full bg-stone-900 h-2.5 rounded-full overflow-hidden border border-stone-800">
                 <div
-                  className="bg-gradient-to-r from-emerald-500 to-heritage-gold h-full rounded-full transition-all duration-700"
+                  className="bg-amber-600 h-full rounded-full transition-all duration-700"
                   style={{
                     width: `${Math.min(100, (activeProfileInCurrentSport.xpPoints % 500) / 5)}%`,
                   }}
                 />
               </div>
-              <p className="text-[11px] text-gray-500 text-right">
+              <p className="text-[11px] text-stone-400 text-right">
                 {isZh
                   ? `距离升级至下一阶还需 ${500 - (activeProfileInCurrentSport.xpPoints % 500)} XP`
                   : `${500 - (activeProfileInCurrentSport.xpPoints % 500)} XP needed for next tier`}
               </p>
             </div>
 
-            <div className="pt-3 border-t border-white/5 grid grid-cols-2 gap-2 text-xs text-gray-300">
-              <div className="p-2.5 rounded bg-white/5">
-                <span className="text-gray-400 text-[10px] block">{isZh ? "球衣号码" : "Jersey"}</span>
-                <strong className="text-sm text-white font-serif">#{activeProfileInCurrentSport.jerseyNumber}</strong>
+            <div className="pt-3 border-t border-stone-800 grid grid-cols-2 gap-2 text-xs text-stone-300">
+              <div className="p-2.5 rounded bg-stone-900 border border-stone-800">
+                <span className="text-stone-400 text-[10px] block">{isZh ? "球衣号码" : "Jersey"}</span>
+                <strong className="text-sm text-stone-100 font-serif">#{activeProfileInCurrentSport.jerseyNumber}</strong>
               </div>
-              <div className="p-2.5 rounded bg-white/5">
-                <span className="text-gray-400 text-[10px] block">{isZh ? "战术位置组" : "Unit"}</span>
-                <strong className="text-sm text-white truncate block">{activeProfileInCurrentSport.positionGroup || "主力组"}</strong>
+              <div className="p-2.5 rounded bg-stone-900 border border-stone-800">
+                <span className="text-stone-400 text-[10px] block">{isZh ? "战术位置组" : "Unit"}</span>
+                <strong className="text-sm text-stone-100 truncate block">{activeProfileInCurrentSport.positionGroup || "主力组"}</strong>
               </div>
             </div>
           </div>
 
           {/* Honors & Duties Spotlight */}
-          <div className="bg-black/50 border border-white/10 rounded-2xl p-6 shadow-chiseled space-y-4">
+          <div className="bg-[#121815] border border-stone-800 rounded-2xl p-6 shadow-md space-y-4">
             <h3 className="text-sm font-bold text-white flex items-center space-x-2">
               <Award className="w-4 h-4 text-amber-400" />
               <span>{isZh ? "荣誉勋章与战术使命" : "Honors & Duties"}</span>

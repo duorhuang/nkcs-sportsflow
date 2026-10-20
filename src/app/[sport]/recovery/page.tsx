@@ -348,26 +348,26 @@ export default function RecoveryPage() {
         {/* Right Column: Prescriptions & Zero-Cost Protocols (7 cols) */}
         <div className="lg:col-span-7 space-y-6">
           {/* Active Part Overview Card */}
-          <div className="p-6 rounded-2xl bg-gradient-to-br from-black/80 via-black/60 to-black/90 border border-rose-500/30 shadow-chiseled">
-            <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-white/10">
+          <div className="p-6 rounded-2xl bg-[#141B18] border border-stone-800 shadow-xl">
+            <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-stone-800">
               <div>
-                <span className="text-[10px] font-mono text-rose-400 font-bold uppercase tracking-wider">
-                  TARGET TARGET MUSCLE / JOINT
+                <span className="text-[10px] font-mono text-amber-500 font-bold uppercase tracking-wider">
+                  TARGET MUSCLE & JOINT ZONE
                 </span>
-                <h2 className="text-xl font-bold text-white mt-0.5">
+                <h2 className="text-xl font-serif font-black text-stone-100 mt-0.5">
                   {currentSpec.nameZh}
                 </h2>
-                <p className="text-xs text-gray-400">{currentSpec.nameEn}</p>
+                <p className="text-xs text-stone-400">{currentSpec.nameEn}</p>
               </div>
 
               {/* Condition Switcher Tabs */}
-              <div className="flex items-center space-x-1 p-1 rounded-xl bg-white/5 border border-white/10 text-xs font-bold">
+              <div className="flex items-center space-x-1 p-1 rounded-xl bg-stone-900 border border-stone-800 text-xs font-bold">
                 <button
                   onClick={() => setCondition("DOMS")}
                   className={`px-2.5 py-1 rounded-lg transition-all ${
                     condition === "DOMS"
-                      ? "bg-amber-600 text-white"
-                      : "text-gray-400 hover:text-white"
+                      ? "bg-amber-600 text-stone-950 font-black shadow-sm"
+                      : "text-stone-400 hover:text-stone-200"
                   }`}
                 >
                   ⚡ 赛后酸痛 (DOMS)
@@ -376,18 +376,18 @@ export default function RecoveryPage() {
                   onClick={() => setCondition("ACUTE")}
                   className={`px-2.5 py-1 rounded-lg transition-all ${
                     condition === "ACUTE"
-                      ? "bg-rose-600 text-white"
-                      : "text-gray-400 hover:text-white"
+                      ? "bg-rose-700 text-white font-bold"
+                      : "text-stone-400 hover:text-stone-200"
                   }`}
                 >
-                  ⚠️ 急性扭伤/拉伤
+                  ⚠️ 急性扭拉伤
                 </button>
                 <button
                   onClick={() => setCondition("CHRONIC")}
                   className={`px-2.5 py-1 rounded-lg transition-all ${
                     condition === "CHRONIC"
-                      ? "bg-blue-600 text-white"
-                      : "text-gray-400 hover:text-white"
+                      ? "bg-stone-700 text-stone-100 font-bold"
+                      : "text-stone-400 hover:text-stone-200"
                   }`}
                 >
                   🔄 慢性劳损
@@ -396,7 +396,7 @@ export default function RecoveryPage() {
             </div>
 
             {/* Sport Risk Factor */}
-            <div className="mt-4 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-200 flex items-start space-x-2">
+            <div className="mt-4 p-3 rounded-xl bg-amber-950/40 border border-amber-900/50 text-xs text-amber-200 flex items-start space-x-2">
               <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
               <div>
                 <strong className="text-amber-300">{sport} 常见损伤机制：</strong>
@@ -405,20 +405,20 @@ export default function RecoveryPage() {
             </div>
 
             {/* Clinical Evidence Directive */}
-            <div className="mt-3 p-3 rounded-xl bg-white/5 border border-white/10 text-xs text-gray-300">
-              <strong className="text-white block mb-1">
+            <div className="mt-3 p-3 rounded-xl bg-stone-900/80 border border-stone-800 text-xs text-stone-300">
+              <strong className="text-stone-100 block mb-1">
                 现代运动医学处置黄金准则：
               </strong>
-              <p className="leading-relaxed text-gray-300">{currentSpec.peaceLove}</p>
+              <p className="leading-relaxed text-stone-300">{currentSpec.peaceLove}</p>
             </div>
 
             {/* Zero-Cost Campus / Dormitory Substitute Spotlight */}
-            <div className="mt-4 p-4 rounded-xl bg-gradient-to-r from-emerald-950/40 via-emerald-900/20 to-black/60 border border-emerald-500/40">
-              <h4 className="text-xs font-black uppercase tracking-wider text-emerald-400 mb-1 flex items-center space-x-1.5">
-                <Sparkles className="w-4 h-4 text-emerald-300" />
+            <div className="mt-4 p-4 rounded-xl bg-stone-900 border border-stone-700/60">
+              <h4 className="text-xs font-black uppercase tracking-wider text-amber-400 mb-1 flex items-center space-x-1.5">
+                <Sparkles className="w-4 h-4 text-amber-400" />
                 <span>宿舍零成本简易自愈替代手法 (ZERO-COST DORM SUBSTITUTE)</span>
               </h4>
-              <p className="text-xs text-emerald-100 leading-relaxed font-medium">
+              <p className="text-xs text-stone-200 leading-relaxed font-medium">
                 {currentSpec.zeroCost}
               </p>
             </div>

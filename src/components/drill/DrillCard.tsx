@@ -8,13 +8,10 @@ import {
   Users,
   Maximize2,
   CheckCircle2,
-  Flame,
-  Play,
   X,
   Sparkles,
   ChevronRight,
   ShieldAlert,
-  HelpCircle,
 } from "lucide-react";
 
 interface DrillCardProps {
@@ -29,37 +26,37 @@ const categoryStyles: Record<
   WARMUP: {
     labelZh: "热身与神经激活",
     labelEn: "Warmup & Activation",
-    bg: "bg-amber-500/15",
-    text: "text-amber-300",
-    border: "border-amber-500/40",
+    bg: "bg-amber-950/70",
+    text: "text-amber-200",
+    border: "border-amber-800/70",
   },
   TACTICAL: {
     labelZh: "实战战术对抗演练",
     labelEn: "Tactical Transition",
-    bg: "bg-emerald-500/15",
-    text: "text-emerald-300",
-    border: "border-emerald-500/40",
+    bg: "bg-emerald-950/70",
+    text: "text-emerald-200",
+    border: "border-emerald-800/70",
   },
   TECHNICAL: {
     labelZh: "专项位置技术细节",
     labelEn: "Technical Position",
-    bg: "bg-blue-500/15",
-    text: "text-blue-300",
-    border: "border-blue-500/40",
+    bg: "bg-stone-800",
+    text: "text-stone-200",
+    border: "border-stone-700",
   },
   CONDITIONING: {
     labelZh: "专项体能与负荷",
     labelEn: "Conditioning & Intensity",
-    bg: "bg-rose-500/15",
-    text: "text-rose-300",
-    border: "border-rose-500/40",
+    bg: "bg-rose-950/70",
+    text: "text-rose-200",
+    border: "border-rose-800/70",
   },
   COOLDOWN: {
     labelZh: "整理放松与拉伸",
     labelEn: "Cooldown & Stretch",
-    bg: "bg-teal-500/15",
-    text: "text-teal-300",
-    border: "border-teal-500/40",
+    bg: "bg-teal-950/70",
+    text: "text-teal-200",
+    border: "border-teal-800/70",
   },
 };
 
@@ -78,222 +75,172 @@ export const DrillCard: React.FC<DrillCardProps> = ({ drill, index }) => {
     : drill.coachingCuesEn?.split(/[;\n]/).filter(Boolean) || [];
 
   return (
-    <div className="bg-gradient-to-b from-[#181B20] to-[#0E1013] border-2 border-white/15 hover:border-white/25 rounded-2xl p-4 sm:p-6 shadow-2xl transition-all duration-300 hover:shadow-[0_10px_35px_rgba(0,0,0,0.8)] flex flex-col justify-between">
+    <div className="bg-[#121815] border border-stone-800 hover:border-stone-700 rounded-xl p-4 sm:p-5 shadow-md transition-all duration-200 flex flex-col justify-between">
       <div>
-        {/* Top Header: Index, Category Badge, Title, Duration & Audience Switcher */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3.5 border-b border-white/10">
-          <div className="flex items-start space-x-3.5">
+        {/* Top Header: Index, Category Badge, Title, Duration */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-2.5 pb-3 border-b border-stone-800">
+          <div className="flex items-start space-x-3">
             {index !== undefined && (
-              <span className="font-serif font-black text-lg text-heritage-gold bg-heritage-gold/15 border border-heritage-gold/40 rounded-xl w-10 h-10 flex items-center justify-center shrink-0 shadow-inner">
+              <span className="font-serif font-black text-base text-amber-400 bg-stone-900 border border-stone-800 rounded-lg w-8 h-8 flex items-center justify-center shrink-0">
                 {String(index).padStart(2, "0")}
               </span>
             )}
             <div>
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="flex flex-wrap items-center gap-1.5">
                 <span
-                  className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${cat.bg} ${cat.text} ${cat.border}`}
+                  className={`text-[10px] font-bold px-2 py-0.5 rounded border ${cat.bg} ${cat.text} ${cat.border}`}
                 >
                   {isZh ? cat.labelZh : cat.labelEn}
                 </span>
 
                 {drill.durationMins && (
-                  <span className="flex items-center space-x-1 text-xs text-gray-300 bg-white/5 px-2 py-0.5 rounded-full border border-white/10">
-                    <Clock className="w-3.5 h-3.5 text-heritage-gold" />
-                    <span>{drill.durationMins} {isZh ? "分钟" : "mins"}</span>
-                  </span>
-                )}
-
-                {drill.setsAndReps && (
-                  <span className="flex items-center space-x-1 text-xs text-amber-200 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/30">
-                    <Flame className="w-3.5 h-3.5 text-amber-400" />
-                    <span>{drill.setsAndReps}</span>
+                  <span className="flex items-center space-x-1 text-[11px] text-stone-300 bg-stone-900 px-2 py-0.5 rounded border border-stone-800">
+                    <Clock className="w-3 h-3 text-stone-400" />
+                    <span>{drill.durationMins} 分钟</span>
                   </span>
                 )}
               </div>
 
-              <h3 className="text-base sm:text-lg font-serif font-bold text-white mt-1.5 tracking-wide">
+              <h3 className="font-serif font-black text-base sm:text-lg text-stone-100 mt-1">
                 {isZh ? drill.titleZh : drill.titleEn}
               </h3>
-              <p className="text-xs text-gray-400">
-                {isZh ? drill.titleEn : drill.titleZh}
-              </p>
             </div>
           </div>
 
-          {/* Age-Level Adaptation Switcher (U19 深度 / U15 通俗) */}
-          <div className="flex items-center self-start lg:self-center bg-black/60 p-1 rounded-xl border border-white/10">
+          {/* Age-tier Toggle (U19 High School Varsity vs U15 Junior) */}
+          <div className="flex items-center space-x-1 self-start lg:self-center p-0.5 rounded-lg bg-stone-900 border border-stone-800 text-[11px] font-bold">
             <button
               onClick={() => setViewMode("U19")}
-              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
+              className={`px-2.5 py-0.5 rounded transition-all ${
                 viewMode === "U19"
-                  ? "bg-heritage-gold text-black shadow-md"
-                  : "text-gray-400 hover:text-white"
+                  ? "bg-amber-600 text-stone-950 font-black shadow-sm"
+                  : "text-stone-400 hover:text-stone-200"
               }`}
             >
-              U19 深度战术
+              U19 高中校队
             </button>
             <button
               onClick={() => setViewMode("U15")}
-              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
+              className={`px-2.5 py-0.5 rounded transition-all ${
                 viewMode === "U15"
-                  ? "bg-emerald-600 text-white shadow-md"
-                  : "text-gray-400 hover:text-white"
+                  ? "bg-stone-700 text-stone-100 font-bold"
+                  : "text-stone-400 hover:text-stone-200"
               }`}
             >
-              U15/U12 直观演示
+              U15 初中精讲
             </button>
           </div>
         </div>
 
-        {/* Visual Tactical Diagram Preview (教练端图解示范核心) */}
-        {drill.diagramUrl && (
-          <div className="relative mt-4 rounded-xl overflow-hidden border-2 border-white/15 bg-black/80 shadow-inner group">
-            <div className="relative w-full aspect-[16/10] bg-black/40 flex items-center justify-center">
-              <img
-                src={drill.diagramUrl}
-                alt="Tactical Drill Diagram"
-                className="w-full h-full object-contain cursor-pointer transition-transform duration-300 group-hover:scale-[1.01]"
-                onClick={() => setIsZoomOpen(true)}
-              />
-
-              {/* Tap to Zoom Overlay Button for iPad sideline coach */}
-              <button
-                onClick={() => setIsZoomOpen(true)}
-                className="absolute bottom-2.5 right-2.5 px-3 py-1.5 rounded-lg bg-black/80 hover:bg-black text-white text-xs font-bold flex items-center space-x-1.5 border border-white/20 shadow-lg backdrop-blur-md transition-all group-hover:border-heritage-gold"
-              >
-                <Maximize2 className="w-3.5 h-3.5 text-heritage-gold" />
-                <span>{isZh ? "全屏大图讲解" : "Expand Diagram"}</span>
-              </button>
-
-              <div className="absolute top-2.5 left-2.5 px-2.5 py-1 rounded bg-black/75 border border-white/10 text-[10px] text-gray-300 font-mono tracking-wider backdrop-blur-sm">
-                TACTICAL SCHEMATIC • 标准跑位示意图
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Specs: Pitch & Personnel */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 my-3.5 text-xs text-gray-300">
-          {drill.pitchSpecs && (
-            <div className="flex items-center space-x-2.5 bg-white/5 px-3 py-2 rounded-xl border border-white/10">
-              <div className="w-6 h-6 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center shrink-0">
-                <Maximize2 className="w-3.5 h-3.5 text-emerald-300" />
-              </div>
-              <div>
-                <span className="text-[10px] text-gray-400 block">{isZh ? "场地规范" : "Pitch Dimension"}</span>
-                <span className="font-bold text-white">{drill.pitchSpecs}</span>
-              </div>
-            </div>
-          )}
-          {drill.playerCount && (
-            <div className="flex items-center space-x-2.5 bg-white/5 px-3 py-2 rounded-xl border border-white/10">
-              <div className="w-6 h-6 rounded-lg bg-blue-500/20 border border-blue-500/40 flex items-center justify-center shrink-0">
-                <Users className="w-3.5 h-3.5 text-blue-300" />
-              </div>
-              <div>
-                <span className="text-[10px] text-gray-400 block">{isZh ? "人员编成" : "Personnel"}</span>
-                <span className="font-bold text-white">{drill.playerCount}</span>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Coaching Cues: Mode-dependent presentation */}
-        {viewMode === "U19" ? (
-          /* U19 Senior Tactical Principles */
-          cues.length > 0 && (
-            <div className="mt-3 bg-white/[0.03] border border-white/10 rounded-xl p-3.5 sm:p-4">
-              <h4 className="text-xs font-serif font-black text-heritage-gold uppercase tracking-wider mb-2.5 flex items-center space-x-2">
-                <CheckCircle2 className="w-4 h-4 text-heritage-gold" />
-                <span>{isZh ? "教练 3 点核心指导原则 (Coaching Cues)" : "Key Coaching Principles"}</span>
-              </h4>
-              <div className="space-y-2">
-                {cues.map((cue, i) => (
-                  <div key={i} className="flex items-start space-x-2.5 text-xs text-gray-200 leading-relaxed">
-                    <span className="w-5 h-5 rounded-full bg-heritage-gold/20 text-heritage-gold border border-heritage-gold/40 flex items-center justify-center font-bold text-[11px] shrink-0 mt-0.5">
-                      {i + 1}
-                    </span>
-                    <span className="pt-0.5">{cue.trim()}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )
-        ) : (
-          /* U15 / U12 Junior Simplified Cues */
-          <div className="mt-3 bg-emerald-950/30 border border-emerald-500/30 rounded-xl p-3.5 sm:p-4">
-            <h4 className="text-xs font-serif font-black text-emerald-300 uppercase tracking-wider mb-2 flex items-center space-x-2">
-              <Sparkles className="w-4 h-4 text-emerald-400" />
-              <span>{isZh ? "青少年梯队直观执行口诀 (Junior Cues)" : "Junior Guidelines"}</span>
-            </h4>
-            <div className="space-y-2 text-xs text-emerald-100">
-              <div className="flex items-start space-x-2">
-                <span className="text-emerald-400 font-bold">🎯 核心目标：</span>
-                <span>传球后立刻主动跑动，把球在 3 脚内准确送到空当队友脚下。</span>
-              </div>
-              <div className="flex items-start space-x-2">
-                <span className="text-emerald-400 font-bold">👟 动作要点：</span>
-                <span>抬头观察场面，脚踝锁紧，身体面向开阔空间接球。</span>
-              </div>
-              <div className="flex items-start space-x-2">
-                <span className="text-amber-400 font-bold">⚠️ 提醒避免：</span>
-                <span>低头只看脚下的球，原地等待队友传球导致被对手抢断。</span>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Video Demonstration Pill (if available) */}
-      {drill.videoUrl && (
-        <div className="mt-4 flex items-center justify-between text-xs text-emerald-300 bg-emerald-950/20 border border-emerald-500/30 px-3.5 py-2.5 rounded-xl cursor-pointer hover:bg-emerald-950/40 transition-colors">
-          <span className="flex items-center space-x-2 font-bold">
-            <Play className="w-4 h-4 fill-current text-emerald-400" />
-            <span>{isZh ? "观看动作高清示范视频" : "Watch Drill Demo Video"}</span>
-          </span>
-          <span className="text-[10px] text-gray-400 font-mono">1080P HD</span>
-        </div>
-      )}
-
-      {/* Full-Screen Diagram Zoom Lightbox Modal */}
-      {isZoomOpen && drill.diagramUrl && (
-        <div className="fixed inset-0 z-50 bg-black/95 flex flex-col items-center justify-center p-4 sm:p-8 animate-fadeIn">
-          {/* Top Bar */}
-          <div className="w-full max-w-5xl flex items-center justify-between pb-3 border-b border-white/20 mb-4">
-            <div>
-              <span className="text-xs font-bold text-heritage-gold uppercase tracking-widest block">
-                {isZh ? "教练端大屏讲解模式" : "COACH SIDELINE PRESENTATION"}
+        {/* Drill Specs Matrix */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 my-3 text-xs">
+          {drill.setsAndReps && (
+            <div className="p-2 rounded-lg bg-stone-900/60 border border-stone-800">
+              <span className="text-[10px] text-stone-400 font-bold block uppercase">
+                {isZh ? "组数与间歇" : "Sets & Interval"}
               </span>
-              <h2 className="text-lg font-bold text-white">
-                {isZh ? drill.titleZh : drill.titleEn}
-              </h2>
+              <span className="font-medium text-stone-200 text-[11px]">
+                {drill.setsAndReps}
+              </span>
             </div>
-            <button
-              onClick={() => setIsZoomOpen(false)}
-              className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors"
-            >
-              <X className="w-6 h-6" />
-            </button>
-          </div>
+          )}
 
-          {/* Expanded High-Resolution Image Container */}
-          <div className="w-full max-w-5xl max-h-[75vh] flex items-center justify-center rounded-2xl overflow-hidden border-2 border-heritage-gold/50 shadow-2xl bg-black">
+          {drill.pitchSpecs && (
+            <div className="p-2 rounded-lg bg-stone-900/60 border border-stone-800">
+              <span className="text-[10px] text-stone-400 font-bold block uppercase">
+                {isZh ? "场地规格" : "Pitch Specs"}
+              </span>
+              <span className="font-medium text-stone-200 text-[11px]">
+                {drill.pitchSpecs}
+              </span>
+            </div>
+          )}
+
+          {drill.playerCount && (
+            <div className="p-2 rounded-lg bg-stone-900/60 border border-stone-800 col-span-2 sm:col-span-1">
+              <span className="text-[10px] text-stone-400 font-bold block uppercase">
+                {isZh ? "人数配比" : "Personnel"}
+              </span>
+              <span className="font-medium text-stone-200 text-[11px]">
+                {drill.playerCount}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Tactical Pitch Illustration / Diagram Banner */}
+        {drill.diagramUrl && (
+          <div className="relative aspect-[16/9] rounded-lg overflow-hidden bg-stone-950 border border-stone-800 my-2.5 group">
             <img
               src={drill.diagramUrl}
-              alt="Expanded Drill Diagram"
-              className="w-full h-full object-contain max-h-[75vh]"
+              alt={drill.titleZh}
+              className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-300"
             />
+            <button
+              onClick={() => setIsZoomOpen(true)}
+              className="absolute top-2 right-2 p-1.5 rounded-md bg-stone-900/80 hover:bg-stone-800 text-stone-300 hover:text-white border border-stone-700 transition-colors"
+              title="放大查看战术图解"
+            >
+              <Maximize2 className="w-3.5 h-3.5" />
+            </button>
           </div>
+        )}
 
-          {/* Coaching Keys Bar below Expanded Diagram */}
-          <div className="w-full max-w-5xl mt-3 flex items-center justify-between text-xs text-gray-300 bg-white/5 border border-white/10 p-3 rounded-xl">
-            <div className="flex items-center space-x-2">
-              <span className="font-bold text-heritage-gold">{isZh ? "训练要点：" : "Key Focus: "}</span>
-              <span>{drill.setsAndReps || "连续轮转对抗"}</span>
-            </div>
-            <span className="text-gray-400 font-mono">
-              NKCS ATHLETICS TACTICAL BOARD
+        {/* Coaching Cues */}
+        <div className="space-y-1.5 mt-3">
+          <h4 className="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center space-x-1">
+            <ShieldAlert className="w-3 h-3" />
+            <span>
+              {isZh
+                ? viewMode === "U19"
+                  ? "教练核心指令与战术要点 (U19)"
+                  : "基础动作拆解与安全提示 (U15)"
+                : "Coaching Cues"}
             </span>
+          </h4>
+
+          {viewMode === "U15" && (
+            <p className="text-[11px] text-amber-200/90 bg-amber-950/40 p-2 rounded-lg border border-amber-900/50 leading-relaxed">
+              💡 <strong>初中梯队教学口诀：</strong>{" "}
+              {isZh
+                ? "动作重在重心压低与连贯性，不追求极限对抗速率，确保落地支撑脚踝保护！"
+                : "Prioritize body mechanics and stability over extreme tempo."}
+            </p>
+          )}
+
+          <ul className="space-y-1 text-xs text-stone-300">
+            {cues.map((cue, idx) => (
+              <li key={idx} className="flex items-start space-x-1.5">
+                <span className="text-stone-400 font-bold shrink-0 mt-0.5">•</span>
+                <span className="leading-relaxed">{cue.trim()}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      {/* Modal for Fullscreen Tactical Diagram */}
+      {isZoomOpen && drill.diagramUrl && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-fadeIn">
+          <div className="relative max-w-4xl w-full bg-[#121815] border border-stone-800 rounded-2xl p-4 shadow-2xl">
+            <div className="flex items-center justify-between pb-3 border-b border-stone-800">
+              <h3 className="text-base font-bold text-stone-100">
+                {isZh ? drill.titleZh : drill.titleEn} — 战术图解白皮书
+              </h3>
+              <button
+                onClick={() => setIsZoomOpen(false)}
+                className="p-1 rounded-full text-stone-400 hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="mt-3 aspect-[16/9] rounded-xl overflow-hidden bg-black border border-stone-800">
+              <img
+                src={drill.diagramUrl}
+                alt={drill.titleZh}
+                className="w-full h-full object-contain"
+              />
+            </div>
           </div>
         </div>
       )}

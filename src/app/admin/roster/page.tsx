@@ -197,7 +197,7 @@ export default function RosterAdminPage() {
       </div>
 
       {/* Roster Table */}
-      <div className="bg-black/60 border border-white/15 rounded-2xl overflow-hidden shadow-chiseled">
+      <div className="bg-[#121815] border border-stone-800 rounded-2xl overflow-hidden shadow-md">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs text-gray-200">
             <thead className="bg-white/5 uppercase text-[10px] tracking-wider text-gray-400 border-b border-white/10">

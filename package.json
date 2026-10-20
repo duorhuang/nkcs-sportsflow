@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@prisma/client": "^5.21.1",
+    "@types/three": "^0.186.0",
     "bcryptjs": "^2.4.3",
     "clsx": "^2.1.1",
     "jose": "^5.9.6",
@@ -19,7 +20,8 @@
     "next": "14.2.15",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "tailwind-merge": "^2.5.4"
+    "tailwind-merge": "^2.5.4",
+    "three": "^0.186.1"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

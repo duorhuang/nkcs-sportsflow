@@ -80,14 +80,14 @@ export default function CharacterTray({
           </div>
         </div>
 
-        {/* Tab Buttons (Game-like Character Select Tabs) */}
+        {/* Tab Buttons (Collegiate Roster Filter Tabs) */}
         <div className="flex items-center space-x-1.5 overflow-x-auto pb-1 sm:pb-0">
           <button
             onClick={() => setActiveTab("ACTIVE")}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 ${
               activeTab === "ACTIVE"
-                ? "bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)] border border-emerald-400"
-                : "bg-white/5 text-gray-300 hover:bg-white/10 border border-white/10"
+                ? "bg-amber-600 text-stone-950 font-black shadow-sm"
+                : "bg-stone-900 text-stone-400 hover:text-stone-200 border border-stone-800"
             }`}
           >
             <Users className="w-3.5 h-3.5" />
@@ -96,34 +96,34 @@ export default function CharacterTray({
 
           <button
             onClick={() => setActiveTab("HOF")}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 ${
               activeTab === "HOF"
-                ? "bg-gradient-to-r from-amber-600 to-yellow-600 text-white shadow-[0_0_18px_rgba(245,158,11,0.5)] border border-amber-400"
-                : "bg-white/5 text-gray-300 hover:bg-white/10 border border-white/10"
+                ? "bg-stone-800 text-amber-300 border border-amber-600/60 font-black shadow-sm"
+                : "bg-stone-900 text-stone-400 hover:text-stone-200 border border-stone-800"
             }`}
           >
-            <Award className="w-3.5 h-3.5 text-amber-300" />
+            <Award className="w-3.5 h-3.5 text-amber-400" />
             <span>🏆 传奇名宿 ({hofPlayers.length})</span>
           </button>
 
           <button
             onClick={() => setActiveTab("ALUMNI")}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 ${
               activeTab === "ALUMNI"
-                ? "bg-slate-700 text-white shadow-[0_0_15px_rgba(148,163,184,0.3)] border border-slate-400"
-                : "bg-white/5 text-gray-300 hover:bg-white/10 border border-white/10"
+                ? "bg-stone-800 text-stone-200 border border-stone-600 font-black shadow-sm"
+                : "bg-stone-900 text-stone-400 hover:text-stone-200 border border-stone-800"
             }`}
           >
-            <GraduationCap className="w-3.5 h-3.5 text-slate-300" />
+            <GraduationCap className="w-3.5 h-3.5 text-stone-400" />
             <span>🎓 毕业校友 ({alumniPlayers.length})</span>
           </button>
 
           <button
             onClick={() => setActiveTab("TOOLS")}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 ${
               activeTab === "TOOLS"
-                ? "bg-heritage-gold text-black shadow-md border border-yellow-300"
-                : "bg-white/5 text-gray-300 hover:bg-white/10 border border-white/10"
+                ? "bg-stone-200 text-stone-950 font-black shadow-sm"
+                : "bg-stone-900 text-stone-400 hover:text-stone-200 border border-stone-800"
             }`}
           >
             <Flag className="w-3.5 h-3.5" />
@@ -139,11 +139,11 @@ export default function CharacterTray({
             {activePlayers.map((player) => (
               <div
                 key={player.id}
-                className="group p-2.5 rounded-xl bg-gradient-to-b from-[#1A251E] to-[#0D1410] border border-emerald-500/30 hover:border-emerald-400 flex flex-col justify-between transition-all hover:scale-[1.03] shadow-lg hover:shadow-[0_0_20px_rgba(16,185,129,0.3)]"
+                className="group p-2.5 rounded-xl bg-[#141B17] border border-stone-800 hover:border-stone-700 flex flex-col justify-between transition-all shadow-md"
               >
                 <div>
                   {/* Photo & Number Header */}
-                  <div className="relative rounded-lg overflow-hidden w-full aspect-[4/5] mb-2 bg-black/60 border border-white/10 flex items-center justify-center">
+                  <div className="relative rounded-lg overflow-hidden w-full aspect-[4/5] mb-2 bg-stone-950 border border-stone-800 flex items-center justify-center">
                     {player.photoUrl ? (
                       <img
                         src={player.photoUrl}
@@ -151,7 +151,7 @@ export default function CharacterTray({
                         className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform"
                       />
                     ) : (
-                      <Users className="w-8 h-8 text-white/30" />
+                      <Users className="w-8 h-8 text-stone-600" />
                     )}
 
                     {/* Number Overlay */}
@@ -160,29 +160,29 @@ export default function CharacterTray({
                     </span>
 
                     {/* Position Pill */}
-                    <span className="absolute top-1 right-1 text-[9px] font-bold px-1.5 py-0.5 rounded bg-black/75 text-emerald-300 border border-emerald-500/40">
+                    <span className="absolute top-1 right-1 text-[9px] font-bold px-1.5 py-0.5 rounded bg-black/75 text-stone-300 border border-stone-700">
                       {player.primaryPosition}
                     </span>
 
                     {/* Captain Tag */}
                     {player.isCaptain && (
-                      <span className="absolute bottom-1 left-1 text-[9px] font-black px-1.5 py-0.2 rounded bg-amber-500 text-black shadow-sm">
+                      <span className="absolute bottom-1 left-1 text-[9px] font-black px-1.5 py-0.2 rounded bg-amber-600 text-stone-950 shadow-sm">
                         © 队长
                       </span>
                     )}
                   </div>
 
-                  <h4 className="font-bold text-white text-xs truncate">
+                  <h4 className="font-bold text-stone-100 text-xs truncate">
                     {player.user.nameZh}
                   </h4>
-                  <p className="text-[10px] text-gray-400 truncate">
+                  <p className="text-[10px] text-stone-400 truncate">
                     {player.user.nameEn}
                   </p>
                 </div>
 
                 <button
                   onClick={() => handleAddPlayer(player)}
-                  className="mt-2 w-full py-1 px-2 rounded-lg bg-emerald-600/90 hover:bg-emerald-500 text-white font-bold text-[11px] flex items-center justify-center space-x-1 transition-colors shadow-sm"
+                  className="mt-2 w-full py-1 px-2 rounded-lg bg-stone-800 hover:bg-stone-700 text-stone-200 hover:text-white font-bold text-[11px] flex items-center justify-center space-x-1 transition-colors border border-stone-700"
                 >
                   <Plus className="w-3 h-3" />
                   <span>调入推演</span>
@@ -197,10 +197,10 @@ export default function CharacterTray({
             {hofPlayers.map((player) => (
               <div
                 key={player.id}
-                className="group p-2.5 rounded-xl bg-gradient-to-b from-[#2E200C] to-[#140D04] border-2 border-[#E5B842]/70 hover:border-[#FFF0B0] flex flex-col justify-between transition-all hover:scale-[1.03] shadow-[0_0_20px_rgba(229,184,66,0.25)] hover:shadow-[0_0_25px_rgba(229,184,66,0.5)]"
+                className="group p-2.5 rounded-xl bg-[#1A130C] border border-amber-900/60 hover:border-amber-700/80 flex flex-col justify-between transition-all shadow-md"
               >
                 <div>
-                  <div className="relative rounded-lg overflow-hidden w-full aspect-[4/5] mb-2 bg-[#1A1206] border border-[#E5B842]/50 flex items-center justify-center">
+                  <div className="relative rounded-lg overflow-hidden w-full aspect-[4/5] mb-2 bg-stone-950 border border-amber-900/40 flex items-center justify-center">
                     {player.photoUrl ? (
                       <img
                         src={player.photoUrl}
@@ -208,34 +208,34 @@ export default function CharacterTray({
                         className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform"
                       />
                     ) : (
-                      <Award className="w-8 h-8 text-[#E5B842]/50" />
+                      <Award className="w-8 h-8 text-amber-600" />
                     )}
 
-                    <span className="absolute top-1 left-1.5 font-serif font-black text-gold-foil text-base drop-shadow-md">
+                    <span className="absolute top-1 left-1.5 font-serif font-black text-amber-400 text-base drop-shadow-md">
                       #{player.jerseyNumber}
                     </span>
 
-                    <span className="absolute top-1 right-1 text-[9px] font-bold px-1.5 py-0.5 rounded bg-black/80 text-amber-300 border border-amber-500/50">
+                    <span className="absolute top-1 right-1 text-[9px] font-bold px-1.5 py-0.5 rounded bg-black/80 text-amber-300 border border-amber-900/50">
                       {player.primaryPosition}
                     </span>
 
-                    <span className="absolute bottom-1 left-1 text-[9px] font-black px-1.5 py-0.2 rounded bg-gradient-to-r from-amber-500 to-yellow-400 text-black shadow-sm">
+                    <span className="absolute bottom-1 left-1 text-[9px] font-black px-1.5 py-0.2 rounded bg-amber-600 text-stone-950 shadow-sm">
                       🏆 名宿
                     </span>
                   </div>
 
-                  <h4 className="font-bold text-[#FFF5C0] text-xs truncate flex items-center space-x-1">
+                  <h4 className="font-bold text-amber-200 text-xs truncate flex items-center space-x-1">
                     <span>{player.user.nameZh}</span>
-                    <Award className="w-3 h-3 text-[#E5B842] shrink-0" />
+                    <Award className="w-3 h-3 text-amber-400 shrink-0" />
                   </h4>
-                  <p className="text-[10px] text-gray-400 truncate">
+                  <p className="text-[10px] text-stone-400 truncate">
                     {player.graduationYear} 届 · 终身荣誉
                   </p>
                 </div>
 
                 <button
                   onClick={() => handleAddPlayer(player)}
-                  className="mt-2 w-full py-1 px-2 rounded-lg bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-white font-bold text-[11px] flex items-center justify-center space-x-1 transition-colors shadow-md"
+                  className="mt-2 w-full py-1 px-2 rounded-lg bg-amber-700/80 hover:bg-amber-600 text-stone-100 font-bold text-[11px] flex items-center justify-center space-x-1 transition-colors border border-amber-600"
                 >
                   <Plus className="w-3 h-3" />
                   <span>调入推演</span>
@@ -250,10 +250,10 @@ export default function CharacterTray({
             {alumniPlayers.map((player) => (
               <div
                 key={player.id}
-                className="group p-2.5 rounded-xl bg-gradient-to-b from-[#1C2433] to-[#0E131D] border border-slate-500/40 hover:border-slate-300 flex flex-col justify-between transition-all hover:scale-[1.03] shadow-md"
+                className="group p-2.5 rounded-xl bg-[#131922] border border-stone-800 hover:border-stone-700 flex flex-col justify-between transition-all shadow-md"
               >
                 <div>
-                  <div className="relative rounded-lg overflow-hidden w-full aspect-[4/5] mb-2 bg-[#0C121E] border border-slate-500/30 flex items-center justify-center">
+                  <div className="relative rounded-lg overflow-hidden w-full aspect-[4/5] mb-2 bg-stone-950 border border-stone-800 flex items-center justify-center">
                     {player.photoUrl ? (
                       <img
                         src={player.photoUrl}
@@ -261,18 +261,18 @@ export default function CharacterTray({
                         className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform"
                       />
                     ) : (
-                      <GraduationCap className="w-8 h-8 text-slate-400/50" />
+                      <GraduationCap className="w-8 h-8 text-stone-500" />
                     )}
 
-                    <span className="absolute top-1 left-1.5 font-serif font-black text-silver-foil text-base drop-shadow-md">
+                    <span className="absolute top-1 left-1.5 font-serif font-black text-stone-200 text-base drop-shadow-md">
                       #{player.jerseyNumber}
                     </span>
 
-                    <span className="absolute top-1 right-1 text-[9px] font-bold px-1.5 py-0.5 rounded bg-black/80 text-slate-300 border border-slate-500/40">
+                    <span className="absolute top-1 right-1 text-[9px] font-bold px-1.5 py-0.5 rounded bg-black/80 text-stone-300 border border-stone-700">
                       {player.primaryPosition}
                     </span>
 
-                    <span className="absolute bottom-1 left-1 text-[9px] font-semibold px-1.5 py-0.2 rounded bg-slate-700 text-slate-200">
+                    <span className="absolute bottom-1 left-1 text-[9px] font-semibold px-1.5 py-0.2 rounded bg-stone-800 text-stone-300">
                       🎓 已退役
                     </span>
                   </div>

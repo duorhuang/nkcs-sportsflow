@@ -307,9 +307,9 @@ export default function TacticsPage() {
             {selectedTactic && (
               <button
                 onClick={() => setShowBigScreen(true)}
-                className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white text-xs font-bold flex items-center space-x-1.5 shadow-frameGold transition-all"
+                className="px-3.5 py-2 rounded-xl bg-stone-900 hover:bg-stone-800 border border-stone-700 text-amber-400 text-xs font-bold flex items-center space-x-1.5 transition-colors shadow-sm"
               >
-                <Tv className="w-4 h-4" />
+                <Tv className="w-4 h-4 text-amber-500" />
                 <span>📺 更衣室大屏演播</span>
               </button>
             )}
@@ -326,28 +326,28 @@ export default function TacticsPage() {
                 onClick={() => setSelectedTactic(tactic)}
                 className={`p-4 rounded-xl cursor-pointer border transition-all ${
                   isSelected
-                    ? "bg-gradient-to-br from-heritage-gold/20 via-black/80 to-black/90 border-heritage-gold shadow-frameGold scale-[1.01]"
-                    : "bg-black/50 border-white/10 hover:border-white/20 hover:bg-black/70"
+                    ? "bg-[#16221B] border-amber-600/70 shadow-md scale-[1.01]"
+                    : "bg-[#121815] border-stone-800 hover:border-stone-700"
                 }`}
               >
                 <div className="flex items-center justify-between text-[11px] mb-1.5">
-                  <span className="font-bold text-heritage-gold uppercase">
+                  <span className="font-bold text-amber-400 uppercase">
                     {tactic.scenario}
                   </span>
-                  <span className="text-gray-400 text-[10px] font-mono">
+                  <span className="text-stone-400 text-[10px] font-mono">
                     {tactic.courtFormat}
                   </span>
                 </div>
-                <h3 className="font-bold text-white text-sm line-clamp-1">
+                <h3 className="font-bold text-stone-100 text-sm line-clamp-1">
                   {isZh ? tactic.titleZh : tactic.titleEn}
                 </h3>
-                <p className="text-[11px] text-gray-400 line-clamp-1 mt-0.5">
+                <p className="text-[11px] text-stone-400 line-clamp-1 mt-0.5">
                   {isZh ? tactic.titleEn : tactic.titleZh}
                 </p>
 
-                <div className="flex items-center justify-between mt-3 pt-2 border-t border-white/5 text-[11px] text-gray-400">
+                <div className="flex items-center justify-between mt-3 pt-2 border-t border-stone-800 text-[11px] text-stone-400">
                   <span>{tactic.phases?.length || 0} 个动画推演阶段</span>
-                  <span className="text-heritage-gold font-bold flex items-center space-x-0.5">
+                  <span className="text-amber-400 font-bold flex items-center space-x-0.5">
                     <span>演练</span>
                     <ChevronRight className="w-3.5 h-3.5" />
                   </span>

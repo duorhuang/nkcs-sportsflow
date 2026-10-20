@@ -281,7 +281,7 @@ export default function MatchesPage() {
               return (
                 <div
                   key={m.id}
-                  className="p-5 rounded-2xl bg-black/60 border border-white/15 shadow-chiseled flex flex-col justify-between"
+                  className="p-5 rounded-2xl bg-[#121815] border border-stone-800 shadow-md flex flex-col justify-between"
                 >
                   <div>
                     <div className="flex items-center justify-between text-xs mb-2">
@@ -289,18 +289,18 @@ export default function MatchesPage() {
                         className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                           isFinished
                             ? isWin
-                              ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
-                              : "bg-rose-500/20 text-rose-300 border border-rose-500/40"
-                            : "bg-amber-500/20 text-amber-300 border border-amber-500/40"
+                              ? "bg-emerald-950/80 text-emerald-200 border border-emerald-800"
+                              : "bg-rose-950/80 text-rose-200 border border-rose-800"
+                            : "bg-amber-950/80 text-amber-200 border border-amber-800"
                         }`}
                       >
                         {isFinished
                           ? isWin
                             ? "🏆 胜场 (WIN)"
                             : "战平/未胜"
-                          : "⏳ 下场预告 (UPCOMING)"}
+                          : "⏳ 赛事预告 (UPCOMING)"}
                       </span>
-                      <span className="text-gray-400 font-mono text-[11px]">
+                      <span className="text-stone-400 font-mono text-[11px]">
                         {new Date(m.matchDate).toLocaleDateString()}
                       </span>
                     </div>

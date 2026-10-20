@@ -89,9 +89,9 @@ export default function LoginPage() {
         </div>
 
         {/* Login Card */}
-        <div className="bg-black/75 border border-white/15 rounded-2xl p-6 sm:p-8 shadow-chiseled backdrop-blur-md">
+        <div className="bg-[#121A16] border border-stone-800 rounded-2xl p-6 sm:p-8 shadow-2xl">
           {error && (
-            <div className="mb-5 p-3 rounded-lg bg-rose-500/15 border border-rose-500/30 flex items-center space-x-2.5 text-xs text-rose-300">
+            <div className="mb-5 p-3 rounded-lg bg-rose-950/60 border border-rose-800/80 flex items-center space-x-2.5 text-xs text-rose-200">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{error}</span>
             </div>
@@ -99,35 +99,35 @@ export default function LoginPage() {
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-1.5">
+              <label className="block text-xs font-bold uppercase tracking-wider text-stone-300 mb-1.5">
                 {t("username")}
               </label>
               <div className="relative">
-                <User className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <User className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="admin / football / volleyball / basketball / zhangwei"
                   required
-                  className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-white/5 border border-white/10 focus:border-heritage-gold/60 focus:bg-white/10 text-white text-sm outline-none transition-all placeholder:text-gray-600"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-stone-900 border border-stone-700 text-white text-sm outline-none transition-all placeholder:text-stone-500 focus:border-amber-500"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-1.5">
+              <label className="block text-xs font-bold uppercase tracking-wider text-stone-300 mb-1.5">
                 {t("password")}
               </label>
               <div className="relative">
-                <Lock className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <Lock className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
-                  className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-white/5 border border-white/10 focus:border-heritage-gold/60 focus:bg-white/10 text-white text-sm outline-none transition-all placeholder:text-gray-600"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-stone-900 border border-stone-700 text-white text-sm outline-none transition-all placeholder:text-stone-500 focus:border-amber-500"
                 />
               </div>
             </div>
@@ -135,7 +135,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-2 py-3 px-4 rounded-lg bg-gradient-to-r from-heritage-gold via-heritage-antiqueGold to-heritage-brass text-black font-bold text-sm tracking-wide hover:brightness-110 active:scale-[0.99] transition-all flex items-center justify-center space-x-2 shadow-md disabled:opacity-50"
+              className="w-full mt-2 py-3 px-4 rounded-xl bg-amber-600 hover:bg-amber-500 text-stone-950 font-black text-sm tracking-wider active:scale-[0.99] transition-all flex items-center justify-center space-x-2 shadow-sm disabled:opacity-50"
             >
               <span>{loading ? (isZh ? "验证凭证中..." : "Authenticating...") : t("signIn")}</span>
               <ArrowRight className="w-4 h-4" />

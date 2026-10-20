@@ -72,28 +72,28 @@ export const Navbar: React.FC = () => {
     },
   ];
 
-  // Sport color highlights for Bar 2
+  // Sport color highlights for Bar 2 (Natural Sports Style, no fluorescent glow)
   const getSubBarAccent = () => {
     switch (sport) {
       case "FOOTBALL":
         return {
-          activeTab: "bg-emerald-500/20 text-emerald-300 border-b-2 border-emerald-400",
-          glow: "border-b border-emerald-950/60 bg-[#07130F]/90",
+          activeTab: "bg-emerald-950/70 text-emerald-100 border-b-2 border-emerald-600 font-bold",
+          glow: "border-b border-emerald-950/80 bg-[#0A1812]",
         };
       case "VOLLEYBALL":
         return {
-          activeTab: "bg-orange-500/20 text-orange-300 border-b-2 border-orange-400",
-          glow: "border-b border-orange-950/60 bg-[#120E0B]/90",
+          activeTab: "bg-amber-950/70 text-amber-100 border-b-2 border-amber-600 font-bold",
+          glow: "border-b border-stone-800 bg-[#16120E]",
         };
       case "BASKETBALL":
         return {
-          activeTab: "bg-amber-600/20 text-amber-300 border-b-2 border-amber-500",
-          glow: "border-b border-amber-950/60 bg-[#140C0A]/90",
+          activeTab: "bg-stone-900 text-stone-100 border-b-2 border-amber-600 font-bold",
+          glow: "border-b border-stone-800 bg-[#16110D]",
         };
       default:
         return {
-          activeTab: "bg-white/10 text-white",
-          glow: "border-b border-white/10 bg-black/90",
+          activeTab: "bg-stone-900 text-white font-bold",
+          glow: "border-b border-stone-800 bg-[#121212]",
         };
     }
   };
@@ -135,14 +135,14 @@ export const Navbar: React.FC = () => {
                 <button
                   key={item.key}
                   onClick={() => setSport(item.key)}
-                  className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-300 ${
+                  className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-200 ${
                     isSelected
                       ? item.key === "FOOTBALL"
-                        ? "bg-emerald-600 text-white shadow-[0_0_12px_rgba(16,185,129,0.5)] border border-emerald-400"
+                        ? "bg-emerald-800 text-stone-100 border border-emerald-700/80 shadow-sm"
                         : item.key === "VOLLEYBALL"
-                        ? "bg-orange-600 text-white shadow-[0_0_12px_rgba(249,115,22,0.5)] border border-orange-400"
-                        : "bg-amber-600 text-white shadow-[0_0_12px_rgba(217,119,6,0.5)] border border-amber-400"
-                      : "text-gray-400 hover:text-white hover:bg-white/5"
+                        ? "bg-amber-800 text-stone-100 border border-amber-700/80 shadow-sm"
+                        : "bg-amber-700 text-stone-100 border border-amber-600/80 shadow-sm"
+                      : "text-stone-400 hover:text-stone-200 hover:bg-white/5"
                   }`}
                 >
                   <span className="text-sm">{item.icon}</span>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useId } from "react";
 import {
   TacticData,
   TacticPhaseData,
@@ -8,6 +8,7 @@ import {
   TacticTrajectory,
   SportChannel,
   PlayerProfileData,
+  TrajectoryType,
 } from "@/types";
 import {
   Play,
@@ -24,7 +25,18 @@ import {
   GraduationCap,
   Sparkles,
   Info,
+  Move,
+  ArrowRight,
+  Footprints,
+  Zap,
+  Eraser,
+  CircleDot,
+  Shield,
+  Flag,
+  Undo2,
 } from "lucide-react";
+
+export type BoardTool = "SELECT" | "PASS" | "RUN" | "DRIBBLE" | "ERASE";
 
 interface TacticsBoardProps {
   sport: SportChannel;
@@ -40,7 +52,7 @@ export default function TacticsBoard({
   sport,
   tactic,
   players = [],
-  editable = false,
+  editable = true, // Default interactive board
   onUpdateTactic,
   onOpenBigScreen,
   onPrintA4,
@@ -48,13 +60,20 @@ export default function TacticsBoard({
   const [currentPhaseIdx, setCurrentPhaseIdx] = useState(0);
   const [selectedTokenId, setSelectedTokenId] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [animProgress, setAnimProgress] = useState(0); // 0 to 1 between phases
-  const [draggingTokenId, setDraggingTokenId] = useState<string | null>(null);
+  const [animProgress, setAnimProgress] = useState(0);
 
-  const svgRef = useRef<SVGSVGElement | null>(null);
-  const animFrameRef = useRef<number | null>(null);
+  // Active Tool State
+  const [activeTool, setActiveTool] = useState<BoardTool>("SELECT");
 
-  const phases = tactic.phases || [];
+  // Local phase data copy to guarantee instant 60fps dragging and tactile responsiveness
+  const [phases, setPhases] = useState<TacticPhaseData[]>(tactic.phases || []);
+
+  useEffect(() => {
+    if (tactic.phases) {
+      setPhases(tactic.phases);
+    }
+  }, [tactic]);
+
   const currentPhase: TacticPhaseData = phases[currentPhaseIdx] || {
     phaseIndex: 1,
     titleZh: "阶段一",
@@ -62,6 +81,19 @@ export default function TacticsBoard({
     tokens: [],
     trajectories: [],
   };
+
+  // Dragging & Drawing State
+  const [draggingTokenId, setDraggingTokenId] = useState<string | null>(null);
+  const [drawingTrajectory, setDrawingTrajectory] = useState<{
+    startX: number;
+    startY: number;
+    currentX: number;
+    currentY: number;
+    type: TrajectoryType;
+  } | null>(null);
+
+  const svgRef = useRef<SVGSVGElement | null>(null);
+  const animFrameRef = useRef<number | null>(null);
 
   // Setup animated playback loop
   useEffect(() => {
@@ -104,7 +136,6 @@ export default function TacticsBoard({
     const nextToken = nextPhase.tokens.find((t) => t.id === token.id);
     if (!nextToken) return token;
 
-    // Linear interpolation with smooth easing
     const ease = (t: number) => t * t * (3 - 2 * t);
     const easedProgress = ease(animProgress);
     const interpX = token.x + (nextToken.x - token.x) * easedProgress;
@@ -117,33 +148,30 @@ export default function TacticsBoard({
     };
   });
 
-  // Handle Dragging in SVG
-  const handlePointerDown = (tokenId: string, e: React.PointerEvent) => {
-    if (!editable || isPlaying) return;
-    e.stopPropagation();
-    setDraggingTokenId(tokenId);
-    setSelectedTokenId(tokenId);
-    (e.target as Element).setPointerCapture(e.pointerId);
+  // SVG Normalized Coordinate Transformer (1000 x 700)
+  const getSvgCoordinates = (clientX: number, clientY: number): { x: number; y: number } => {
+    const svg = svgRef.current;
+    if (!svg) return { x: 500, y: 350 };
+    const pt = svg.createSVGPoint();
+    pt.x = clientX;
+    pt.y = clientY;
+    const ctm = svg.getScreenCTM();
+    if (!ctm) return { x: 500, y: 350 };
+    const local = pt.matrixTransform(ctm.inverse());
+    return {
+      x: Math.round(Math.max(15, Math.min(985, local.x))),
+      y: Math.round(Math.max(15, Math.min(685, local.y))),
+    };
   };
 
-  const handlePointerMove = (e: React.PointerEvent) => {
-    if (!draggingTokenId || !svgRef.current || !editable) return;
-    const rect = svgRef.current.getBoundingClientRect();
-    const rawX = e.clientX - rect.left;
-    const rawY = e.clientY - rect.top;
-
-    // Convert to normalized 1000 x 700
-    const normX = Math.round(Math.max(20, Math.min(980, (rawX / rect.width) * 1000)));
-    const normY = Math.round(Math.max(20, Math.min(680, (rawY / rect.height) * 700)));
-
-    const updatedTokens = currentPhase.tokens.map((t) =>
-      t.id === draggingTokenId ? { ...t, x: normX, y: normY } : t
-    );
-
+  // Sync update helper
+  const commitPhaseUpdate = (newTokens: TacticToken[], newTrajectories: TacticTrajectory[]) => {
     const updatedPhases = phases.map((p, idx) =>
-      idx === currentPhaseIdx ? { ...p, tokens: updatedTokens } : p
+      idx === currentPhaseIdx
+        ? { ...p, tokens: newTokens, trajectories: newTrajectories }
+        : p
     );
-
+    setPhases(updatedPhases);
     if (onUpdateTactic) {
       onUpdateTactic({
         ...tactic,
@@ -152,22 +180,178 @@ export default function TacticsBoard({
     }
   };
 
-  const handlePointerUp = (e: React.PointerEvent) => {
+  // ================= POINTER / TOUCH GESTURE HANDLERS =================
+
+  const handlePointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
+    if (isPlaying) return;
+    const coords = getSvgCoordinates(e.clientX, e.clientY);
+
+    // Check if clicked directly on an existing token
+    const clickedToken = currentPhase.tokens.find(
+      (t) => Math.hypot(t.x - coords.x, t.y - coords.y) <= 28
+    );
+
+    if (activeTool === "ERASE") {
+      if (clickedToken) {
+        // Delete token
+        const remaining = currentPhase.tokens.filter((t) => t.id !== clickedToken.id);
+        commitPhaseUpdate(remaining, currentPhase.trajectories || []);
+        if (selectedTokenId === clickedToken.id) setSelectedTokenId(null);
+      }
+      return;
+    }
+
+    if (activeTool === "SELECT") {
+      if (clickedToken) {
+        setDraggingTokenId(clickedToken.id);
+        setSelectedTokenId(clickedToken.id);
+      } else {
+        setSelectedTokenId(null);
+      }
+      return;
+    }
+
+    // Trajectory Drawing Mode ("PASS" | "RUN" | "DRIBBLE")
+    if (activeTool === "PASS" || activeTool === "RUN" || activeTool === "DRIBBLE") {
+      const startX = clickedToken ? clickedToken.x : coords.x;
+      const startY = clickedToken ? clickedToken.y : coords.y;
+
+      setDrawingTrajectory({
+        startX,
+        startY,
+        currentX: coords.x,
+        currentY: coords.y,
+        type: activeTool,
+      });
+    }
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
+    if (isPlaying) return;
+    const coords = getSvgCoordinates(e.clientX, e.clientY);
+
     if (draggingTokenId) {
-      try {
-        (e.target as Element).releasePointerCapture(e.pointerId);
-      } catch {}
+      // Fluid real-time dragging of selected token
+      const updatedTokens = currentPhase.tokens.map((t) =>
+        t.id === draggingTokenId ? { ...t, x: coords.x, y: coords.y } : t
+      );
+      const updatedPhases = phases.map((p, idx) =>
+        idx === currentPhaseIdx ? { ...p, tokens: updatedTokens } : p
+      );
+      setPhases(updatedPhases);
+    } else if (drawingTrajectory) {
+      // Live arrow line preview
+      setDrawingTrajectory((prev) =>
+        prev
+          ? {
+              ...prev,
+              currentX: coords.x,
+              currentY: coords.y,
+            }
+          : null
+      );
+    }
+  };
+
+  const handlePointerUp = (e: React.PointerEvent<SVGSVGElement>) => {
+    if (draggingTokenId) {
+      // Finished dragging: notify parent
       setDraggingTokenId(null);
+      if (onUpdateTactic) {
+        onUpdateTactic({
+          ...tactic,
+          phases,
+        });
+      }
+    }
+
+    if (drawingTrajectory) {
+      const dist = Math.hypot(
+        drawingTrajectory.currentX - drawingTrajectory.startX,
+        drawingTrajectory.currentY - drawingTrajectory.startY
+      );
+
+      // If user dragged more than 16px, finalize trajectory arrow
+      if (dist >= 16) {
+        const newTraj: TacticTrajectory = {
+          id: `traj_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+          type: drawingTrajectory.type,
+          startX: drawingTrajectory.startX,
+          startY: drawingTrajectory.startY,
+          controlX: Math.round((drawingTrajectory.startX + drawingTrajectory.currentX) / 2),
+          controlY: Math.round((drawingTrajectory.startY + drawingTrajectory.currentY) / 2),
+          endX: drawingTrajectory.currentX,
+          endY: drawingTrajectory.currentY,
+        };
+
+        const updatedTrajectories = [...(currentPhase.trajectories || []), newTraj];
+        commitPhaseUpdate(currentPhase.tokens, updatedTrajectories);
+      }
+
+      setDrawingTrajectory(null);
+    }
+  };
+
+  // Erase Trajectory
+  const handleEraseTrajectory = (trajId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (activeTool === "ERASE") {
+      const remaining = (currentPhase.trajectories || []).filter((t) => t.id !== trajId);
+      commitPhaseUpdate(currentPhase.tokens, remaining);
+    }
+  };
+
+  // Quick Add Item
+  const handleAddToken = (type: "PLAYER" | "OPPONENT" | "BALL" | "CONE") => {
+    const id = `token_${Date.now()}_${Math.random().toString(36).substring(2, 5)}`;
+    let label = "P";
+    if (type === "OPPONENT") label = "X";
+    if (type === "BALL") label = "⚽";
+    if (type === "CONE") label = "▲";
+
+    const newToken: TacticToken = {
+      id,
+      type,
+      label,
+      jerseyNumber: type === "PLAYER" ? currentPhase.tokens.length + 1 : undefined,
+      x: 500 + Math.round((Math.random() - 0.5) * 160),
+      y: 350 + Math.round((Math.random() - 0.5) * 120),
+      dutyZh: type === "PLAYER" ? "协同策应与落位" : undefined,
+    };
+
+    commitPhaseUpdate([...currentPhase.tokens, newToken], currentPhase.trajectories || []);
+    setSelectedTokenId(id);
+    setActiveTool("SELECT");
+  };
+
+  // Clear all trajectories in current phase
+  const handleClearTrajectories = () => {
+    commitPhaseUpdate(currentPhase.tokens, []);
+  };
+
+  // Reset phase to seed
+  const handleResetPhase = () => {
+    if (tactic.phases && tactic.phases[currentPhaseIdx]) {
+      const seedPhase = JSON.parse(JSON.stringify(tactic.phases[currentPhaseIdx]));
+      const updatedPhases = phases.map((p, idx) => (idx === currentPhaseIdx ? seedPhase : p));
+      setPhases(updatedPhases);
+      if (onUpdateTactic) {
+        onUpdateTactic({
+          ...tactic,
+          phases: updatedPhases,
+        });
+      }
     }
   };
 
   const selectedToken = currentPhase.tokens.find((t) => t.id === selectedTokenId);
 
   return (
-    <div className="bg-black/60 border border-white/15 rounded-2xl p-4 sm:p-6 shadow-chiseled backdrop-blur-md flex flex-col space-y-4">
-      {/* Top Action Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-white/10">
-        <div className="flex items-center space-x-2">
+    <div className="bg-[#121815] border border-stone-800 rounded-2xl p-4 sm:p-5 shadow-2xl flex flex-col space-y-3.5 select-none w-full">
+      {/* ================= 1. TOP HEADER & PHASES BAR ================= */}
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-stone-800">
+        {/* Phase Pills */}
+        <div className="flex items-center space-x-1.5 overflow-x-auto py-0.5">
           {phases.map((phase, idx) => (
             <button
               key={idx}
@@ -176,10 +360,10 @@ export default function TacticsBoard({
                 setCurrentPhaseIdx(idx);
                 setAnimProgress(0);
               }}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center space-x-1 ${
                 currentPhaseIdx === idx
-                  ? "bg-heritage-gold text-black shadow-md scale-105"
-                  : "bg-white/5 text-gray-300 hover:bg-white/10 border border-white/10"
+                  ? "bg-amber-600 text-stone-950 font-black shadow-md scale-105"
+                  : "bg-stone-900 text-stone-300 hover:bg-stone-800 border border-stone-800"
               }`}
             >
               <span>{phase.titleZh || `阶段 ${idx + 1}`}</span>
@@ -199,21 +383,23 @@ export default function TacticsBoard({
                   tokens: JSON.parse(JSON.stringify(currentPhase.tokens)),
                   trajectories: [],
                 };
+                const nextPhases = [...phases, newPhase];
+                setPhases(nextPhases);
                 onUpdateTactic({
                   ...tactic,
-                  phases: [...phases, newPhase],
+                  phases: nextPhases,
                 });
                 setCurrentPhaseIdx(phases.length);
               }}
-              className="p-1.5 rounded-lg bg-white/5 hover:bg-white/15 border border-white/10 text-emerald-400 hover:text-emerald-300 transition-colors"
-              title="添加阶段 (Add Phase)"
+              className="p-1.5 rounded-lg bg-stone-900 hover:bg-stone-800 border border-stone-800 text-stone-300 hover:text-amber-400 transition-colors"
+              title="添加阶段"
             >
               <Plus className="w-4 h-4" />
             </button>
           )}
         </div>
 
-        {/* Playback Controls & Utility Actions */}
+        {/* Playback & Utility Controls */}
         <div className="flex items-center space-x-2">
           <button
             onClick={() => {
@@ -222,8 +408,8 @@ export default function TacticsBoard({
             }}
             className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1.5 transition-all ${
               isPlaying
-                ? "bg-amber-500 text-black hover:bg-amber-400 animate-pulse"
-                : "bg-emerald-600 text-white hover:bg-emerald-500"
+                ? "bg-amber-600 text-stone-950 shadow-md"
+                : "bg-stone-800 hover:bg-stone-700 text-stone-200 border border-stone-700"
             }`}
           >
             {isPlaying ? (
@@ -240,13 +426,9 @@ export default function TacticsBoard({
           </button>
 
           <button
-            onClick={() => {
-              setIsPlaying(false);
-              setCurrentPhaseIdx(0);
-              setAnimProgress(0);
-            }}
-            className="p-1.5 rounded-lg bg-white/5 hover:bg-white/15 border border-white/10 text-gray-300 transition-colors"
-            title="复位至阶段一 (Reset)"
+            onClick={handleResetPhase}
+            className="p-1.5 rounded-lg bg-stone-900 hover:bg-stone-800 border border-stone-800 text-stone-300 hover:text-stone-100 transition-colors"
+            title="一键复位本阶段"
           >
             <RotateCcw className="w-4 h-4" />
           </button>
@@ -254,8 +436,8 @@ export default function TacticsBoard({
           {onOpenBigScreen && (
             <button
               onClick={onOpenBigScreen}
-              className="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/15 border border-white/10 text-heritage-gold text-xs font-bold flex items-center space-x-1.5 transition-colors"
-              title="大屏演播模式 (Big-Screen Presentation)"
+              className="px-2.5 py-1.5 rounded-lg bg-stone-900 hover:bg-stone-800 border border-stone-800 text-amber-400 text-xs font-bold flex items-center space-x-1.5 transition-colors"
+              title="大屏演播模式"
             >
               <Maximize2 className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">大屏演播</span>
@@ -265,8 +447,8 @@ export default function TacticsBoard({
           {onPrintA4 && (
             <button
               onClick={onPrintA4}
-              className="p-1.5 rounded-lg bg-white/5 hover:bg-white/15 border border-white/10 text-gray-300 hover:text-white transition-colors"
-              title="打印战术白皮书 A4 手册"
+              className="p-1.5 rounded-lg bg-stone-900 hover:bg-stone-800 border border-stone-800 text-stone-300 hover:text-white transition-colors"
+              title="打印战术白皮书 A4"
             >
               <Printer className="w-4 h-4" />
             </button>
@@ -274,106 +456,194 @@ export default function TacticsBoard({
         </div>
       </div>
 
-      {/* Phase Description Banner */}
-      <div className="px-3 py-2 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between text-xs text-gray-300">
-        <div className="flex items-center space-x-2">
-          <span className="font-bold text-heritage-gold">
-            {currentPhase.titleZh || `阶段 ${currentPhaseIdx + 1}`}:
+      {/* ================= 2. TACTICAL TOOLBOX (MODE PALETTE) ================= */}
+      <div className="flex flex-wrap items-center justify-between gap-2 p-2 rounded-xl bg-stone-900/90 border border-stone-800">
+        {/* Drawing & Interaction Modes */}
+        <div className="flex items-center space-x-1 flex-wrap gap-y-1">
+          <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider px-2">
+            工具:
           </span>
-          <span className="text-gray-200">
-            {currentPhase.notesZh || currentPhase.notesEn || "观察跑位路线与战术职责"}
-          </span>
+
+          <button
+            onClick={() => setActiveTool("SELECT")}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1.5 transition-all ${
+              activeTool === "SELECT"
+                ? "bg-amber-600 text-stone-950 font-black shadow-sm"
+                : "bg-stone-800/80 text-stone-300 hover:bg-stone-700 hover:text-white"
+            }`}
+          >
+            <Move className="w-3.5 h-3.5" />
+            <span>✋ 选人移动</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTool("PASS")}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1.5 transition-all ${
+              activeTool === "PASS"
+                ? "bg-amber-500 text-stone-950 font-black shadow-sm"
+                : "bg-stone-800/80 text-amber-300/90 hover:bg-stone-700"
+            }`}
+          >
+            <ArrowRight className="w-3.5 h-3.5 text-amber-400" />
+            <span>➡️ 传球路线</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTool("RUN")}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1.5 transition-all ${
+              activeTool === "RUN"
+                ? "bg-sky-500 text-stone-950 font-black shadow-sm"
+                : "bg-stone-800/80 text-sky-300/90 hover:bg-stone-700"
+            }`}
+          >
+            <Footprints className="w-3.5 h-3.5 text-sky-400" />
+            <span>🏃 跑位路线</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTool("DRIBBLE")}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1.5 transition-all ${
+              activeTool === "DRIBBLE"
+                ? "bg-orange-500 text-stone-950 font-black shadow-sm"
+                : "bg-stone-800/80 text-orange-300/90 hover:bg-stone-700"
+            }`}
+          >
+            <Zap className="w-3.5 h-3.5 text-orange-400" />
+            <span>⚡ 运球突破</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTool("ERASE")}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1.5 transition-all ${
+              activeTool === "ERASE"
+                ? "bg-rose-700 text-white font-black shadow-sm"
+                : "bg-stone-800/80 text-rose-300/90 hover:bg-stone-700"
+            }`}
+          >
+            <Eraser className="w-3.5 h-3.5 text-rose-400" />
+            <span>🧹 橡皮擦</span>
+          </button>
         </div>
-        <div className="text-[11px] text-gray-400 font-mono">
-          {currentPhaseIdx + 1} / {phases.length}
+
+        {/* Quick Stamp Tokens & Clear Trajectories */}
+        <div className="flex items-center space-x-1.5">
+          <button
+            onClick={() => handleAddToken("BALL")}
+            className="px-2 py-1 rounded-md bg-stone-800 hover:bg-stone-700 text-stone-200 text-xs font-semibold flex items-center space-x-1"
+            title="添加比赛球"
+          >
+            <span>+ ⚽ 球</span>
+          </button>
+
+          <button
+            onClick={() => handleAddToken("OPPONENT")}
+            className="px-2 py-1 rounded-md bg-stone-800 hover:bg-stone-700 text-red-300 text-xs font-semibold flex items-center space-x-1"
+            title="添加防守人"
+          >
+            <span>+ 🛡️ 防守人</span>
+          </button>
+
+          <button
+            onClick={() => handleAddToken("CONE")}
+            className="px-2 py-1 rounded-md bg-stone-800 hover:bg-stone-700 text-amber-300 text-xs font-semibold flex items-center space-x-1"
+            title="添加标志锥"
+          >
+            <span>+ 🚩 标志锥</span>
+          </button>
+
+          <button
+            onClick={handleClearTrajectories}
+            className="px-2 py-1 rounded-md bg-stone-800/60 hover:bg-stone-800 text-stone-400 hover:text-stone-200 text-xs"
+            title="清空当前阶段所有箭头"
+          >
+            清空箭头
+          </button>
         </div>
       </div>
 
-      {/* SVG Interactive Pitch Canvas (1000 x 700 normalized) */}
-      <div className="relative w-full aspect-[1000/700] rounded-xl overflow-hidden border border-white/20 shadow-2xl select-none">
+      {/* Phase Description Banner */}
+      <div className="px-3.5 py-2 rounded-xl bg-stone-900/60 border border-stone-800 flex items-center justify-between text-xs text-stone-300">
+        <div className="flex items-center space-x-2">
+          <span className="font-bold text-amber-400">
+            {currentPhase.titleZh || `阶段 ${currentPhaseIdx + 1}`}:
+          </span>
+          <span className="text-stone-300">
+            {currentPhase.notesZh || currentPhase.notesEn || "观察跑位路线与战术职责"}
+          </span>
+        </div>
+        <div className="text-[11px] text-stone-400 font-mono">
+          {currentPhaseIdx + 1} / {phases.length} 阶段
+        </div>
+      </div>
+
+      {/* ================= 3. INTERACTIVE PITCH CANVAS (SVG Normalized 1000 x 700) ================= */}
+      <div
+        className="relative w-full aspect-[1000/700] rounded-xl overflow-hidden border border-stone-800 shadow-2xl select-none"
+        style={{ touchAction: "none" }}
+      >
         <svg
           ref={svgRef}
           viewBox="0 0 1000 700"
-          className="w-full h-full cursor-crosshair"
+          className={`w-full h-full ${
+            activeTool === "SELECT"
+              ? "cursor-default"
+              : activeTool === "ERASE"
+              ? "cursor-not-allowed"
+              : "cursor-crosshair"
+          }`}
+          onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
+          onPointerLeave={() => {
+            if (draggingTokenId) setDraggingTokenId(null);
+            if (drawingTrajectory) setDrawingTrajectory(null);
+          }}
         >
           <defs>
             {/* Markers for Trajectory Arrows */}
             <marker
-              id="arrow-pass"
+              id="arrow-pass-v3"
               viewBox="0 0 10 10"
               refX="8"
               refY="5"
-              markerWidth="6"
-              markerHeight="6"
+              markerWidth="7"
+              markerHeight="7"
               orient="auto-start-reverse"
             >
               <path d="M 0 1 L 10 5 L 0 9 z" fill="#D4AF37" />
             </marker>
             <marker
-              id="arrow-run"
+              id="arrow-run-v3"
               viewBox="0 0 10 10"
               refX="8"
               refY="5"
-              markerWidth="6"
-              markerHeight="6"
+              markerWidth="7"
+              markerHeight="7"
               orient="auto-start-reverse"
             >
               <path d="M 0 1 L 10 5 L 0 9 z" fill="#38BDF8" />
             </marker>
             <marker
-              id="arrow-dribble"
+              id="arrow-dribble-v3"
               viewBox="0 0 10 10"
               refX="8"
               refY="5"
-              markerWidth="6"
-              markerHeight="6"
+              markerWidth="7"
+              markerHeight="7"
               orient="auto-start-reverse"
             >
-              <path d="M 0 1 L 10 5 L 0 9 z" fill="#F43F5E" />
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#FB923C" />
             </marker>
-
-            {/* Ball texture gradients */}
-            <radialGradient id="soccerGrad" cx="35%" cy="35%" r="65%">
-              <stop offset="0%" stopColor="#FFFFFF" />
-              <stop offset="70%" stopColor="#E2E8F0" />
-              <stop offset="100%" stopColor="#475569" />
-            </radialGradient>
-            <radialGradient id="volleyGrad" cx="35%" cy="35%" r="65%">
-              <stop offset="0%" stopColor="#FDE047" />
-              <stop offset="60%" stopColor="#2563EB" />
-              <stop offset="100%" stopColor="#1E3A8A" />
-            </radialGradient>
-            <radialGradient id="basketGrad" cx="35%" cy="35%" r="65%">
-              <stop offset="0%" stopColor="#FB923C" />
-              <stop offset="70%" stopColor="#EA580C" />
-              <stop offset="100%" stopColor="#7C2D12" />
-            </radialGradient>
-
-            {/* Pitch pattern gradients */}
-            <linearGradient id="grassStripes" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stopColor="#0E3320" />
-              <stop offset="50%" stopColor="#0B2618" />
-              <stop offset="100%" stopColor="#0E3320" />
-            </linearGradient>
-            <linearGradient id="hardwood" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#261A13" />
-              <stop offset="50%" stopColor="#1F140E" />
-              <stop offset="100%" stopColor="#261A13" />
-            </linearGradient>
-            <linearGradient id="volleyballCourt" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#9A4822" />
-              <stop offset="50%" stopColor="#B85D2A" />
-              <stop offset="100%" stopColor="#8C3F1B" />
-            </linearGradient>
           </defs>
 
-          {/* COURT BACKGROUND RENDERING ACCORDING TO SPORT */}
+          {/* ================= COURT TEXTURES (SPORTS HERITAGE) ================= */}
+
           {sport === "FOOTBALL" && (
-            <g id="footballPitch">
-              {/* Grass Bands */}
-              <rect width="1000" height="700" fill="#0A2215" />
+            <g id="footballPitchV3">
+              {/* Natural Grass Base */}
+              <rect width="1000" height="700" fill="#0E2419" />
+
+              {/* Mowing Lawn Bands */}
               {[0, 100, 200, 300, 400, 500, 600, 700, 800, 900].map((x, i) => (
                 <rect
                   key={x}
@@ -381,11 +651,11 @@ export default function TacticsBoard({
                   y="0"
                   width="100"
                   height="700"
-                  fill={i % 2 === 0 ? "#0C291A" : "#0E301F"}
+                  fill={i % 2 === 0 ? "#122E20" : "#0E2419"}
                 />
               ))}
 
-              {/* Pitch Boundaries & Lines */}
+              {/* Outer Chalk Perimeter */}
               <rect
                 x="40"
                 y="35"
@@ -394,10 +664,10 @@ export default function TacticsBoard({
                 fill="none"
                 stroke="#FFFFFF"
                 strokeWidth="2.5"
-                strokeOpacity="0.75"
+                strokeOpacity="0.8"
               />
 
-              {/* Halfway Line */}
+              {/* Half-way Line & Center Circle */}
               <line
                 x1="500"
                 y1="35"
@@ -405,22 +675,20 @@ export default function TacticsBoard({
                 y2="665"
                 stroke="#FFFFFF"
                 strokeWidth="2.5"
-                strokeOpacity="0.75"
+                strokeOpacity="0.8"
               />
-
-              {/* Center Circle & Spot */}
               <circle
                 cx="500"
                 cy="350"
-                r="85"
+                r="80"
                 fill="none"
                 stroke="#FFFFFF"
                 strokeWidth="2.5"
-                strokeOpacity="0.75"
+                strokeOpacity="0.8"
               />
               <circle cx="500" cy="350" r="4.5" fill="#FFFFFF" fillOpacity="0.9" />
 
-              {/* Left Penalty Area (18-yard box) */}
+              {/* Left Penalty Area */}
               <rect
                 x="40"
                 y="175"
@@ -429,9 +697,8 @@ export default function TacticsBoard({
                 fill="none"
                 stroke="#FFFFFF"
                 strokeWidth="2.5"
-                strokeOpacity="0.75"
+                strokeOpacity="0.8"
               />
-              {/* Left Goal Area (6-yard box) */}
               <rect
                 x="40"
                 y="265"
@@ -440,28 +707,15 @@ export default function TacticsBoard({
                 fill="none"
                 stroke="#FFFFFF"
                 strokeWidth="2"
-                strokeOpacity="0.75"
+                strokeOpacity="0.8"
               />
-              {/* Left Penalty Spot & Arc */}
               <circle cx="145" cy="350" r="4" fill="#FFFFFF" fillOpacity="0.9" />
               <path
                 d="M 195 295 A 85 85 0 0 1 195 405"
                 fill="none"
                 stroke="#FFFFFF"
                 strokeWidth="2.5"
-                strokeOpacity="0.75"
-              />
-              {/* Left Goal Net */}
-              <rect
-                x="15"
-                y="305"
-                width="25"
-                height="90"
-                fill="#FFFFFF"
-                fillOpacity="0.1"
-                stroke="#FFFFFF"
-                strokeWidth="2"
-                strokeOpacity="0.6"
+                strokeOpacity="0.8"
               />
 
               {/* Right Penalty Area */}
@@ -473,9 +727,8 @@ export default function TacticsBoard({
                 fill="none"
                 stroke="#FFFFFF"
                 strokeWidth="2.5"
-                strokeOpacity="0.75"
+                strokeOpacity="0.8"
               />
-              {/* Right Goal Area */}
               <rect
                 x="905"
                 y="265"
@@ -484,49 +737,31 @@ export default function TacticsBoard({
                 fill="none"
                 stroke="#FFFFFF"
                 strokeWidth="2"
-                strokeOpacity="0.75"
+                strokeOpacity="0.8"
               />
-              {/* Right Penalty Spot & Arc */}
               <circle cx="855" cy="350" r="4" fill="#FFFFFF" fillOpacity="0.9" />
               <path
                 d="M 805 295 A 85 85 0 0 0 805 405"
                 fill="none"
                 stroke="#FFFFFF"
                 strokeWidth="2.5"
-                strokeOpacity="0.75"
+                strokeOpacity="0.8"
               />
-              {/* Right Goal Net */}
-              <rect
-                x="960"
-                y="305"
-                width="25"
-                height="90"
-                fill="#FFFFFF"
-                fillOpacity="0.1"
-                stroke="#FFFFFF"
-                strokeWidth="2"
-                strokeOpacity="0.6"
-              />
-
-              {/* Corner Arcs */}
-              <path d="M 40 55 A 20 20 0 0 0 60 35" fill="none" stroke="#FFFFFF" strokeWidth="2" strokeOpacity="0.7" />
-              <path d="M 40 645 A 20 20 0 0 1 60 665" fill="none" stroke="#FFFFFF" strokeWidth="2" strokeOpacity="0.7" />
-              <path d="M 940 35 A 20 20 0 0 0 960 55" fill="none" stroke="#FFFFFF" strokeWidth="2" strokeOpacity="0.7" />
-              <path d="M 940 665 A 20 20 0 0 1 960 645" fill="none" stroke="#FFFFFF" strokeWidth="2" strokeOpacity="0.7" />
             </g>
           )}
 
           {sport === "VOLLEYBALL" && (
-            <g id="volleyballPitch">
+            <g id="volleyballPitchV3">
               {/* Outer Surround Flooring */}
-              <rect width="1000" height="700" fill="#1A365D" />
-              {/* Main Court (18m x 9m ratio, centered) */}
+              <rect width="1000" height="700" fill="#141E28" />
+
+              {/* Main Court (Teraflex / Maple) */}
               <rect
                 x="120"
                 y="110"
                 width="760"
                 height="480"
-                fill="url(#volleyballCourt)"
+                fill="#8C3F1B"
                 stroke="#FFFFFF"
                 strokeWidth="3.5"
               />
@@ -537,16 +772,14 @@ export default function TacticsBoard({
                 y1="110"
                 x2="500"
                 y2="590"
-                stroke="#E2E8F0"
+                stroke="#FFFFFF"
                 strokeWidth="5"
                 strokeDasharray="4 2"
               />
-              {/* Net Top Band & Poles */}
-              <line x1="500" y1="90" x2="500" y2="610" stroke="#CBD5E1" strokeWidth="3" />
-              <circle cx="500" cy="90" r="5" fill="#DC2626" />
-              <circle cx="500" cy="610" r="5" fill="#DC2626" />
+              <circle cx="500" cy="90" r="6" fill="#DC2626" />
+              <circle cx="500" cy="610" r="6" fill="#DC2626" />
 
-              {/* Left Attack Line (3m line) */}
+              {/* Left & Right Attack Lines (3m) */}
               <line
                 x1="373"
                 y1="110"
@@ -556,7 +789,6 @@ export default function TacticsBoard({
                 strokeWidth="3"
                 strokeDasharray="6 4"
               />
-              {/* Right Attack Line (3m line) */}
               <line
                 x1="627"
                 y1="110"
@@ -568,23 +800,23 @@ export default function TacticsBoard({
               />
 
               {/* Zone Annotations */}
-              <g fill="#FFFFFF" fillOpacity="0.35" fontSize="13" fontWeight="bold" fontFamily="sans-serif">
-                <text x="430" y="210">Zone 4 (OH)</text>
-                <text x="430" y="355">Zone 3 (MB)</text>
-                <text x="430" y="500">Zone 2 (OPP)</text>
-                <text x="230" y="210">Zone 5 (DS)</text>
-                <text x="230" y="355">Zone 6 (PIPE)</text>
-                <text x="230" y="500">Zone 1 (SET)</text>
+              <g fill="#FFFFFF" fillOpacity="0.3" fontSize="13" fontWeight="bold">
+                <text x="430" y="210">Zone 4</text>
+                <text x="430" y="355">Zone 3</text>
+                <text x="430" y="500">Zone 2</text>
+                <text x="230" y="210">Zone 5</text>
+                <text x="230" y="355">Zone 6</text>
+                <text x="230" y="500">Zone 1</text>
               </g>
             </g>
           )}
 
           {sport === "BASKETBALL" && (
-            <g id="basketballPitch">
-              {/* Hardwood Flooring */}
-              <rect width="1000" height="700" fill="url(#hardwood)" />
+            <g id="basketballPitchV3">
+              {/* Natural Hardwood */}
+              <rect width="1000" height="700" fill="#20140E" />
 
-              {/* Wood Grain Lines */}
+              {/* Parquet Grain Lines */}
               {[70, 140, 210, 280, 350, 420, 490, 560, 630].map((y) => (
                 <line
                   key={y}
@@ -594,111 +826,89 @@ export default function TacticsBoard({
                   y2={y}
                   stroke="#FFFFFF"
                   strokeWidth="0.5"
-                  strokeOpacity="0.08"
+                  strokeOpacity="0.06"
                 />
               ))}
 
-              {/* Perimeter Boundary */}
+              {/* Boundary */}
               <rect
                 x="50"
                 y="50"
                 width="900"
                 height="600"
                 fill="none"
-                stroke="#D4AF37"
+                stroke="#C5A059"
                 strokeWidth="3"
-                strokeOpacity="0.8"
+                strokeOpacity="0.85"
               />
 
-              {/* Half Court Line & Center Circle */}
+              {/* Half Court & Center Circle */}
               <line
                 x1="500"
                 y1="50"
                 x2="500"
                 y2="650"
-                stroke="#D4AF37"
+                stroke="#C5A059"
                 strokeWidth="3"
-                strokeOpacity="0.8"
+                strokeOpacity="0.85"
               />
               <circle
                 cx="500"
                 cy="350"
                 r="70"
                 fill="none"
-                stroke="#D4AF37"
+                stroke="#C5A059"
                 strokeWidth="3"
-                strokeOpacity="0.8"
+                strokeOpacity="0.85"
               />
 
-              {/* Left Key / Paint & Free Throw */}
+              {/* Left Key / Paint */}
               <rect
                 x="50"
                 y="240"
                 width="170"
                 height="220"
-                fill="#78350F"
-                fillOpacity="0.25"
-                stroke="#D4AF37"
+                fill="#5E2A12"
+                fillOpacity="0.3"
+                stroke="#C5A059"
                 strokeWidth="2.5"
-                strokeOpacity="0.8"
               />
-              <circle
-                cx="220"
-                cy="350"
-                r="65"
-                fill="none"
-                stroke="#D4AF37"
-                strokeWidth="2.5"
-                strokeOpacity="0.8"
-              />
+              <circle cx="220" cy="350" r="65" fill="none" stroke="#C5A059" strokeWidth="2.5" />
               {/* Left 3-Point Arc */}
               <path
                 d="M 50 110 L 140 110 A 240 240 0 0 1 140 590 L 50 590"
                 fill="none"
-                stroke="#D4AF37"
+                stroke="#C5A059"
                 strokeWidth="2.5"
-                strokeOpacity="0.8"
               />
-              {/* Left Rim & Backboard */}
               <line x1="85" y1="315" x2="85" y2="385" stroke="#FFFFFF" strokeWidth="4" />
               <circle cx="105" cy="350" r="14" fill="none" stroke="#EA580C" strokeWidth="3" />
 
-              {/* Right Key / Paint & Free Throw */}
+              {/* Right Key / Paint */}
               <rect
                 x="780"
                 y="240"
                 width="170"
                 height="220"
-                fill="#78350F"
-                fillOpacity="0.25"
-                stroke="#D4AF37"
+                fill="#5E2A12"
+                fillOpacity="0.3"
+                stroke="#C5A059"
                 strokeWidth="2.5"
-                strokeOpacity="0.8"
               />
-              <circle
-                cx="780"
-                cy="350"
-                r="65"
-                fill="none"
-                stroke="#D4AF37"
-                strokeWidth="2.5"
-                strokeOpacity="0.8"
-              />
+              <circle cx="780" cy="350" r="65" fill="none" stroke="#C5A059" strokeWidth="2.5" />
               {/* Right 3-Point Arc */}
               <path
                 d="M 950 110 L 860 110 A 240 240 0 0 0 860 590 L 950 590"
                 fill="none"
-                stroke="#D4AF37"
+                stroke="#C5A059"
                 strokeWidth="2.5"
-                strokeOpacity="0.8"
               />
-              {/* Right Rim & Backboard */}
               <line x1="915" y1="315" x2="915" y2="385" stroke="#FFFFFF" strokeWidth="4" />
               <circle cx="895" cy="350" r="14" fill="none" stroke="#EA580C" strokeWidth="3" />
             </g>
           )}
 
-          {/* TACTICAL TRAJECTORIES (ARROWS, PASSES, RUNS) */}
+          {/* ================= 4. TACTICAL TRAJECTORIES (ARROWS) ================= */}
           {currentPhase.trajectories?.map((traj) => {
             const isCurve = traj.controlX && traj.controlY;
             const pathData = isCurve
@@ -706,21 +916,35 @@ export default function TacticsBoard({
               : `M ${traj.startX} ${traj.startY} L ${traj.endX} ${traj.endY}`;
 
             let strokeColor = "#38BDF8"; // RUN = Sky Blue
-            let markerEnd = "url(#arrow-run)";
-            let strokeDash = "6 4";
+            let markerEnd = "url(#arrow-run-v3)";
+            let strokeDash = "7 5";
 
             if (traj.type === "PASS") {
-              strokeColor = "#FACC15"; // PASS = Bright Gold
-              markerEnd = "url(#arrow-pass)";
+              strokeColor = "#D4AF37"; // PASS = Classic Gold
+              markerEnd = "url(#arrow-pass-v3)";
               strokeDash = "none";
             } else if (traj.type === "DRIBBLE") {
-              strokeColor = "#F43F5E"; // DRIBBLE = Crimson
-              markerEnd = "url(#arrow-dribble)";
-              strokeDash = "3 3";
+              strokeColor = "#FB923C"; // DRIBBLE = Amber/Orange
+              markerEnd = "url(#arrow-dribble-v3)";
+              strokeDash = "4 3";
             }
 
             return (
-              <g key={traj.id} className="pointer-events-none">
+              <g
+                key={traj.id}
+                onClick={(e) => handleEraseTrajectory(traj.id, e)}
+                className={activeTool === "ERASE" ? "cursor-pointer group" : "pointer-events-none"}
+              >
+                {/* Invisible wide click buffer for easy clicking */}
+                <path
+                  d={pathData}
+                  fill="none"
+                  stroke="transparent"
+                  strokeWidth="24"
+                  className="pointer-events-auto"
+                />
+
+                {/* Visible Arrow */}
                 <path
                   d={pathData}
                   fill="none"
@@ -730,85 +954,132 @@ export default function TacticsBoard({
                   strokeLinecap="round"
                   markerEnd={markerEnd}
                   opacity="0.9"
+                  className="transition-opacity group-hover:opacity-40"
                 />
-                {traj.label && (
-                  <text
-                    x={traj.controlX || (traj.startX + traj.endX) / 2}
-                    y={(traj.controlY || (traj.startY + traj.endY) / 2) - 8}
-                    fill="#FFFFFF"
-                    fontSize="11"
-                    fontWeight="bold"
-                    textAnchor="middle"
-                    className="bg-black/60 px-1 py-0.5"
-                  >
-                    {traj.label}
-                  </text>
+
+                {/* Hover indicator when in ERASE mode */}
+                {activeTool === "ERASE" && (
+                  <circle
+                    cx={(traj.startX + traj.endX) / 2}
+                    cy={(traj.startY + traj.endY) / 2}
+                    r="8"
+                    fill="#EF4444"
+                    opacity="0.8"
+                    className="animate-pulse"
+                  />
                 )}
               </g>
             );
           })}
 
-          {/* TACTICAL TOKENS (PLAYERS, OPPONENTS, BALL) */}
+          {/* Live Drawing Preview Line */}
+          {drawingTrajectory && (
+            <g className="pointer-events-none">
+              <line
+                x1={drawingTrajectory.startX}
+                y1={drawingTrajectory.startY}
+                x2={drawingTrajectory.currentX}
+                y2={drawingTrajectory.currentY}
+                stroke={
+                  drawingTrajectory.type === "PASS"
+                    ? "#D4AF37"
+                    : drawingTrajectory.type === "RUN"
+                    ? "#38BDF8"
+                    : "#FB923C"
+                }
+                strokeWidth="3.5"
+                strokeDasharray={drawingTrajectory.type === "PASS" ? "none" : "6 4"}
+                markerEnd={
+                  drawingTrajectory.type === "PASS"
+                    ? "url(#arrow-pass-v3)"
+                    : drawingTrajectory.type === "RUN"
+                    ? "url(#arrow-run-v3)"
+                    : "url(#arrow-dribble-v3)"
+                }
+              />
+              <circle
+                cx={drawingTrajectory.startX}
+                cy={drawingTrajectory.startY}
+                r="4"
+                fill="#FFFFFF"
+              />
+            </g>
+          )}
+
+          {/* ================= 5. TACTICAL TOKENS (ATHLETES, BALL, CONES) ================= */}
           {displayedTokens.map((token) => {
             const isSelected = token.id === selectedTokenId;
             const isDragging = token.id === draggingTokenId;
 
+            // Ball Token
             if (token.type === "BALL") {
-              let ballFill = "url(#soccerGrad)";
-              if (sport === "VOLLEYBALL") ballFill = "url(#volleyGrad)";
-              if (sport === "BASKETBALL") ballFill = "url(#basketGrad)";
-
               return (
                 <g
                   key={token.id}
                   transform={`translate(${token.x}, ${token.y})`}
-                  onPointerDown={(e) => handlePointerDown(token.id, e)}
-                  className="cursor-grab active:cursor-grabbing transition-transform duration-75"
+                  className={activeTool === "SELECT" ? "cursor-grab active:cursor-grabbing" : ""}
                 >
-                  <circle cx="0" cy="0" r="14" fill="#000000" fillOpacity="0.4" />
+                  <circle cx="0" cy="0" r="14" fill="#000000" fillOpacity="0.5" />
                   <circle
                     cx="0"
                     cy="0"
                     r="12"
-                    fill={ballFill}
-                    stroke="#FFFFFF"
+                    fill="#F8FAFC"
+                    stroke="#000000"
                     strokeWidth="1.5"
-                    className="filter drop-shadow-md"
                   />
                   {sport === "FOOTBALL" && (
                     <polygon
-                      points="0,-6 5,-2 3,5 -3,5 -5,-2"
+                      points="0,-5 4,-2 2,4 -2,4 -4,-2"
                       fill="#000000"
-                      fillOpacity="0.75"
+                      fillOpacity="0.8"
                     />
                   )}
                   {sport === "BASKETBALL" && (
                     <path
                       d="M -10 0 L 10 0 M 0 -10 L 0 10"
-                      stroke="#000000"
-                      strokeWidth="1"
+                      stroke="#EA580C"
+                      strokeWidth="1.5"
                     />
                   )}
                 </g>
               );
             }
 
+            // Cone Token (Training Cone)
+            if (token.type === "CONE") {
+              return (
+                <g
+                  key={token.id}
+                  transform={`translate(${token.x}, ${token.y})`}
+                  className={activeTool === "SELECT" ? "cursor-grab active:cursor-grabbing" : ""}
+                >
+                  <polygon
+                    points="0,-16 -12,12 12,12"
+                    fill="#F97316"
+                    stroke="#C2410C"
+                    strokeWidth="1.5"
+                  />
+                  <line x1="-7" y1="2" x2="7" y2="2" stroke="#FFFFFF" strokeWidth="2" />
+                </g>
+              );
+            }
+
+            // Opponent Token
             if (token.type === "OPPONENT") {
               return (
                 <g
                   key={token.id}
                   transform={`translate(${token.x}, ${token.y})`}
-                  onPointerDown={(e) => handlePointerDown(token.id, e)}
-                  className="cursor-grab active:cursor-grabbing"
+                  className={activeTool === "SELECT" ? "cursor-grab active:cursor-grabbing" : ""}
                 >
                   <circle
                     cx="0"
                     cy="0"
                     r="17"
-                    fill="#991B1B"
-                    stroke="#EF4444"
+                    fill="#881337"
+                    stroke="#F43F5E"
                     strokeWidth="2"
-                    className="filter drop-shadow-lg"
                   />
                   <text
                     x="0"
@@ -824,17 +1095,17 @@ export default function TacticsBoard({
               );
             }
 
-            // Athlete Token (Active / Hall of Fame / Alumni)
+            // Athlete Token
             const isHoF = token.alumniTier === "HALL_OF_FAME";
             const isAlumni = token.isRetired && !isHoF;
 
-            let badgeStroke = "#34D399"; // Emerald active
+            let badgeStroke = "#34D399";
             let badgeFill = "#064E3B";
             if (isHoF) {
-              badgeStroke = "#F59E0B"; // Gold laurel
+              badgeStroke = "#F59E0B";
               badgeFill = "#78350F";
             } else if (isAlumni) {
-              badgeStroke = "#94A3B8"; // Silver alumni
+              badgeStroke = "#94A3B8";
               badgeFill = "#334155";
             }
 
@@ -851,23 +1122,20 @@ export default function TacticsBoard({
               <g
                 key={token.id}
                 transform={`translate(${token.x}, ${token.y})`}
-                onPointerDown={(e) => handlePointerDown(token.id, e)}
-                onClick={() => setSelectedTokenId(token.id)}
-                className={`cursor-pointer transition-transform ${
-                  isSelected ? "scale-110" : ""
-                } ${isDragging ? "opacity-90" : ""}`}
+                className={`${
+                  activeTool === "SELECT" ? "cursor-grab active:cursor-grabbing" : ""
+                } ${isSelected ? "scale-105" : ""} ${isDragging ? "opacity-90" : ""}`}
               >
-                {/* Glow ring if selected */}
+                {/* Selection Ring (Matte Gold) */}
                 {isSelected && (
                   <circle
                     cx="0"
                     cy="0"
-                    r="28"
+                    r="27"
                     fill="none"
-                    stroke="#D4AF37"
+                    stroke="#C5A059"
                     strokeWidth="2.5"
                     strokeDasharray="4 2"
-                    className="animate-spin-slow"
                   />
                 )}
 
@@ -882,8 +1150,7 @@ export default function TacticsBoard({
                       r="22"
                       fill={badgeFill}
                       stroke={badgeStroke}
-                      strokeWidth="2.5"
-                      className="filter drop-shadow-xl"
+                      strokeWidth="2"
                     />
                     <image
                       href={photo}
@@ -894,9 +1161,9 @@ export default function TacticsBoard({
                       clipPath={`url(#clip-${token.id})`}
                       preserveAspectRatio="xMidYMid slice"
                     />
-                    {/* Miniature Jersey Pill at bottom right */}
+                    {/* Jersey number pill at bottom right */}
                     <g transform="translate(13, 13)">
-                      <circle cx="0" cy="0" r="8" fill="#000000" stroke={badgeStroke} strokeWidth="1.5" />
+                      <circle cx="0" cy="0" r="8" fill="#1C1917" stroke={badgeStroke} strokeWidth="1" />
                       <text x="0" y="3" fill="#FFFFFF" fontSize="9" fontWeight="900" textAnchor="middle">
                         {token.jerseyNumber ?? "•"}
                       </text>
@@ -904,25 +1171,20 @@ export default function TacticsBoard({
                   </g>
                 ) : (
                   <g>
-                    {/* Base Token Shield / Circle */}
                     <circle
                       cx="0"
                       cy="0"
-                      r="21"
+                      r="20"
                       fill={badgeFill}
                       stroke={badgeStroke}
-                      strokeWidth="2.5"
-                      className="filter drop-shadow-xl"
+                      strokeWidth="2"
                     />
-
-                    {/* Jersey Number */}
                     <text
                       x="0"
                       y="4"
                       fill="#FFFFFF"
-                      fontSize="13"
+                      fontSize="12"
                       fontWeight="black"
-                      fontFamily="sans-serif"
                       textAnchor="middle"
                     >
                       {token.jerseyNumber ?? token.position ?? "•"}
@@ -930,58 +1192,43 @@ export default function TacticsBoard({
                   </g>
                 )}
 
-                {/* Captain Badge Ribbon */}
+                {/* Captain Badge */}
                 {token.isCaptain && (
-                  <g transform="translate(12, -15)">
-                    <circle cx="0" cy="0" r="7" fill="#F59E0B" stroke="#000000" strokeWidth="1" />
-                    <text
-                      x="0"
-                      y="3.5"
-                      fill="#000000"
-                      fontSize="9"
-                      fontWeight="black"
-                      textAnchor="middle"
-                    >
+                  <g transform="translate(13, -15)">
+                    <circle cx="0" cy="0" r="7" fill="#D97706" stroke="#1C1917" strokeWidth="1" />
+                    <text x="0" y="3.5" fill="#1C1917" fontSize="9" fontWeight="black" textAnchor="middle">
                       C
                     </text>
                   </g>
                 )}
 
-                {/* Hall of Fame Wreath Star */}
+                {/* Hall of Fame Star */}
                 {isHoF && (
                   <g transform="translate(-13, -15)">
-                    <circle cx="0" cy="0" r="7" fill="#B45309" stroke="#FDE047" strokeWidth="1" />
-                    <text
-                      x="0"
-                      y="3.5"
-                      fill="#FDE047"
-                      fontSize="9"
-                      fontWeight="black"
-                      textAnchor="middle"
-                    >
+                    <circle cx="0" cy="0" r="7" fill="#92400E" stroke="#FDE047" strokeWidth="1" />
+                    <text x="0" y="3.5" fill="#FDE047" fontSize="9" fontWeight="black" textAnchor="middle">
                       ★
                     </text>
                   </g>
                 )}
 
-                {/* Label text pill below badge */}
-                <g transform="translate(0, 32)">
+                {/* Label Tag below Token */}
+                <g transform="translate(0, 30)">
                   <rect
-                    x="-40"
-                    y="-10"
-                    width="80"
+                    x="-35"
+                    y="-9"
+                    width="70"
                     height="18"
                     rx="4"
-                    fill="#000000"
-                    fillOpacity="0.8"
+                    fill="#1C1917"
                     stroke={badgeStroke}
                     strokeWidth="1"
                   />
                   <text
                     x="0"
-                    y="3"
-                    fill="#FFFFFF"
-                    fontSize="10"
+                    y="3.5"
+                    fill="#F8FAFC"
+                    fontSize="9.5"
                     fontWeight="bold"
                     textAnchor="middle"
                   >
@@ -994,42 +1241,42 @@ export default function TacticsBoard({
         </svg>
       </div>
 
-      {/* Selected Token Tactical Duties & Instructions Card */}
+      {/* ================= 6. SELECTED TOKEN DUTIES & ATTRIBUTES CARD ================= */}
       {selectedToken && (
-        <div className="p-4 rounded-xl bg-gradient-to-r from-black/80 via-black/60 to-black/80 border border-heritage-gold/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-center space-x-3.5">
-            <div className="w-11 h-11 rounded-xl bg-heritage-gold/20 border border-heritage-gold/40 flex items-center justify-center font-serif font-black text-heritage-gold text-lg shrink-0">
+        <div className="p-3.5 rounded-xl bg-stone-900 border border-stone-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 rounded-lg bg-stone-800 border border-stone-700 flex items-center justify-center font-serif font-black text-amber-400 text-base shrink-0">
               {selectedToken.jerseyNumber || selectedToken.position || "•"}
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <h4 className="font-bold text-white text-sm">{selectedToken.label}</h4>
+                <h4 className="font-bold text-stone-100 text-sm">{selectedToken.label}</h4>
                 {selectedToken.isCaptain && (
-                  <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold">
-                    队长 (Captain)
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-900/50 text-amber-300 border border-amber-700/50 font-bold">
+                    队长
                   </span>
                 )}
                 {selectedToken.alumniTier === "HALL_OF_FAME" && (
-                  <span className="text-[10px] px-2 py-0.5 rounded bg-yellow-500/20 text-yellow-300 border border-yellow-500/40 font-bold flex items-center space-x-1">
-                    <Award className="w-3 h-3" />
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-900/60 text-amber-200 border border-amber-700/60 font-bold flex items-center space-x-0.5">
+                    <Award className="w-2.5 h-2.5" />
                     <span>校队名宿</span>
                   </span>
                 )}
                 {selectedToken.isRetired && selectedToken.alumniTier !== "HALL_OF_FAME" && (
-                  <span className="text-[10px] px-2 py-0.5 rounded bg-slate-500/20 text-slate-300 border border-slate-500/40 font-bold flex items-center space-x-1">
-                    <GraduationCap className="w-3 h-3" />
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-stone-800 text-stone-300 border border-stone-700 font-bold flex items-center space-x-0.5">
+                    <GraduationCap className="w-2.5 h-2.5" />
                     <span>毕业校友</span>
                   </span>
                 )}
               </div>
-              <p className="text-xs text-gray-300 mt-1">
-                <strong className="text-heritage-gold">本阶段战术职责：</strong>{" "}
+              <p className="text-xs text-stone-300 mt-0.5">
+                <strong className="text-amber-400">本阶段战术职责：</strong>{" "}
                 {selectedToken.dutyZh || selectedToken.dutyEn || "保持战术位置，随时策应传球。"}
               </p>
             </div>
           </div>
 
-          <div className="text-xs text-gray-400 font-mono shrink-0">
+          <div className="text-[11px] text-stone-400 font-mono shrink-0">
             坐标: ({selectedToken.x}, {selectedToken.y})
           </div>
         </div>

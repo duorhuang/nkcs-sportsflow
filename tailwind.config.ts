@@ -9,43 +9,42 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // 足球专区经典绿茵色调
+        // 足球专区经典绿茵色调（自然深墨绿草皮）
         pitch: {
-          dark: "#0A1A14",
-          surface: "#0F261D",
-          border: "#1E3D30",
-          accent: "#10B981",
-          chalk: "#E5E7EB",
+          dark: "#0C1A14",
+          surface: "#11261D",
+          border: "#1E3B2E",
+          accent: "#2D6A4F",
+          chalk: "#F3F4F6",
         },
-        // 排球专区经典室内暖阳枫木色调
+        // 排球专区经典室内暖枫木色调
         maple: {
-          dark: "#1A1613",
-          surface: "#241E1A",
-          border: "#3D342E",
-          orange: "#F97316",
-          blue: "#2563EB",
-          warm: "#F59E0B",
+          dark: "#16110D",
+          surface: "#221B15",
+          border: "#3B2F25",
+          orange: "#C25E1A",
+          blue: "#1E3A8A",
+          warm: "#D97706",
         },
         // 篮球专区美式拼花硬木经典色调
         hardwood: {
-          dark: "#1C120F",
-          surface: "#281A16",
-          border: "#422C25",
-          crimson: "#E11D48",
-          amber: "#D97706",
-          leather: "#B45309",
+          dark: "#18110D",
+          surface: "#261A14",
+          border: "#3E2B21",
+          crimson: "#991B1B",
+          amber: "#B45309",
+          leather: "#854D0E",
         },
-        // 古典竞技学院质感专属点缀
+        // 古典竞技学院质感专属点缀（低调哑光铜金）
         heritage: {
-          gold: "#D4AF37",
-          antiqueGold: "#C5A059",
-          brass: "#B59A57",
-          pewter: "#9CA3AF",
-          bronze: "#92400E",
-          parchment: "#FDFBF7",
-          parchmentDark: "#1F1D1A",
+          gold: "#C5A059",
+          antiqueGold: "#B59247",
+          brass: "#A1823B",
+          pewter: "#94A3B8",
+          bronze: "#78350F",
+          parchment: "#FBF9F5",
+          parchmentDark: "#1C1A17",
           borderSubtle: "rgba(255, 255, 255, 0.08)",
-          cardGlow: "rgba(212, 175, 55, 0.15)",
         },
       },
       fontFamily: {
@@ -61,9 +60,8 @@ const config: Config = {
         ],
       },
       boxShadow: {
-        chiseled: "inset 0 2px 4px rgba(0, 0, 0, 0.6), 0 4px 12px rgba(0, 0, 0, 0.4)",
-        frameGold: "0 0 0 1px rgba(212, 175, 55, 0.4), 0 8px 24px rgba(0, 0, 0, 0.5)",
-        framePewter: "0 0 0 1px rgba(156, 163, 175, 0.3), 0 8px 20px rgba(0, 0, 0, 0.5)",
+        cardNatural: "0 2px 8px rgba(0, 0, 0, 0.4)",
+        frameGold: "0 0 0 1px rgba(197, 160, 89, 0.3), 0 4px 16px rgba(0, 0, 0, 0.4)",
       },
     },
   },
