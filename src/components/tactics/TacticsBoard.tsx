@@ -125,6 +125,11 @@ export default function TacticsBoard({
 
   const svgRef = useRef<SVGSVGElement | null>(null);
   const animFrameRef = useRef<number | null>(null);
+  const dragOffsetRef = useRef<{ offsetX: number; offsetY: number; hasMoved: boolean }>({
+    offsetX: 0,
+    offsetY: 0,
+    hasMoved: false,
+  });
 
   // Setup animated playback loop
   useEffect(() => {
@@ -178,19 +183,31 @@ export default function TacticsBoard({
     };
   });
 
-  // SVG Normalized Coordinate Transformer (1000 x 700)
+  // SVG Normalized Coordinate Transformer (1000 x 700 viewBox)
+  // Strictly uses getBoundingClientRect to ensure 100% deterministic screen-to-viewBox projection
   const getSvgCoordinates = (clientX: number, clientY: number): { x: number; y: number } => {
     const svg = svgRef.current;
     if (!svg) return { x: 500, y: 350 };
-    const pt = svg.createSVGPoint();
-    pt.x = clientX;
-    pt.y = clientY;
-    const ctm = svg.getScreenCTM();
-    if (!ctm) return { x: 500, y: 350 };
-    const local = pt.matrixTransform(ctm.inverse());
+
+    const rect = svg.getBoundingClientRect();
+    if (!rect || rect.width <= 0 || rect.height <= 0) {
+      return { x: 500, y: 350 };
+    }
+
+    const relX = clientX - rect.left;
+    const relY = clientY - rect.top;
+
+    const x = (relX / rect.width) * 1000;
+    const y = (relY / rect.height) * 700;
+
+    if (!Number.isFinite(x) || !Number.isFinite(y)) {
+      return { x: 500, y: 350 };
+    }
+
+    // Keep tokens safely inside the pitch boundary
     return {
-      x: Math.round(Math.max(15, Math.min(985, local.x))),
-      y: Math.round(Math.max(15, Math.min(685, local.y))),
+      x: Math.round(Math.max(25, Math.min(975, x))),
+      y: Math.round(Math.max(25, Math.min(675, y))),
     };
   };
 
@@ -212,36 +229,50 @@ export default function TacticsBoard({
 
   // ================= POINTER / TOUCH GESTURE HANDLERS =================
 
+  // Direct grab on a tactical token (player, opponent, ball, cone, text)
+  const handleTokenPointerDown = (token: TacticToken, e: React.PointerEvent) => {
+    if (isPlaying) return;
+    e.stopPropagation();
+
+    // In ERASE mode: immediately remove clicked token
+    if (activeTool === "ERASE") {
+      const remaining = currentPhase.tokens.filter((t) => t.id !== token.id);
+      commitPhaseUpdate(remaining, currentPhase.trajectories || []);
+      if (selectedTokenId === token.id) setSelectedTokenId(null);
+      return;
+    }
+
+    const coords = getSvgCoordinates(e.clientX, e.clientY);
+    // Record exact click offset to prevent token jumping or snapping to cursor center
+    dragOffsetRef.current = {
+      offsetX: coords.x - token.x,
+      offsetY: coords.y - token.y,
+      hasMoved: false,
+    };
+
+    try {
+      svgRef.current?.setPointerCapture(e.pointerId);
+    } catch {}
+
+    setDraggingTokenId(token.id);
+    setSelectedTokenId(token.id);
+  };
+
+  // Pitch canvas click handler (handles empty space and drawing tools)
   const handlePointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
     if (isPlaying) return;
     const coords = getSvgCoordinates(e.clientX, e.clientY);
 
-    // 1. Check if clicked directly on an existing token
+    // 1. Fallback token detection if user clicked slightly outside token element
     const clickedToken = currentPhase.tokens.find(
-      (t) => Math.hypot(t.x - coords.x, t.y - coords.y) <= 32
+      (t) => Math.hypot(t.x - coords.x, t.y - coords.y) <= 24
     );
-
-    // ERASE mode: delete token
-    if (activeTool === "ERASE") {
-      if (clickedToken) {
-        const remaining = currentPhase.tokens.filter((t) => t.id !== clickedToken.id);
-        commitPhaseUpdate(remaining, currentPhase.trajectories || []);
-        if (selectedTokenId === clickedToken.id) setSelectedTokenId(null);
-      }
-      return;
-    }
-
-    // CRITICAL: Any touch/click on an existing token ALWAYS starts dragging that token!
     if (clickedToken) {
-      try {
-        e.currentTarget.setPointerCapture(e.pointerId);
-      } catch {}
-      setDraggingTokenId(clickedToken.id);
-      setSelectedTokenId(clickedToken.id);
+      handleTokenPointerDown(clickedToken, e);
       return;
     }
 
-    // 2. Clicked on EMPTY space:
+    // 2. Clicked on empty pitch: deselect active token
     setSelectedTokenId(null);
 
     // Text tool: prompt for label
@@ -287,9 +318,25 @@ export default function TacticsBoard({
     const coords = getSvgCoordinates(e.clientX, e.clientY);
 
     if (draggingTokenId) {
-      // Fluid 60fps dragging of selected token
+      const targetToken = currentPhase.tokens.find((t) => t.id === draggingTokenId);
+      if (!targetToken) return;
+
+      const targetX = Math.round(
+        Math.max(25, Math.min(975, coords.x - dragOffsetRef.current.offsetX))
+      );
+      const targetY = Math.round(
+        Math.max(25, Math.min(675, coords.y - dragOffsetRef.current.offsetY))
+      );
+
+      // Deadzone check: require at least 3px delta before altering position (prevents click twitching)
+      if (!dragOffsetRef.current.hasMoved && Math.hypot(targetX - targetToken.x, targetY - targetToken.y) < 3) {
+        return;
+      }
+      dragOffsetRef.current.hasMoved = true;
+
+      // Smooth 60fps local position update
       const updatedTokens = currentPhase.tokens.map((t) =>
-        t.id === draggingTokenId ? { ...t, x: coords.x, y: coords.y } : t
+        t.id === draggingTokenId ? { ...t, x: targetX, y: targetY } : t
       );
       const updatedPhases = phases.map((p, idx) =>
         idx === currentPhaseIdx ? { ...p, tokens: updatedTokens } : p
@@ -314,8 +361,12 @@ export default function TacticsBoard({
     } catch {}
 
     if (draggingTokenId) {
+      const moved = dragOffsetRef.current.hasMoved;
       setDraggingTokenId(null);
-      if (onUpdateTactic) {
+      dragOffsetRef.current.hasMoved = false;
+
+      // Only broadcast update if the token was actually dragged
+      if (moved && onUpdateTactic) {
         onUpdateTactic({
           ...tactic,
           phases,
@@ -450,24 +501,29 @@ export default function TacticsBoard({
       ];
     } else if (formationKey === "VOLLEYBALL_5_1") {
       newTokens = [
-        { id: "v1", type: "PLAYER", label: "二传", jerseyNumber: 1, position: "SET", x: 620, y: 260 },
-        { id: "v2", type: "PLAYER", label: "主攻", jerseyNumber: 4, position: "OH", x: 680, y: 160 },
-        { id: "v3", type: "PLAYER", label: "副攻", jerseyNumber: 3, position: "MB", x: 680, y: 350 },
-        { id: "v4", type: "PLAYER", label: "接应", jerseyNumber: 2, position: "OPP", x: 680, y: 540 },
-        { id: "v5", type: "PLAYER", label: "自由人", jerseyNumber: 5, position: "LIB", x: 280, y: 200 },
-        { id: "v6", type: "PLAYER", label: "后排", jerseyNumber: 6, position: "OH", x: 280, y: 500 },
-        { id: "ball", type: "BALL", label: "🏐", x: 630, y: 280 },
+        { id: "v1", type: "PLAYER", label: "二传", jerseyNumber: 1, position: "SET", x: 440, y: 500 },
+        { id: "v2", type: "PLAYER", label: "主攻", jerseyNumber: 4, position: "OH", x: 420, y: 180 },
+        { id: "v3", type: "PLAYER", label: "副攻", jerseyNumber: 3, position: "MB", x: 420, y: 350 },
+        { id: "v4", type: "PLAYER", label: "接应", jerseyNumber: 2, position: "OPP", x: 220, y: 500 },
+        { id: "v5", type: "PLAYER", label: "自由人", jerseyNumber: 5, position: "LIB", x: 220, y: 180 },
+        { id: "v6", type: "PLAYER", label: "后排主攻", jerseyNumber: 6, position: "OH", x: 220, y: 350 },
+        { id: "ball", type: "BALL", label: "🏐", x: 440, y: 460 },
+        { id: "opp1", type: "OPPONENT", label: "X1", x: 560, y: 260 },
+        { id: "opp2", type: "OPPONENT", label: "X2", x: 560, y: 440 },
       ];
     } else if (formationKey === "BASKETBALL_1_2_2") {
       newTokens = [
-        { id: "b1", type: "PLAYER", label: "控卫", jerseyNumber: 1, position: "PG", x: 300, y: 350 },
-        { id: "b2", type: "PLAYER", label: "分卫", jerseyNumber: 2, position: "SG", x: 460, y: 180 },
-        { id: "b3", type: "PLAYER", label: "小前", jerseyNumber: 3, position: "SF", x: 460, y: 520 },
-        { id: "b4", type: "PLAYER", label: "大前", jerseyNumber: 4, position: "PF", x: 700, y: 240 },
-        { id: "b5", type: "PLAYER", label: "中锋", jerseyNumber: 5, position: "C", x: 760, y: 350 },
-        { id: "ball", type: "BALL", label: "🏀", x: 330, y: 350 },
-        { id: "opp1", type: "OPPONENT", label: "X1", x: 360, y: 350 },
-        { id: "opp2", type: "OPPONENT", label: "X2", x: 720, y: 350 },
+        { id: "b1", type: "PLAYER", label: "控卫", jerseyNumber: 1, position: "PG", x: 540, y: 350 },
+        { id: "b2", type: "PLAYER", label: "分卫", jerseyNumber: 2, position: "SG", x: 660, y: 180 },
+        { id: "b3", type: "PLAYER", label: "小前", jerseyNumber: 3, position: "SF", x: 660, y: 520 },
+        { id: "b4", type: "PLAYER", label: "大前", jerseyNumber: 4, position: "PF", x: 780, y: 230 },
+        { id: "b5", type: "PLAYER", label: "中锋", jerseyNumber: 5, position: "C", x: 820, y: 350 },
+        { id: "ball", type: "BALL", label: "🏀", x: 560, y: 350 },
+        { id: "opp1", type: "OPPONENT", label: "X1", x: 600, y: 350 },
+        { id: "opp2", type: "OPPONENT", label: "X2", x: 700, y: 200 },
+        { id: "opp3", type: "OPPONENT", label: "X3", x: 700, y: 500 },
+        { id: "opp4", type: "OPPONENT", label: "X4", x: 800, y: 270 },
+        { id: "opp5", type: "OPPONENT", label: "X5", x: 840, y: 370 },
       ];
     }
 
@@ -1074,14 +1130,8 @@ export default function TacticsBoard({
                 <g
                   key={token.id}
                   transform={`translate(${token.x}, ${token.y})`}
+                  onPointerDown={(e) => handleTokenPointerDown(token, e)}
                   className="cursor-grab active:cursor-grabbing"
-                  onClick={(e) => {
-                    if (activeTool === "ERASE") {
-                      e.stopPropagation();
-                      const remaining = currentPhase.tokens.filter((t) => t.id !== token.id);
-                      commitPhaseUpdate(remaining, currentPhase.trajectories || []);
-                    }
-                  }}
                 >
                   <rect
                     x={-textWidth / 2}
@@ -1118,6 +1168,7 @@ export default function TacticsBoard({
                 <g
                   key={token.id}
                   transform={`translate(${token.x}, ${token.y})`}
+                  onPointerDown={(e) => handleTokenPointerDown(token, e)}
                   className="cursor-grab active:cursor-grabbing"
                 >
                   <circle cx="0" cy="0" r="16" fill="#000000" fillOpacity="0.5" />
@@ -1142,6 +1193,7 @@ export default function TacticsBoard({
                 <g
                   key={token.id}
                   transform={`translate(${token.x}, ${token.y})`}
+                  onPointerDown={(e) => handleTokenPointerDown(token, e)}
                   className="cursor-grab active:cursor-grabbing"
                 >
                   <polygon
@@ -1161,6 +1213,7 @@ export default function TacticsBoard({
                 <g
                   key={token.id}
                   transform={`translate(${token.x}, ${token.y})`}
+                  onPointerDown={(e) => handleTokenPointerDown(token, e)}
                   className="cursor-grab active:cursor-grabbing"
                 >
                   <circle cx="0" cy="0" r="20" fill="#000000" fillOpacity="0.4" />
@@ -1187,6 +1240,7 @@ export default function TacticsBoard({
               <g
                 key={token.id}
                 transform={`translate(${token.x}, ${token.y})`}
+                onPointerDown={(e) => handleTokenPointerDown(token, e)}
                 className={`cursor-grab active:cursor-grabbing transition-transform duration-100 ${
                   isSelected ? "scale-110" : ""
                 }`}

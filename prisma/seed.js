@@ -4,14 +4,13 @@ const bcrypt = require("bcryptjs");
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log("🌱 Starting seed...");
+  console.log("🌱 Starting clean seed (No fabricated names, official coaching staff only)...");
 
   // 1. Password hashes
   const adminPass = await bcrypt.hash("admin123", 10);
   const coachPass = await bcrypt.hash("coach123", 10);
-  const playerPass = await bcrypt.hash("player123", 10);
 
-  // 2. Clear old data cleanly
+  // 2. Clear old data cleanly in dependency order
   await prisma.systemNotification.deleteMany();
   await prisma.debriefRecipient.deleteMany();
   await prisma.debrief.deleteMany();
@@ -27,26 +26,26 @@ async function main() {
   await prisma.coachAssignment.deleteMany();
   await prisma.user.deleteMany();
 
-  // 3. Create Admin
+  // 3. Create Admin (Athletic Director - Strictly official designation, no invented human names)
   const admin = await prisma.user.create({
     data: {
       username: "admin",
       passwordHash: adminPass,
       role: "ADMIN",
-      nameEn: "Director Alexander Vance",
-      nameZh: "亚历山大·凡斯 总监",
+      nameEn: "Athletic Director",
+      nameZh: "体育总监",
       avatarUrl: "/assets/crests/hall-of-fame-crest.svg",
     },
   });
 
-  // 4. Create Coaches
+  // 4. Create Coaches (Direct standard role usernames: football, volleyball, basketball)
   const coachFootball = await prisma.user.create({
     data: {
       username: "football",
       passwordHash: coachPass,
       role: "COACH",
-      nameEn: "Coach Marcus Evans",
-      nameZh: "马库斯·埃文斯 教练",
+      nameEn: "Football Head Coach",
+      nameZh: "足球主教练",
       avatarUrl: "/assets/crests/nkcs-football-crest.svg",
       coachAssignments: {
         create: [{ sport: "FOOTBALL" }],
@@ -59,8 +58,8 @@ async function main() {
       username: "volleyball",
       passwordHash: coachPass,
       role: "COACH",
-      nameEn: "Coach Kenji Takahashi",
-      nameZh: "高桥健司 教练",
+      nameEn: "Volleyball Head Coach",
+      nameZh: "排球主教练",
       avatarUrl: "/assets/players/coach_volleyball.png",
       coachAssignments: {
         create: [{ sport: "VOLLEYBALL" }],
@@ -73,8 +72,8 @@ async function main() {
       username: "basketball",
       passwordHash: coachPass,
       role: "COACH",
-      nameEn: "Coach David Sterling",
-      nameZh: "大卫·斯特林 教练",
+      nameEn: "Basketball Head Coach",
+      nameZh: "篮球主教练",
       avatarUrl: "/assets/players/coach_basketball.png",
       coachAssignments: {
         create: [{ sport: "BASKETBALL" }],
@@ -82,309 +81,12 @@ async function main() {
     },
   });
 
-  // 5. Create Multi-sport Athlete (Zhang Wei - Football & Volleyball)
-  const zhangWei = await prisma.user.create({
-    data: {
-      username: "zhangwei",
-      passwordHash: playerPass,
-      role: "PLAYER",
-      nameEn: "Zhang Wei",
-      nameZh: "张伟",
-      avatarUrl: "/assets/players/zhangwei.png",
-      playerProfiles: {
-        create: [
-          {
-            sport: "FOOTBALL",
-            jerseyNumber: 4,
-            primaryPosition: "CB",
-            secondaryPositions: JSON.stringify(["CDM", "RB"]),
-            positionGroup: "Backline (护卫组)",
-            honors: "2024 校队年度 MVP · 铁血后防领袖",
-            isCaptain: true,
-            isViceCaptain: false,
-            isRetired: false,
-            photoUrl: "/assets/players/zhangwei.png",
-            xpPoints: 340,
-            cardTier: "SILVER",
-          },
-          {
-            sport: "VOLLEYBALL",
-            jerseyNumber: 10,
-            primaryPosition: "OH",
-            secondaryPositions: JSON.stringify(["OPP"]),
-            positionGroup: "Attackers (主攻组)",
-            honors: "最佳主攻手 · 强力后排跳发",
-            isCaptain: false,
-            isViceCaptain: true,
-            isRetired: false,
-            photoUrl: "/assets/players/zhangwei.png",
-            xpPoints: 180,
-            cardTier: "BRONZE",
-          },
-        ],
-      },
-    },
-  });
+  // NOTE: STRICTLY ZERO FABRICATED STUDENT PROFILES CREATED.
+  // User instruction: "请不要再自己创建各种名字了。现在先不要创建队员账号，目前里面没有任何学员，不要凭空捏造人物、名字或奇怪的信息。"
 
-  // 6. Create Football Hall of Fame Legend (Song Jia - Retired 2023)
-  const songJia = await prisma.user.create({
-    data: {
-      username: "songjia",
-      passwordHash: playerPass,
-      role: "PLAYER",
-      nameEn: "Song Jia",
-      nameZh: "宋嘉",
-      avatarUrl: "/assets/players/songjia.png",
-      playerProfiles: {
-        create: [
-          {
-            sport: "FOOTBALL",
-            jerseyNumber: 10,
-            primaryPosition: "ST",
-            secondaryPositions: JSON.stringify(["CAM"]),
-            positionGroup: "Strikers (终结组)",
-            honors: "终身荣誉队长 · 创校历史最佳射手 · 2023 冠军杯 MVP",
-            isCaptain: true,
-            isRetired: true,
-            alumniTier: "HALL_OF_FAME",
-            graduationYear: 2023,
-            photoUrl: "/assets/players/songjia.png",
-            xpPoints: 1200,
-            cardTier: "ICON",
-          },
-        ],
-      },
-    },
-  });
-
-  // 7. Create Football Regular Alumni (Yu Xin - Retired 2024)
-  const yuXin = await prisma.user.create({
-    data: {
-      username: "yuxin",
-      passwordHash: playerPass,
-      role: "PLAYER",
-      nameEn: "Yu Xin",
-      nameZh: "余鑫",
-      avatarUrl: "/assets/players/yuxin.png",
-      playerProfiles: {
-        create: [
-          {
-            sport: "FOOTBALL",
-            jerseyNumber: 6,
-            primaryPosition: "CDM",
-            secondaryPositions: JSON.stringify(["CM"]),
-            positionGroup: "Midfield (中场组)",
-            honors: "2024 届中场铁闸 · 战术纪律标兵",
-            isRetired: true,
-            alumniTier: "ALUMNI_REGULAR",
-            graduationYear: 2024,
-            photoUrl: "/assets/players/yuxin.png",
-            xpPoints: 650,
-            cardTier: "GOLD",
-          },
-        ],
-      },
-    },
-  });
-
-  // 8. Football Active Squad: Goalkeeper Chen Kai & Striker Li Hang
-  await prisma.user.create({
-    data: {
-      username: "chenkai",
-      passwordHash: playerPass,
-      role: "PLAYER",
-      nameEn: "Chen Kai",
-      nameZh: "陈凯",
-      avatarUrl: "/assets/players/chenkai.png",
-      playerProfiles: {
-        create: [
-          {
-            sport: "FOOTBALL",
-            jerseyNumber: 1,
-            primaryPosition: "GK",
-            positionGroup: "Goalkeepers (门将组)",
-            honors: "金手套奖 · 现役副队长 · 零封纪录保持者",
-            isViceCaptain: true,
-            isRetired: false,
-            photoUrl: "/assets/players/chenkai.png",
-            xpPoints: 290,
-            cardTier: "SILVER",
-          },
-        ],
-      },
-    },
-  });
-
-  await prisma.user.create({
-    data: {
-      username: "lihang",
-      passwordHash: playerPass,
-      role: "PLAYER",
-      nameEn: "Li Hang",
-      nameZh: "李航",
-      avatarUrl: "/assets/players/lihang.png",
-      playerProfiles: {
-        create: [
-          {
-            sport: "FOOTBALL",
-            jerseyNumber: 9,
-            primaryPosition: "ST",
-            positionGroup: "Strikers (终结组)",
-            honors: "头号锋线尖刀 · 场均进球 1.4 · 速度突破手",
-            isRetired: false,
-            photoUrl: "/assets/players/lihang.png",
-            xpPoints: 220,
-            cardTier: "BRONZE",
-          },
-        ],
-      },
-    },
-  });
-
-  // 9. Volleyball: Captain Tian Yu & Legend Han Yang
-  await prisma.user.create({
-    data: {
-      username: "tianyu",
-      passwordHash: playerPass,
-      role: "PLAYER",
-      nameEn: "Tian Yu",
-      nameZh: "田宇",
-      avatarUrl: "/assets/players/tianyu.png",
-      playerProfiles: {
-        create: [
-          {
-            sport: "VOLLEYBALL",
-            jerseyNumber: 7,
-            primaryPosition: "SETTER",
-            positionGroup: "Setters (组织组)",
-            honors: "校队队长 · 战术大脑 · 最佳组织奖",
-            isCaptain: true,
-            isRetired: false,
-            photoUrl: "/assets/players/tianyu.png",
-            xpPoints: 410,
-            cardTier: "SILVER",
-          },
-        ],
-      },
-    },
-  });
-
-  await prisma.user.create({
-    data: {
-      username: "hanyang",
-      passwordHash: playerPass,
-      role: "PLAYER",
-      nameEn: "Han Yang",
-      nameZh: "韩阳",
-      avatarUrl: "/assets/players/hanyang.png",
-      playerProfiles: {
-        create: [
-          {
-            sport: "VOLLEYBALL",
-            jerseyNumber: 1,
-            primaryPosition: "MB",
-            positionGroup: "Attackers (主攻组)",
-            honors: "终身名宿 · 传奇重炮主攻手 · 3 届省冠军金牌",
-            isCaptain: false,
-            isRetired: true,
-            alumniTier: "HALL_OF_FAME",
-            graduationYear: 2022,
-            photoUrl: "/assets/players/hanyang.png",
-            xpPoints: 1350,
-            cardTier: "ICON",
-          },
-        ],
-      },
-    },
-  });
-
-  // 10. Basketball: Captain Wang Chao, Center Zhao Peng, & Legend Wu Lei
-  await prisma.user.create({
-    data: {
-      username: "wangchao",
-      passwordHash: playerPass,
-      role: "PLAYER",
-      nameEn: "Wang Chao",
-      nameZh: "王超",
-      avatarUrl: "/assets/players/wangchao.png",
-      playerProfiles: {
-        create: [
-          {
-            sport: "BASKETBALL",
-            jerseyNumber: 3,
-            primaryPosition: "PG",
-            positionGroup: "Guards (后卫组)",
-            honors: "校队队长 · 全明星控球后卫 · 绝杀关键先生",
-            isCaptain: true,
-            isRetired: false,
-            photoUrl: "/assets/players/wangchao.png",
-            xpPoints: 520,
-            cardTier: "GOLD",
-          },
-        ],
-      },
-    },
-  });
-
-  await prisma.user.create({
-    data: {
-      username: "zhaopeng",
-      passwordHash: playerPass,
-      role: "PLAYER",
-      nameEn: "Zhao Peng",
-      nameZh: "赵鹏",
-      avatarUrl: "/assets/players/zhaopeng.png",
-      playerProfiles: {
-        create: [
-          {
-            sport: "BASKETBALL",
-            jerseyNumber: 15,
-            primaryPosition: "C",
-            positionGroup: "Bigs (内线组)",
-            honors: "禁区铁塔 · 场均 12 篮板 3.2 盖帽",
-            isCaptain: false,
-            isRetired: false,
-            photoUrl: "/assets/players/zhaopeng.png",
-            xpPoints: 310,
-            cardTier: "SILVER",
-          },
-        ],
-      },
-    },
-  });
-
-  await prisma.user.create({
-    data: {
-      username: "wulei",
-      passwordHash: playerPass,
-      role: "PLAYER",
-      nameEn: "Wu Lei",
-      nameZh: "武磊",
-      avatarUrl: "/assets/players/wulei.png",
-      playerProfiles: {
-        create: [
-          {
-            sport: "BASKETBALL",
-            jerseyNumber: 23,
-            primaryPosition: "SG",
-            positionGroup: "Guards (后卫组)",
-            honors: "创校历史得分王 · 2021 届终身名宿 · 单场 48 分纪录",
-            isCaptain: true,
-            isRetired: true,
-            alumniTier: "HALL_OF_FAME",
-            graduationYear: 2021,
-            photoUrl: "/assets/players/wulei.png",
-            xpPoints: 1500,
-            cardTier: "ICON",
-          },
-        ],
-      },
-    },
-  });
-
-  // 11. Initial Precision Training Plan with Drill Cards for Football
+  // 5. Training Plans with Drill Cards for Football, Volleyball, Basketball
   const today = new Date();
-  const footballPlan = await prisma.trainingPlan.create({
+  await prisma.trainingPlan.create({
     data: {
       sport: "FOOTBALL",
       trainingDate: today,
@@ -396,7 +98,7 @@ async function main() {
       contentEn:
         "Focus on immediate pressure within 5 seconds of turnover, rapid wide transition, and finishing inside the box.",
       contentZh:
-        "重点演练丢球后5秒就地压迫、弱侧迅速拉开传中、以及禁区内双鬼拍门包抄。",
+        "重点演练丢球后5秒就地压迫、弱侧迅速拉开传中、以及禁区内双点包抄。",
       tags: "高位逼抢, 边路套边, 快速反击",
       drills: {
         create: [
@@ -422,7 +124,7 @@ async function main() {
             category: "TACTICAL",
             durationMins: 25,
             setsAndReps: "3组 x 6分钟，组间间歇 90秒",
-            pitchSpecs: "25m x 20m 狭窄场地",
+            pitchSpecs: "25m x 20m 场地",
             playerCount: "4红 vs 4蓝 + 3黄（自由人）",
             diagramUrl: "/assets/drills/rondo-counter-press-4v2.svg",
             coachingCuesEn:
@@ -452,251 +154,17 @@ async function main() {
     },
   });
 
-  // 12. Seed Masterclass Tactics for Football, Volleyball, and Basketball
-  // Football Tactic: 4-3-3 High Counter-Press & Half-Space Overload
-  await prisma.tactic.create({
-    data: {
-      sport: "FOOTBALL",
-      titleZh: "4-3-3 肋部渗透与边后卫套边 (Half-Space Overload)",
-      titleEn: "4-3-3 Half-Space Penetration & Overlapping Wing Attack",
-      scenario: "阵地进攻 / 局部超载",
-      courtFormat: "11人制标准草坪",
-      tags: JSON.stringify(["4-3-3", "边路套边", "肋部穿插", "禁区终结"]),
-      descriptionZh:
-        "利用中场三角站位在对手肋部制造人数优势，边锋内切吸引防守中卫，边后卫高速套边下底传中，前点掩护后点包抄。",
-      descriptionEn:
-        "Overload the opponent's half-space with midfield triangles. The winger cuts inside to pin the center-back while the fullback makes a high-speed overlapping run to deliver a dangerous cutback cross.",
-      isFeatured: true,
-      creatorId: coachFootball.id,
-      phases: {
-        create: [
-          {
-            phaseIndex: 1,
-            titleZh: "阶段一：初始站位与中后场出球",
-            titleEn: "Phase 1: Initial Setup & Buildup",
-            notesZh: "门将与双中卫在后场形成稳固出球倒脚三角，边后卫拉开宽度，中前卫陈浩回撤接应。",
-            notesEn: "Goalkeeper and two center-backs form a stable build-up triangle. Fullbacks provide width while CDM drops to link play.",
-            tokensJson: JSON.stringify([
-              { id: "p1", type: "PLAYER", label: "王俊", jerseyNumber: 1, position: "GK", isCaptain: false, isRetired: false, alumniTier: null, x: 100, y: 350, dutyZh: "后场开球指挥，控制禁区出球角度", dutyEn: "Distribute calmly and organize defensive line" },
-              { id: "p2", type: "PLAYER", label: "张伟 (C)", jerseyNumber: 10, position: "CB", isCaptain: true, isRetired: false, alumniTier: null, x: 260, y: 240, dutyZh: "持球推进，观察对手左中卫压迫间隙", dutyEn: "Step out with ball, assess half-space passing lane" },
-              { id: "p3", type: "PLAYER", label: "李明 [名宿]", jerseyNumber: 4, position: "CB", isCaptain: false, isRetired: true, alumniTier: "HALL_OF_FAME", x: 260, y: 460, dutyZh: "拖后协防保护，随时防备对手快速反击", dutyEn: "Cover depth and provide sweeper security" },
-              { id: "p4", type: "PLAYER", label: "陈浩 [校友]", jerseyNumber: 6, position: "CDM", isCaptain: false, isRetired: true, alumniTier: "ALUMNI_REGULAR", x: 420, y: 350, dutyZh: "回撤形成出球支点，接球后快速转移弱侧", dutyEn: "Pivot presence, receive under pressure and switch" },
-              { id: "p5", type: "PLAYER", label: "刘峰", jerseyNumber: 9, position: "ST", isCaptain: false, isRetired: false, alumniTier: null, x: 740, y: 350, dutyZh: "压制对手双中卫，准备随时前插反越位", dutyEn: "Pin opposition center-backs on offside line" },
-              { id: "ball", type: "BALL", label: "Soccer Ball", jerseyNumber: 0, position: "BALL", isCaptain: false, isRetired: false, alumniTier: null, x: 275, y: 250, dutyZh: "皮球位于张伟脚下", dutyEn: "Possession with Zhang Wei" },
-              { id: "opp1", type: "OPPONENT", label: "X1", jerseyNumber: 0, position: "FW", isCaptain: false, isRetired: false, alumniTier: null, x: 380, y: 280, dutyZh: "对手前锋上前逼抢张伟", dutyEn: "Pressing front-man" },
-              { id: "opp2", type: "OPPONENT", label: "X2", jerseyNumber: 0, position: "DF", isCaptain: false, isRetired: false, alumniTier: null, x: 760, y: 330, dutyZh: "对手盯防中卫", dutyEn: "Marking striker" }
-            ]),
-            trajectoriesJson: JSON.stringify([
-              { id: "t1", type: "PASS", startX: 280, startY: 250, controlX: 350, controlY: 300, endX: 410, endY: 340, label: "精准斜传" },
-              { id: "t2", type: "RUN", startX: 420, startY: 350, controlX: 460, controlY: 320, endX: 520, endY: 260, label: "接应转身" }
-            ])
-          },
-          {
-            phaseIndex: 2,
-            titleZh: "阶段二：肋部穿透与边卫套边",
-            titleEn: "Phase 2: Half-Space Through-Ball & Overlap",
-            notesZh: "中场陈浩直塞送达肋部空当，边锋内切吸引防守，边后卫从外侧以最高速度套边插上。",
-            notesEn: "CDM delivers an incision pass into the half-space pocket. Winger cuts inside, creating wide corridor for fullback sprint.",
-            tokensJson: JSON.stringify([
-              { id: "p1", type: "PLAYER", label: "王俊", jerseyNumber: 1, position: "GK", isCaptain: false, isRetired: false, alumniTier: null, x: 120, y: 350, dutyZh: "门线前压，保持防线联系", dutyEn: "High starting position" },
-              { id: "p2", type: "PLAYER", label: "张伟 (C)", jerseyNumber: 10, position: "CB", isCaptain: true, isRetired: false, alumniTier: null, x: 450, y: 220, dutyZh: "前移至中线压迫，封锁防守反击路线", dutyEn: "Step up to halfway line" },
-              { id: "p3", type: "PLAYER", label: "李明 [名宿]", jerseyNumber: 4, position: "CB", isCaptain: false, isRetired: true, alumniTier: "HALL_OF_FAME", x: 380, y: 440, dutyZh: "在中后场保持纵深警戒", dutyEn: "Deep cover vigilance" },
-              { id: "p4", type: "PLAYER", label: "陈浩 [校友]", jerseyNumber: 6, position: "CDM", isCaptain: false, isRetired: true, alumniTier: "ALUMNI_REGULAR", x: 550, y: 310, dutyZh: "送出精妙手术刀直塞球", dutyEn: "Weight incision pass to wing" },
-              { id: "p5", type: "PLAYER", label: "刘峰", jerseyNumber: 9, position: "ST", isCaptain: false, isRetired: false, alumniTier: null, x: 790, y: 300, dutyZh: "斜插前点带走后卫，为后排拉扯空间", dutyEn: "Near-post diagonal drag run" },
-              { id: "ball", type: "BALL", label: "Soccer Ball", jerseyNumber: 0, position: "BALL", isCaptain: false, isRetired: false, alumniTier: null, x: 810, y: 160, dutyZh: "皮球传至边路底线深处", dutyEn: "Ball delivered into deep flank" },
-              { id: "opp1", type: "OPPONENT", label: "X1", jerseyNumber: 0, position: "FW", isCaptain: false, isRetired: false, alumniTier: null, x: 480, y: 300, dutyZh: "被晃过失位", dutyEn: "Bypassed press" },
-              { id: "opp2", type: "OPPONENT", label: "X2", jerseyNumber: 0, position: "DF", isCaptain: false, isRetired: false, alumniTier: null, x: 770, y: 280, dutyZh: "被前锋带离中路", dutyEn: "Dragged out by striker" }
-            ]),
-            trajectoriesJson: JSON.stringify([
-              { id: "t1", type: "PASS", startX: 550, startY: 310, controlX: 680, controlY: 220, endX: 800, endY: 165, label: "手术刀直塞" },
-              { id: "t2", type: "RUN", startX: 650, startY: 120, controlX: 740, controlY: 130, endX: 830, endY: 160, label: "高速套边突破" }
-            ])
-          },
-          {
-            phaseIndex: 3,
-            titleZh: "阶段三：倒三角传中与后插上终结",
-            titleEn: "Phase 3: Cutback Delivery & Box Finish",
-            notesZh: "边路下底后扣球倒三角回传，前点中锋吸引两名后卫，后插上的队长张伟在大禁区弧顶迎球劲射破门！",
-            notesEn: "Fullback reaches byline and delivers low cutback pass. Striker near-post dummy creates space for Captain Zhang Wei to smash home from edge of box!",
-            tokensJson: JSON.stringify([
-              { id: "p1", type: "PLAYER", label: "王俊", jerseyNumber: 1, position: "GK", isCaptain: false, isRetired: false, alumniTier: null, x: 150, y: 350, dutyZh: "大声呼喊提醒阵型平衡", dutyEn: "Vocal leadership from back" },
-              { id: "p2", type: "PLAYER", label: "张伟 (C)", jerseyNumber: 10, position: "CB", isCaptain: true, isRetired: false, alumniTier: null, x: 720, y: 340, dutyZh: "高速后插上包抄，迎球重炮轰门！", dutyEn: "Late run onto cutback, power strike on target!" },
-              { id: "p3", type: "PLAYER", label: "李明 [名宿]", jerseyNumber: 4, position: "CB", isCaptain: false, isRetired: true, alumniTier: "HALL_OF_FAME", x: 420, y: 370, dutyZh: "坐镇中后场指挥整体退防防线", dutyEn: "Hold defensive line shape" },
-              { id: "p4", type: "PLAYER", label: "陈浩 [校友]", jerseyNumber: 6, position: "CDM", isCaptain: false, isRetired: true, alumniTier: "ALUMNI_REGULAR", x: 620, y: 280, dutyZh: "保护二点球，防止解围反击", dutyEn: "Second ball protection" },
-              { id: "p5", type: "PLAYER", label: "刘峰", jerseyNumber: 9, position: "ST", isCaptain: false, isRetired: false, alumniTier: null, x: 860, y: 310, dutyZh: "前点强力吸引防守并虚晃漏球", dutyEn: "Near post dummy to clear lane" },
-              { id: "ball", type: "BALL", label: "Soccer Ball", jerseyNumber: 0, position: "BALL", isCaptain: false, isRetired: false, alumniTier: null, x: 735, y: 340, dutyZh: "皮球入网球门死角", dutyEn: "Ball flies into top corner!" },
-              { id: "opp1", type: "OPPONENT", label: "X1", jerseyNumber: 0, position: "FW", isCaptain: false, isRetired: false, alumniTier: null, x: 550, y: 330, dutyZh: "无力回防", dutyEn: "Stranded opponent" },
-              { id: "opp2", type: "OPPONENT", label: "X2", jerseyNumber: 0, position: "DF", isCaptain: false, isRetired: false, alumniTier: null, x: 880, y: 290, dutyZh: "被前点晃倒", dutyEn: "Beaten defender" }
-            ]),
-            trajectoriesJson: JSON.stringify([
-              { id: "t1", type: "PASS", startX: 840, startY: 170, controlX: 790, controlY: 260, endX: 730, endY: 330, label: "精准倒三角" },
-              { id: "t2", type: "RUN", startX: 730, startY: 330, controlX: 830, controlY: 345, endX: 920, endY: 350, label: "重炮直挂死角" }
-            ])
-          }
-        ]
-      }
-    }
-  });
-
-  // Volleyball Tactic: 5-1 Rotation 1 Pipe & Slide Attack
-  await prisma.tactic.create({
-    data: {
-      sport: "VOLLEYBALL",
-      titleZh: "5-1 轮转一号位快攻与后排梯次进攻 (Pipe & Slide Attack)",
-      titleEn: "5-1 System: Rotation 1 Slide Decoy & Back-Row Pipe Spike",
-      scenario: "一攻体系 / 战术掩护",
-      courtFormat: "6人制室内排球场",
-      tags: JSON.stringify(["5-1轮转", "一号位", "背飞", "后排Pipe进攻"]),
-      descriptionZh:
-        "在5-1阵型一号位轮转中，二传孙凯插上分配球，副攻手向2号位做高速背飞佯攻，吸引对手双人拦网，后排主攻手在6号位3米线后跃起实施Pipe强攻重扣！",
-      descriptionEn:
-        "In Rotation 1, setter Sun Kai penetrates to deliver the ball. Middle blocker executes an aggressive slide approach to zone 2 dragging two blockers, opening the pipe lane for a thundering back-row spike from zone 6.",
-      isFeatured: true,
-      creatorId: coachVolleyball.id,
-      phases: {
-        create: [
-          {
-            phaseIndex: 1,
-            titleZh: "阶段一：W型稳定接发球与二传插上",
-            titleEn: "Phase 1: W-Formation Receive & Setter Penetration",
-            notesZh: "接应队员后撤保护，自由人与主攻手组成坚固接发球弧线，二传孙凯从一号位启动插上网前。",
-            notesEn: "Libero and outside hitters stabilize serve reception in W formation. Setter Sun Kai starts penetration sprint from zone 1.",
-            tokensJson: JSON.stringify([
-              { id: "v1", type: "PLAYER", label: "孙凯 (C)", jerseyNumber: 1, position: "SETTER", isCaptain: true, isRetired: false, alumniTier: null, x: 280, y: 480, dutyZh: "一号位准备插上网前2-3号位之间分配一传", dutyEn: "Penetrate from zone 1 to target setting zone" },
-              { id: "v2", type: "PLAYER", label: "张伟", jerseyNumber: 10, position: "OH", isCaptain: false, isRetired: false, alumniTier: null, x: 260, y: 220, dutyZh: "主攻手后撤准备接一传并观察防守空当", dutyEn: "Outside hitter pass platform and ready for pipe" },
-              { id: "v3", type: "PLAYER", label: "李明 [名宿]", jerseyNumber: 4, position: "MB", isCaptain: false, isRetired: true, alumniTier: "HALL_OF_FAME", x: 400, y: 350, dutyZh: "副攻手网前待命，观察对方发球落点", dutyEn: "Middle blocker alert at net, tracking ball trajectory" },
-              { id: "ball", type: "BALL", label: "Volleyball", jerseyNumber: 0, position: "BALL", isCaptain: false, isRetired: false, alumniTier: null, x: 180, y: 260, dutyZh: "发球飞向张伟身前一传控制区", dutyEn: "Incoming serve targeted at pass zone" }
-            ]),
-            trajectoriesJson: JSON.stringify([
-              { id: "t1", type: "RUN", startX: 280, startY: 480, controlX: 380, controlY: 420, endX: 470, endY: 340, label: "二传插上网前" },
-              { id: "t2", type: "PASS", startX: 180, startY: 260, controlX: 320, controlY: 290, endX: 470, endY: 330, label: "完美一传起球" }
-            ])
-          },
-          {
-            phaseIndex: 2,
-            titleZh: "阶段二：副攻背飞佯攻与拦网牵制",
-            titleEn: "Phase 2: Middle Slide Decoy & Block Commitment",
-            notesZh: "二传孙凯起跳单手假传真吊，副攻李明向右侧2号位大范围跑动背飞，强力牵制对方主拦网手。",
-            notesEn: "Setter Sun Kai squares up at net. Middle blocker Li Ming runs a high-speed slide route behind setter to zone 2, drawing both blockers.",
-            tokensJson: JSON.stringify([
-              { id: "v1", type: "PLAYER", label: "孙凯 (C)", jerseyNumber: 1, position: "SETTER", isCaptain: true, isRetired: false, alumniTier: null, x: 480, y: 330, dutyZh: "起跳滞空背传或跳传后排", dutyEn: "Jump set, disguise trajectory to back row" },
-              { id: "v2", type: "PLAYER", label: "张伟", jerseyNumber: 10, position: "OH", isCaptain: false, isRetired: false, alumniTier: null, x: 340, y: 320, dutyZh: "从6号位后排开始发力助跑，3米线外踏跳", dutyEn: "Accelerate approach from zone 6 behind 3m line" },
-              { id: "v3", type: "PLAYER", label: "李明 [名宿]", jerseyNumber: 4, position: "MB", isCaptain: false, isRetired: true, alumniTier: "HALL_OF_FAME", x: 480, y: 180, dutyZh: "2号位背飞起跳佯攻，怒吼带走双人拦网", dutyEn: "Fast slide takeoff in zone 2 drawing double block" },
-              { id: "ball", type: "BALL", label: "Volleyball", jerseyNumber: 0, position: "BALL", isCaptain: false, isRetired: false, alumniTier: null, x: 480, y: 320, dutyZh: "球在二传手中正送往后排", dutyEn: "Set executed toward 3m line" },
-              { id: "opp1", type: "OPPONENT", label: "拦网X1", jerseyNumber: 0, position: "MB", isCaptain: false, isRetired: false, alumniTier: null, x: 530, y: 220, dutyZh: "被背飞佯攻吸引起跳", dutyEn: "Committed to slide block" },
-              { id: "opp2", type: "OPPONENT", label: "拦网X2", jerseyNumber: 0, position: "OH", isCaptain: false, isRetired: false, alumniTier: null, x: 530, y: 270, dutyZh: "跟随副攻往2号位移动", dutyEn: "Shifting right with slide" }
-            ]),
-            trajectoriesJson: JSON.stringify([
-              { id: "t1", type: "RUN", startX: 400, startY: 350, controlX: 440, controlY: 240, endX: 480, endY: 180, label: "高速背飞助跑" },
-              { id: "t2", type: "PASS", startX: 480, startY: 320, controlX: 440, controlY: 335, endX: 410, endY: 340, label: "平快后排立球" }
-            ])
-          },
-          {
-            phaseIndex: 3,
-            titleZh: "阶段三：后排立体强攻与超手重扣",
-            titleEn: "Phase 3: Back-Row Pipe Thunder Spike",
-            notesZh: "主攻手张伟在6号位3米线后雷霆拔地而起，利用拦网移位造成的巨大中路真空，以105km/h时速重扣得分！",
-            notesEn: "Outside hitter Zhang Wei elevates behind 3m attack line, unleashing a devastating 105km/h pipe spike into the vacated court seam!",
-            tokensJson: JSON.stringify([
-              { id: "v1", type: "PLAYER", label: "孙凯 (C)", jerseyNumber: 1, position: "SETTER", isCaptain: true, isRetired: false, alumniTier: null, x: 470, y: 340, dutyZh: "落地保护网前二点", dutyEn: "Cover tip and deflection" },
-              { id: "v2", type: "PLAYER", label: "张伟", jerseyNumber: 10, position: "OH", isCaptain: false, isRetired: false, alumniTier: null, x: 420, y: 340, dutyZh: "超高击球点重扣砸向对手深区中路！", dutyEn: "Apex contact spike deep into court split!" },
-              { id: "v3", type: "PLAYER", label: "李明 [名宿]", jerseyNumber: 4, position: "MB", isCaptain: false, isRetired: true, alumniTier: "HALL_OF_FAME", x: 480, y: 170, dutyZh: "完成佯攻掩护任务", dutyEn: "Decoy execution complete" },
-              { id: "ball", type: "BALL", label: "Volleyball", jerseyNumber: 0, position: "BALL", isCaptain: false, isRetired: false, alumniTier: null, x: 780, y: 350, dutyZh: "皮球砸在对手界内地板上直接得分！", dutyEn: "Direct kill point on hardwood!" }
-            ]),
-            trajectoriesJson: JSON.stringify([
-              { id: "t1", type: "RUN", startX: 420, startY: 340, controlX: 600, controlY: 345, endX: 780, endY: 350, label: "105km/h 暴扣落地" }
-            ])
-          }
-        ]
-      }
-    }
-  });
-
-  // Basketball Tactic: Horns Flare & Spanish Pick-and-Roll
-  await prisma.tactic.create({
-    data: {
-      sport: "BASKETBALL",
-      titleZh: "牛角高位战术与西班牙二次掩护 (Horns Spanish PnR)",
-      titleEn: "Horns Alignment & Spanish Double Back-Screen Pick-and-Roll",
-      scenario: "阵地半场 / 关键球战术",
-      courtFormat: "5v5全场硬木地板",
-      tags: JSON.stringify(["牛角Horns", "西班牙挡拆", "空接暴扣", "外线三分"]),
-      descriptionZh:
-        "高位牛角站位，杨帆控球呼叫中锋挡拆顺下，同时弱侧射手迅速上提给中锋防守人做背掩护，撕裂对手内线防守，既可空接终结，亦可分球底角大空位三分！",
-      descriptionEn:
-        "From high horns set, PG Yang Fan initiates PnR with center rolling hard. Crucially, the shooting guard sets a blind back-screen on the center's defender (Spanish action), creating an uncontested alley-oop or corner 3.",
-      isFeatured: true,
-      creatorId: coachBasketball.id,
-      phases: {
-        create: [
-          {
-            phaseIndex: 1,
-            titleZh: "阶段一：高位牛角站位与拉开空间",
-            titleEn: "Phase 1: High Horns Alignment & Spacing",
-            notesZh: "控卫杨帆运球过半场至弧顶，4号位与5号位双内线分别站在罚球线两端肘区(Elbows)，双侧底角彻底拉开。",
-            notesEn: "PG Yang Fan controls tempo at top of key. 4 & 5 position at high elbows, wing shooters clear to corners.",
-            tokensJson: JSON.stringify([
-              { id: "b1", type: "PLAYER", label: "杨帆 (C)", jerseyNumber: 23, position: "PG", isCaptain: true, isRetired: false, alumniTier: null, x: 500, y: 550, dutyZh: "弧顶稳妥控球，手势示意牛角西班牙战术启动", dutyEn: "Top of key command, signal Horns Spanish" },
-              { id: "b2", type: "PLAYER", label: "李明 [名宿]", jerseyNumber: 4, position: "C", isCaptain: false, isRetired: true, alumniTier: "HALL_OF_FAME", x: 420, y: 420, dutyZh: "左肘区站位，准备上前做扎实高质量挡拆", dutyEn: "Left elbow stance, ready to set solid on-ball screen" },
-              { id: "b3", type: "PLAYER", label: "张伟", jerseyNumber: 10, position: "SG", isCaptain: false, isRetired: false, alumniTier: null, x: 580, y: 420, dutyZh: "右肘区站位，准备空切实施背掩护", dutyEn: "Right elbow stance, preparing blind back-screen" },
-              { id: "ball", type: "BALL", label: "Basketball", jerseyNumber: 0, position: "BALL", isCaptain: false, isRetired: false, alumniTier: null, x: 510, y: 545, dutyZh: "杨帆双手护球", dutyEn: "Possession with PG Yang Fan" },
-              { id: "opp1", type: "OPPONENT", label: "对位D1", jerseyNumber: 0, position: "PG", isCaptain: false, isRetired: false, alumniTier: null, x: 500, y: 490, dutyZh: "贴身防守杨帆", dutyEn: "Guarding ball handler" }
-            ]),
-            trajectoriesJson: JSON.stringify([
-              { id: "t1", type: "RUN", startX: 420, startY: 420, controlX: 450, controlY: 470, endX: 490, endY: 500, label: "提上挡拆" }
-            ])
-          },
-          {
-            phaseIndex: 2,
-            titleZh: "阶段二：中锋顺下与西班牙盲区背掩护",
-            titleEn: "Phase 2: Center Roll & Spanish Blind Back-Screen",
-            notesZh: "5号位名宿李明结实挡住防守人，杨帆向右侧运球突破；与此同时，射手张伟闪电切入给李明的防守人设立背掩护！",
-            notesEn: "C Li Ming sets solid pick, Yang Fan attacks right. SG Zhang Wei sprints behind to set a devastating back-screen on Li Ming's recovery defender.",
-            tokensJson: JSON.stringify([
-              { id: "b1", type: "PLAYER", label: "杨帆 (C)", jerseyNumber: 23, position: "PG", isCaptain: true, isRetired: false, alumniTier: null, x: 620, y: 430, dutyZh: "吸引防守注意力，假投真传高抛球", dutyEn: "Drive right to draw defense, prepare lob" },
-              { id: "b2", type: "PLAYER", label: "李明 [名宿]", jerseyNumber: 4, position: "C", isCaptain: false, isRetired: true, alumniTier: "HALL_OF_FAME", x: 480, y: 310, dutyZh: "摆脱防守，全速直冲篮下篮筐！", dutyEn: "Slip free after back-screen, rim-run full speed" },
-              { id: "b3", type: "PLAYER", label: "张伟", jerseyNumber: 10, position: "SG", isCaptain: false, isRetired: false, alumniTier: null, x: 470, y: 360, dutyZh: "设立扎实背掩护挡死中锋防守人，随后向底角外弹", dutyEn: "Set rock-solid back-screen, pop to perimeter" },
-              { id: "ball", type: "BALL", label: "Basketball", jerseyNumber: 0, position: "BALL", isCaptain: false, isRetired: false, alumniTier: null, x: 630, y: 425, dutyZh: "杨帆双手高抛空接传球", dutyEn: "Yang Fan releases lofted alley-oop pass" }
-            ]),
-            trajectoriesJson: JSON.stringify([
-              { id: "t1", type: "RUN", startX: 480, startY: 360, controlX: 480, controlY: 280, endX: 490, endY: 210, label: "直插篮下" },
-              { id: "t2", type: "PASS", startX: 630, startY: 425, controlX: 570, controlY: 300, endX: 495, endY: 215, label: "精准空接吊球" },
-              { id: "t3", type: "RUN", startX: 470, startY: 360, controlX: 600, controlY: 380, endX: 780, endY: 420, label: "外弹底角三分线" }
-            ])
-          },
-          {
-            phaseIndex: 3,
-            titleZh: "阶段三：篮下空接暴扣或底角空位三分",
-            titleEn: "Phase 3: Thunder Alley-Oop or Flare Corner 3",
-            notesZh: "名宿李明在篮筐上方单手接球泰山压顶暴扣得分！若对手收缩包夹，杨帆则瞬间将球甩到底角大空位的张伟命中绝杀三分！",
-            notesEn: "Hall of Famer Li Ming slams down the high lob with authority! If weak-side defender helps, kick out to Zhang Wei for a wide-open corner three!",
-            tokensJson: JSON.stringify([
-              { id: "b1", type: "PLAYER", label: "杨帆 (C)", jerseyNumber: 23, position: "PG", isCaptain: true, isRetired: false, alumniTier: null, x: 610, y: 410, dutyZh: "送出精彩助攻，回防呼喊庆祝", dutyEn: "Masterful assist delivered" },
-              { id: "b2", type: "PLAYER", label: "李明 [名宿]", jerseyNumber: 4, position: "C", isCaptain: false, isRetired: true, alumniTier: "HALL_OF_FAME", x: 500, y: 200, dutyZh: "泰山压顶双手暴扣，篮筐轰鸣！", dutyEn: "Monstrous two-handed alley-oop slam!" },
-              { id: "b3", type: "PLAYER", label: "张伟", jerseyNumber: 10, position: "SG", isCaptain: false, isRetired: false, alumniTier: null, x: 810, y: 430, dutyZh: "底角三分大空位待命接球射门", dutyEn: "Wide-open corner 3pt option locked" },
-              { id: "ball", type: "BALL", label: "Basketball", jerseyNumber: 0, position: "BALL", isCaptain: false, isRetired: false, alumniTier: null, x: 500, y: 205, dutyZh: "皮球砸穿篮网", dutyEn: "Ball ripped through rim!" }
-            ]),
-            trajectoriesJson: JSON.stringify([
-              { id: "t1", type: "RUN", startX: 500, startY: 205, controlX: 500, controlY: 220, endX: 500, endY: 240, label: "暴扣挂框落地" }
-            ])
-          }
-        ]
-      }
-    }
-  });
-
-  // 13. Initial Training Plans for Volleyball and Basketball
   await prisma.trainingPlan.create({
     data: {
       sport: "VOLLEYBALL",
       trainingDate: today,
-      startTime: "16:00",
-      endTime: "18:00",
-      location: "室内排球馆 1号场地 (Indoor Volleyball Court 1)",
-      titleEn: "5-1 Transition Offense & Setting Connections",
-      titleZh: "5-1 进攻体系网前快变配合与防反起球",
+      startTime: "16:30",
+      endTime: "18:30",
+      location: "室内体育馆排球主场地 (Indoor Volleyball Court)",
+      titleEn: "5-1 System Quick Attacks & Pipe Spiking",
+      titleZh: "5-1 进攻战术系统快攻组织与后排立体进攻",
       contentEn:
-        "Focus on setter penetration speed, quick slide coordination in zone 2, and back-row pipe spike timing.",
+        "Train setter penetration speed from back row, middle slide decoy timings, and zone 6 back-row pipe precision.",
       contentZh:
         "重点演练二传从后排插上网前速度、副攻2号位背飞掩护、以及6号位3米线后排立体扣杀的起跳时机。",
       tags: "5-1轮转, 背飞快攻, 梯次强攻",
@@ -782,7 +250,239 @@ async function main() {
     },
   });
 
-  // 14. Seed Matches for Football, Volleyball, and Basketball
+  // 6. Seed Masterclass Tactics (STRICTLY POSITIONAL LABELS, NO FABRICATED NAMES)
+  // Football Tactic: 4-3-3 High Press & Half-Space Overload
+  await prisma.tactic.create({
+    data: {
+      sport: "FOOTBALL",
+      titleZh: "4-3-3 肋部渗透与边后卫套边体系",
+      titleEn: "4-3-3 Half-Space Penetration & Overlapping Wing Attack",
+      scenario: "阵地进攻 / 局部超载",
+      courtFormat: "11人制标准草坪",
+      tags: JSON.stringify(["4-3-3", "边路套边", "肋部穿插", "禁区终结"]),
+      descriptionZh:
+        "利用中场三角站位在对手肋部制造人数优势，边锋内切吸引防守中卫，边后卫高速套边下底传中，前点掩护后点包抄。",
+      descriptionEn:
+        "Overload the opponent's half-space with midfield triangles. The winger cuts inside to pin the center-back while the fullback makes a high-speed overlapping run to deliver a dangerous cutback cross.",
+      isFeatured: true,
+      creatorId: coachFootball.id,
+      phases: {
+        create: [
+          {
+            phaseIndex: 1,
+            titleZh: "阶段一：初始站位与中后场出球",
+            titleEn: "Phase 1: Initial Setup & Buildup",
+            notesZh: "门将与双中卫在后场形成稳固出球倒脚三角，边后卫拉开宽度，后腰回撤接应。",
+            notesEn: "Goalkeeper and two center-backs form a stable build-up triangle. Fullbacks provide width while CDM drops to link play.",
+            tokensJson: JSON.stringify([
+              { id: "p1", type: "PLAYER", label: "门将", jerseyNumber: 1, position: "GK", x: 100, y: 350, dutyZh: "后场开球指挥，控制禁区出球角度", dutyEn: "Distribute calmly and organize defensive line" },
+              { id: "p2", type: "PLAYER", label: "中卫", jerseyNumber: 4, position: "CB", x: 260, y: 240, dutyZh: "持球推进，观察对手压迫间隙", dutyEn: "Step out with ball, assess passing lane" },
+              { id: "p3", type: "PLAYER", label: "中卫", jerseyNumber: 5, position: "CB", x: 260, y: 460, dutyZh: "拖后协防保护，随时防备对手快速反击", dutyEn: "Cover depth and provide sweeper security" },
+              { id: "p4", type: "PLAYER", label: "后腰", jerseyNumber: 6, position: "CDM", x: 420, y: 350, dutyZh: "回撤形成出球支点，接球后快速转移弱侧", dutyEn: "Pivot presence, receive under pressure and switch" },
+              { id: "p5", type: "PLAYER", label: "前锋", jerseyNumber: 9, position: "ST", x: 740, y: 350, dutyZh: "压制对手双中卫，准备随时前插反越位", dutyEn: "Pin opposition center-backs on offside line" },
+              { id: "ball", type: "BALL", label: "⚽", jerseyNumber: 0, position: "BALL", x: 275, y: 250, dutyZh: "皮球位于持球中卫脚下", dutyEn: "Possession with center-back" },
+              { id: "opp1", type: "OPPONENT", label: "X1", jerseyNumber: 0, position: "FW", x: 380, y: 280, dutyZh: "对手前锋上前逼抢持球队员", dutyEn: "Pressing front-man" },
+              { id: "opp2", type: "OPPONENT", label: "X2", jerseyNumber: 0, position: "DF", x: 760, y: 330, dutyZh: "对手中卫贴身盯防前锋", dutyEn: "Marking striker" }
+            ]),
+            trajectoriesJson: JSON.stringify([
+              { id: "t1", type: "PASS", startX: 280, startY: 250, controlX: 350, controlY: 300, endX: 410, endY: 340, label: "精准斜传" },
+              { id: "t2", type: "RUN", startX: 420, startY: 350, controlX: 460, controlY: 320, endX: 520, endY: 260, label: "接应转身" }
+            ])
+          },
+          {
+            phaseIndex: 2,
+            titleZh: "阶段二：肋部穿透与边卫套边",
+            titleEn: "Phase 2: Half-Space Penetration & Overlap",
+            notesZh: "后腰直塞送达肋部空当，边锋内切吸引防守，边后卫从外侧以最高速度套边插上。",
+            notesEn: "CDM delivers an incision pass into the half-space pocket. Winger cuts inside, creating wide corridor for fullback sprint.",
+            tokensJson: JSON.stringify([
+              { id: "p1", type: "PLAYER", label: "门将", jerseyNumber: 1, position: "GK", x: 120, y: 350, dutyZh: "门线前压，保持防线联系", dutyEn: "High starting position" },
+              { id: "p2", type: "PLAYER", label: "中卫", jerseyNumber: 4, position: "CB", x: 450, y: 220, dutyZh: "前移至中线压迫，封锁防守反击路线", dutyEn: "Step up to halfway line" },
+              { id: "p3", type: "PLAYER", label: "中卫", jerseyNumber: 5, position: "CB", x: 380, y: 440, dutyZh: "在中后场保持纵深警戒", dutyEn: "Deep cover vigilance" },
+              { id: "p4", type: "PLAYER", label: "后腰", jerseyNumber: 6, position: "CDM", x: 540, y: 330, dutyZh: "送出手术刀直塞，随后前压保护弧顶", dutyEn: "Play through-ball then protect edge of box" },
+              { id: "p5", type: "PLAYER", label: "边卫", jerseyNumber: 2, position: "RB", x: 680, y: 550, dutyZh: "外侧极速下底，准备传中", dutyEn: "Drive to byline on overlap" },
+              { id: "ball", type: "BALL", label: "⚽", jerseyNumber: 0, position: "BALL", x: 555, y: 340, dutyZh: "皮球精准穿透肋部防线", dutyEn: "Ball travelling into half-space" },
+              { id: "opp1", type: "OPPONENT", label: "X1", jerseyNumber: 0, position: "FW", x: 440, y: 290, dutyZh: "回追逼抢", dutyEn: "Tracking back" },
+              { id: "opp2", type: "OPPONENT", label: "X2", jerseyNumber: 0, position: "DF", x: 660, y: 390, dutyZh: "防守重心被内切扯动", dutyEn: "Drawn out of shape" }
+            ]),
+            trajectoriesJson: JSON.stringify([
+              { id: "t3", type: "PASS", startX: 550, startY: 330, controlX: 620, controlY: 420, endX: 670, endY: 530, label: "致命直塞" },
+              { id: "t4", type: "RUN", startX: 680, startY: 550, controlX: 780, controlY: 560, endX: 860, endY: 560, label: "边卫狂飙下底" }
+            ])
+          },
+          {
+            phaseIndex: 3,
+            titleZh: "阶段三：倒三角传中与后插上终结",
+            titleEn: "Phase 3: Cutback Delivery & Box Finish",
+            notesZh: "边路到底线倒三角回传大禁区弧顶，中前卫后排高速插上迎球推射死角破门！",
+            notesEn: "Fullback reaches byline and cuts ball back towards top of penalty box. Oncoming midfielder arrives late to finish into corner!",
+            tokensJson: JSON.stringify([
+              { id: "p1", type: "PLAYER", label: "门将", jerseyNumber: 1, position: "GK", x: 180, y: 350, dutyZh: "站上大禁区线提供大范围出球策应", dutyEn: "High sweeper position" },
+              { id: "p2", type: "PLAYER", label: "中卫", jerseyNumber: 4, position: "CB", x: 580, y: 260, dutyZh: "前插至对方半场实施反抢压迫", dutyEn: "Counter-press on opposition half" },
+              { id: "p3", type: "PLAYER", label: "中卫", jerseyNumber: 5, position: "CB", x: 520, y: 450, dutyZh: "拖后锁死长传反击点", dutyEn: "Rest-defense anchor" },
+              { id: "p4", type: "PLAYER", label: "后插上", jerseyNumber: 8, position: "CM", x: 760, y: 350, dutyZh: "点球点前沿迎球爆射死角！", dutyEn: "First-time strike into corner!" },
+              { id: "p5", type: "PLAYER", label: "下底边卫", jerseyNumber: 2, position: "RB", x: 860, y: 560, dutyZh: "底线送出精准倒三角地面球", dutyEn: "Accurate low cutback delivery" },
+              { id: "ball", type: "BALL", label: "⚽", jerseyNumber: 0, position: "BALL", x: 775, y: 360, dutyZh: "球贴地急速滚向推射落点", dutyEn: "Ball cut back to shooting zone" },
+              { id: "opp1", type: "OPPONENT", label: "X1", jerseyNumber: 0, position: "DF", x: 800, y: 280, dutyZh: "被前点前锋带走", dutyEn: "Drawn to front post" },
+              { id: "opp2", type: "OPPONENT", label: "X2", jerseyNumber: 0, position: "GK", x: 920, y: 350, dutyZh: "对方门将扑救不及", dutyEn: "Beaten goalkeeper" }
+            ]),
+            trajectoriesJson: JSON.stringify([
+              { id: "t5", type: "PASS", startX: 860, startY: 550, controlX: 820, controlY: 450, endX: 770, endY: 360, label: "倒三角传中" },
+              { id: "t6", type: "RUN", startX: 620, startY: 350, controlX: 690, controlY: 350, endX: 755, endY: 350, label: "致命后插上" }
+            ])
+          }
+        ]
+      }
+    }
+  });
+
+  // Volleyball Tactic: 5-1 Rotation
+  await prisma.tactic.create({
+    data: {
+      sport: "VOLLEYBALL",
+      titleZh: "5-1 进攻体系二传插上与副攻背飞佯攻",
+      titleEn: "5-1 System Setter Penetration & Slide Decoy Attack",
+      scenario: "一攻接发球转换 / 战术快攻",
+      courtFormat: "6人制室内排球场",
+      tags: JSON.stringify(["5-1轮转", "背飞", "Pipe立体进攻", "快攻"]),
+      descriptionZh:
+        "二传从后排1号位高速插上网前2号位组织，副攻2号位背飞佯攻带走双人拦网，主攻6号位3米线后排立体扣杀得分。",
+      descriptionEn:
+        "Setter penetrates from back row to zone 2. Middle blocker runs slide approach to commit double block, opening back-row pipe spike in zone 6.",
+      isFeatured: true,
+      creatorId: coachVolleyball.id,
+      phases: {
+        create: [
+          {
+            phaseIndex: 1,
+            titleZh: "阶段一：W型稳定接发球与二传插上",
+            titleEn: "Phase 1: W Serve Receive & Setter Run",
+            notesZh: "接发球阵型展开，二传迅速插上网前2号位组织进攻。",
+            notesEn: "Receive formation absorbs serve, setter accelerates into target setting zone 2.",
+            tokensJson: JSON.stringify([
+              { id: "v1", type: "PLAYER", label: "二传", jerseyNumber: 1, position: "SET", x: 440, y: 500, dutyZh: "准备启动插上网前2号位", dutyEn: "Anticipate pass to zone 2" },
+              { id: "v2", type: "PLAYER", label: "主攻", jerseyNumber: 4, position: "OH", x: 420, y: 180, dutyZh: "前排左侧待命", dutyEn: "Outside hitter ready at net" },
+              { id: "v3", type: "PLAYER", label: "副攻", jerseyNumber: 3, position: "MB", x: 420, y: 350, dutyZh: "副攻手网前待命", dutyEn: "Middle blocker alert at net" },
+              { id: "v4", type: "PLAYER", label: "自由人", jerseyNumber: 5, position: "LIB", x: 220, y: 180, dutyZh: "后排精准接一传", dutyEn: "Primary passer on receive" },
+              { id: "v5", type: "PLAYER", label: "后排主攻", jerseyNumber: 6, position: "OH", x: 220, y: 350, dutyZh: "后排接发球防守", dutyEn: "Back-row receiver" },
+              { id: "v6", type: "PLAYER", label: "接应", jerseyNumber: 2, position: "OPP", x: 220, y: 500, dutyZh: "后排右侧保护", dutyEn: "Right back defender" },
+              { id: "ball", type: "BALL", label: "🏐", jerseyNumber: 0, position: "BALL", x: 300, y: 350, dutyZh: "接发球向网前高弧度送出", dutyEn: "Serve receive targeted to setter" }
+            ]),
+            trajectoriesJson: JSON.stringify([
+              { id: "vt1", type: "PASS", startX: 300, startY: 350, controlX: 380, controlY: 420, endX: 430, endY: 480, label: "精准一传" }
+            ])
+          },
+          {
+            phaseIndex: 2,
+            titleZh: "阶段二：副攻背飞佯攻与拦网牵制",
+            titleEn: "Phase 2: Middle Slide Decoy & Block Shift",
+            notesZh: "二传网前组织，副攻大范围跑动背飞，强力牵制对方主拦网手。",
+            notesEn: "Setter feints dump, middle slide pulls opposition blockers toward antenna.",
+            tokensJson: JSON.stringify([
+              { id: "v1", type: "PLAYER", label: "二传", jerseyNumber: 1, position: "SET", x: 440, y: 480, dutyZh: "跃起虚晃，双手背传中央高空", dutyEn: "Jump set deceptively to pipe line" },
+              { id: "v2", type: "PLAYER", label: "后排强攻", jerseyNumber: 6, position: "OH", x: 340, y: 350, dutyZh: "从6号位后排开始发力助跑，3米线外踏跳", dutyEn: "Accelerate approach behind 3m line" },
+              { id: "v3", type: "PLAYER", label: "副攻", jerseyNumber: 3, position: "MB", x: 440, y: 220, dutyZh: "跑动背飞起跳佯攻，带走双人拦网", dutyEn: "Fast slide takeoff drawing block" },
+              { id: "ball", type: "BALL", label: "🏐", jerseyNumber: 0, position: "BALL", x: 440, y: 460, dutyZh: "球至击球高点", dutyEn: "Set reaches apex" }
+            ]),
+            trajectoriesJson: JSON.stringify([
+              { id: "vt2", type: "PASS", startX: 440, startY: 480, controlX: 400, controlY: 400, endX: 380, endY: 350, label: "后排立体快球" }
+            ])
+          },
+          {
+            phaseIndex: 3,
+            titleZh: "阶段三：后排立体强攻与超手重扣",
+            titleEn: "Phase 3: Back-Row Pipe Spike & Kill",
+            notesZh: "主攻手在6号位3米线后高空雷霆拔起，利用中路真空以时速重扣得分！",
+            notesEn: "Outside hitter leaps behind 3m line, finding vacant deep court for a thunderous kill!",
+            tokensJson: JSON.stringify([
+              { id: "v1", type: "PLAYER", label: "二传", jerseyNumber: 1, position: "SET", x: 440, y: 480, dutyZh: "保护网前", dutyEn: "Cover net floor" },
+              { id: "v2", type: "PLAYER", label: "主攻手", jerseyNumber: 6, position: "OH", x: 420, y: 350, dutyZh: "超高击球点重扣砸向对手深区中路！", dutyEn: "Apex contact spike deep into court split!" },
+              { id: "v3", type: "PLAYER", label: "副攻", jerseyNumber: 3, position: "MB", x: 440, y: 200, dutyZh: "完成佯攻掩护任务", dutyEn: "Decoy execution complete" },
+              { id: "ball", type: "BALL", label: "🏐", jerseyNumber: 0, position: "BALL", x: 430, y: 350, dutyZh: "重扣砸向对手地板", dutyEn: "Spike hitting court floor" }
+            ]),
+            trajectoriesJson: JSON.stringify([
+              { id: "vt3", type: "PASS", startX: 430, startY: 350, controlX: 550, controlY: 350, endX: 720, endY: 350, label: "致命重扣" }
+            ])
+          }
+        ]
+      }
+    }
+  });
+
+  // Basketball Tactic: Horns PnR & Spanish Back-Screen
+  await prisma.tactic.create({
+    data: {
+      sport: "BASKETBALL",
+      titleZh: "高位牛角战术挡拆与西班牙空切顺下",
+      titleEn: "Horns PnR & Spanish Back-Screen Offense",
+      scenario: "半场阵地进攻 / 掩护拆档",
+      courtFormat: "5v5全场硬木地板",
+      tags: JSON.stringify(["牛角Horns", "西班牙挡拆", "掩护顺下", "空接"]),
+      descriptionZh:
+        "高位牛角双掩护拉开进攻空间，中锋结实掩护后顺下，射手切入设立盲区背掩护，制造空接扣篮或底角大空位三分。",
+      descriptionEn:
+        "Horns double screen spacing. Center rolls after pick, wing sprints into blind back-screen on recovering big man, creating rim-run alley-oop or kick-out 3pt.",
+      isFeatured: true,
+      creatorId: coachBasketball.id,
+      phases: {
+        create: [
+          {
+            phaseIndex: 1,
+            titleZh: "阶段一：高位牛角站位与拉开空间",
+            titleEn: "Phase 1: Horns Double High-Post Spacing",
+            notesZh: "控卫弧顶持球，两大内线拉至罚球线两侧肘区设立牛角双掩护，双翼底角沉底拉开极大空间。",
+            notesEn: "Point guard initiates at top of key, dual bigs station at elbows, wings spread to corners.",
+            tokensJson: JSON.stringify([
+              { id: "b1", type: "PLAYER", label: "控卫", jerseyNumber: 1, position: "PG", x: 540, y: 350, dutyZh: "弧顶持球观察，准备向右侧借掩护发动", dutyEn: "Initiate at top of key, read drop coverage" },
+              { id: "b2", type: "PLAYER", label: "中锋", jerseyNumber: 5, position: "C", x: 680, y: 260, dutyZh: "左肘区站位，准备上前做扎实高质量挡拆", dutyEn: "Elbow stance, ready to set solid screen" },
+              { id: "b3", type: "PLAYER", label: "分卫", jerseyNumber: 2, position: "SG", x: 680, y: 440, dutyZh: "右肘区站位，准备空切实施背掩护", dutyEn: "Elbow stance, preparing blind back-screen" },
+              { id: "b4", type: "PLAYER", label: "大前", jerseyNumber: 4, position: "PF", x: 800, y: 180, dutyZh: "左侧底角三分线拉开空间", dutyEn: "Corner floor spacing" },
+              { id: "b5", type: "PLAYER", label: "小前", jerseyNumber: 3, position: "SF", x: 800, y: 520, dutyZh: "右侧底角三分线拉开空间", dutyEn: "Corner floor spacing" },
+              { id: "ball", type: "BALL", label: "🏀", jerseyNumber: 0, position: "BALL", x: 555, y: 350, dutyZh: "皮球位于控卫手中", dutyEn: "Ball in point guard hands" },
+              { id: "opp1", type: "OPPONENT", label: "X1", jerseyNumber: 0, position: "PG", x: 600, y: 350, dutyZh: "领防控卫", dutyEn: "Point of attack defender" }
+            ]),
+            trajectoriesJson: JSON.stringify([
+              { id: "bt1", type: "RUN", startX: 680, startY: 260, controlX: 640, controlY: 300, endX: 580, endY: 330, label: "上前掩护" }
+            ])
+          },
+          {
+            phaseIndex: 2,
+            titleZh: "阶段二：中锋顺下与西班牙盲区背掩护",
+            titleEn: "Phase 2: Rim Roll & Spanish Back-Screen",
+            notesZh: "中锋结实挡住防守人，控卫向右侧运球突破；与此同时，分卫闪电切入给中锋的防守人设立背掩护！",
+            notesEn: "Center sets brick wall screen, PG drives right. Wing dives inside to set blind back-screen on rim protector!",
+            tokensJson: JSON.stringify([
+              { id: "b1", type: "PLAYER", label: "控卫", jerseyNumber: 1, position: "PG", x: 680, y: 440, dutyZh: "运球突破吸引双人注意，准备高抛击地", dutyEn: "Drive right and draw drop defender" },
+              { id: "b2", type: "PLAYER", label: "中锋", jerseyNumber: 5, position: "C", x: 740, y: 310, dutyZh: "摆脱防守，全速直冲篮下篮筐！", dutyEn: "Slip free after back-screen, rim-run full speed" },
+              { id: "b3", type: "PLAYER", label: "分卫", jerseyNumber: 2, position: "SG", x: 720, y: 360, dutyZh: "设立扎实背掩护挡死中锋防守人，随后向底角外弹", dutyEn: "Set rock-solid back-screen, pop to perimeter" },
+              { id: "ball", type: "BALL", label: "🏀", jerseyNumber: 0, position: "BALL", x: 690, y: 440, dutyZh: "控卫高抛空接传球送往篮筐上空", dutyEn: "Lob pass over the top to rim" }
+            ]),
+            trajectoriesJson: JSON.stringify([
+              { id: "bt2", type: "PASS", startX: 690, startY: 440, controlX: 740, controlY: 380, endX: 790, endY: 350, label: "空接高抛" }
+            ])
+          },
+          {
+            phaseIndex: 3,
+            titleZh: "阶段三：篮下空接暴扣或底角空位三分",
+            titleEn: "Phase 3: Alley-Oop Slam or Corner 3pt",
+            notesZh: "中锋在篮筐上方单手接球泰山压顶暴扣得分！若对手收缩包夹，控卫则瞬间将球甩到底角命中三分！",
+            notesEn: "Center flushes thunderous alley-oop dunk! If defense collapses, kick out to corner for wide-open three-pointer!",
+            tokensJson: JSON.stringify([
+              { id: "b1", type: "PLAYER", label: "控卫", jerseyNumber: 1, position: "PG", x: 700, y: 450, dutyZh: "送出精准助攻", dutyEn: "Dish highlight assist" },
+              { id: "b2", type: "PLAYER", label: "中锋", jerseyNumber: 5, position: "C", x: 820, y: 350, dutyZh: "泰山压顶双手暴扣，篮筐轰鸣！", dutyEn: "Monstrous two-handed alley-oop slam!" },
+              { id: "b3", type: "PLAYER", label: "分卫", jerseyNumber: 2, position: "SG", x: 820, y: 550, dutyZh: "底角三分大空位待命接球射门", dutyEn: "Wide-open corner 3pt option locked" },
+              { id: "ball", type: "BALL", label: "🏀", jerseyNumber: 0, position: "BALL", x: 820, y: 350, dutyZh: "皮球被狠狠灌入篮筐！", dutyEn: "Ball slammed through rim!" }
+            ]),
+            trajectoriesJson: JSON.stringify([
+              { id: "bt3", type: "PASS", startX: 820, startY: 350, controlX: 820, controlY: 350, endX: 820, endY: 350, label: "空中接力灌篮" }
+            ])
+          }
+        ]
+      }
+    }
+  });
+
+  // 7. Seed Matches for Football, Volleyball, and Basketball
   const nextWeek = new Date();
   nextWeek.setDate(nextWeek.getDate() + 5);
 
@@ -861,62 +561,41 @@ async function main() {
     },
   });
 
-  // 15. Seed 1-on-1 Debrief Cards
+  // 8. Seed Team-level Debriefs (Target: TEAM, no fabricated individual names)
   await prisma.debrief.create({
     data: {
       sport: "FOOTBALL",
-      targetType: "INDIVIDUAL",
-      summaryZh: "全队高位逼抢执行坚决，后防线造越位纪律严密，攻防转换打出了训练中套边下底的全部预设战术！",
-      summaryEn: "Exceptional collective press and backline offside discipline.",
+      targetType: "TEAM",
+      summaryZh: "全队高位逼抢执行坚决，后防线造越位纪律严密，攻防转换打出了训练中套边下底的全部预设战术！赛后请全员落实腘绳肌与小腿滚压恢复。",
+      summaryEn: "Exceptional collective press and backline offside discipline. Delivered tactical gameplan with precision.",
       recommendedBodyParts: JSON.stringify(["hamstrings", "calves"]),
       coachId: coachFootball.id,
-      recipients: {
-        create: [
-          {
-            userId: zhangWei.id,
-            rating: 10,
-            honors: "🏆 全场最佳球员 (MATCH MVP)",
-            quickTags: "后插上轰门, 拦截干净果决, 队长统率力强",
-            privateNoteZh:
-              "张伟：作为队长今天完全统治了后防线！下半场那脚后插上劲射死角极其提振士气！今晚回到宿舍记得用冷冻水瓶深度滚压小腿和足底，早点休息保证充沛体力！",
-            privateNoteEn:
-              "Zhang Wei: Outstanding captaincy and defensive leadership! Late finish sealed the victory. Remember to roll calves and get adequate sleep tonight.",
-            isRead: true,
-            acknowledgedAt: new Date(),
-            actionItemNote: "收到教练！今晚已完成15分钟小腿与腘绳肌放松，下场继续加强左脚出球精度！",
-          },
-        ],
-      },
     },
   });
 
   await prisma.debrief.create({
     data: {
       sport: "VOLLEYBALL",
-      targetType: "INDIVIDUAL",
-      summaryZh: "一传起球率高达 82%，二传在网前调度极具隐蔽性，副攻背飞多次拉开对手双人拦网！",
-      summaryEn: "82% passing efficiency, deceptive setting at net opened slide attack lanes.",
+      targetType: "TEAM",
+      summaryZh: "一传起球率高达 82%，二传在网前调度极具隐蔽性，副攻背飞多次拉开对手双人拦网！注意落地时双膝缓冲，做好肩袖十字拉伸。",
+      summaryEn: "82% passing efficiency, deceptive setting at net opened slide attack lanes. Focus on knee cushion mechanics on landings.",
       recommendedBodyParts: JSON.stringify(["shoulders", "calves", "knees"]),
       coachId: coachVolleyball.id,
-      recipients: {
-        create: [
-          {
-            userId: zhangWei.id,
-            rating: 9,
-            honors: "⭐ 关键扣杀之星 (CLUTCH SPIKER)",
-            quickTags: "后排Pipe重扣, 拦网起跳时机精准",
-            privateNoteZh:
-              "张伟：今天在6号位的后排起跳雷霆扣杀直接击垮了对方心理防线！注意落地时双膝弯曲缓冲，赛后做肩袖十字拉伸与靠墙静蹲。",
-            privateNoteEn:
-              "Zhang Wei: Your pipe attack in zone 6 dismantled their defense! Keep up the knee cushion on landings.",
-            isRead: false,
-          },
-        ],
-      },
     },
   });
 
-  // 16. Seed Recovery Guides
+  await prisma.debrief.create({
+    data: {
+      sport: "BASKETBALL",
+      targetType: "TEAM",
+      summaryZh: "高位挡拆质量极高，弱侧底角投射果断，全队传导球流畅度达到赛季最佳！赛后进行髋关节与跟腱冷敷恢复。",
+      summaryEn: "Outstanding high-post screen execution and weak-side shooting. Best ball movement of the season.",
+      recommendedBodyParts: JSON.stringify(["lower_back", "calves", "ankles"]),
+      coachId: coachBasketball.id,
+    },
+  });
+
+  // 9. Seed Recovery Guides
   await prisma.recoveryGuide.create({
     data: {
       sport: "FOOTBALL",
@@ -957,7 +636,7 @@ async function main() {
     },
   });
 
-  console.log("✅ Seed completed successfully with tactics, training plans, matches, debriefs, and recovery guides!");
+  console.log("✅ Clean seed completed successfully! 0 fabricated students, 0 invented names, 100% tactical clarity.");
 }
 
 main()
