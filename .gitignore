@@ -38,3 +38,6 @@ next-env.d.ts
 .wrangler
 .wrangler-config
 
+# vercel
+.vercel
+
