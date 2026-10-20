@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useApp } from "@/context/AppContext";
 import { SportChannel, PlayerProfileData } from "@/types";
@@ -20,6 +21,7 @@ import {
   HeartPulse,
   ChevronRight,
   BookOpen,
+  Activity,
 } from "lucide-react";
 
 interface MatchItem {
@@ -381,12 +383,22 @@ export default function MatchesPage() {
                   </div>
 
                   {debrief.recommendedBodyParts && debrief.recommendedBodyParts.length > 0 && (
-                    <div className="flex items-center space-x-1.5 text-xs text-rose-300 bg-rose-500/10 px-3 py-1 rounded-xl border border-rose-500/30">
-                      <HeartPulse className="w-3.5 h-3.5" />
-                      <span>
-                        赛后重点放松肌群：
-                        {debrief.recommendedBodyParts.join(", ")}
-                      </span>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <div className="flex items-center space-x-1.5 text-xs text-rose-300 bg-rose-500/10 px-3 py-1 rounded-xl border border-rose-500/30">
+                        <HeartPulse className="w-3.5 h-3.5" />
+                        <span>
+                          赛后重点放松肌群：
+                          {debrief.recommendedBodyParts.join(", ")}
+                        </span>
+                      </div>
+                      <Link
+                        href={`/${sport.toLowerCase()}/recovery?part=${debrief.recommendedBodyParts[0]}`}
+                        className="px-3 py-1 rounded-xl bg-amber-600 hover:bg-amber-500 text-stone-950 font-black text-xs flex items-center space-x-1.5 shadow-sm transition-all"
+                      >
+                        <Activity className="w-3.5 h-3.5" />
+                        <span>一键直达 3D 零成本拉伸方案</span>
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </Link>
                     </div>
                   )}
                 </div>
@@ -461,6 +473,21 @@ export default function MatchesPage() {
                             <strong className="text-amber-300">教练寄语：</strong>
                             {rec.privateNoteZh}
                           </p>
+                        )}
+
+                        {/* XP Settlement Reward for Athlete */}
+                        {isMyCard && (
+                          <div className="my-2.5 p-2.5 rounded-lg bg-stone-900 border border-amber-600/30 flex items-center justify-between text-xs">
+                            <div className="flex items-center space-x-2">
+                              <Sparkles className="w-4 h-4 text-amber-400" />
+                              <span className="font-bold text-stone-200">
+                                表现经验结算: <span className="text-amber-400 font-mono font-bold">+50 XP 注入卡牌</span>
+                              </span>
+                            </div>
+                            <span className="text-[10px] font-mono text-stone-400">
+                              {rec.isRead ? "已领悟经验入账" : "签署自勉回执即刻领取"}
+                            </span>
+                          </div>
                         )}
 
                         {/* Athlete Acknowledgment Block */}

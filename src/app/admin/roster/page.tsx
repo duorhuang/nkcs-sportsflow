@@ -137,18 +137,26 @@ export default function RosterAdminPage() {
     }
   };
 
+  useEffect(() => {
+    if (user?.role === "COACH") {
+      if (user.username === "volleyball") setCurrentSport("VOLLEYBALL");
+      else if (user.username === "basketball") setCurrentSport("BASKETBALL");
+      else if (user.username === "football") setCurrentSport("FOOTBALL");
+    }
+  }, [user]);
+
   if (authLoading) {
     return (
       <div className="py-20 text-center text-gray-400 text-sm">
-        {isZh ? "正在验证管理员权限..." : "Verifying administrator permissions..."}
+        {isZh ? "正在验证管理权限..." : "Verifying authorization..."}
       </div>
     );
   }
 
-  if (user?.role !== "ADMIN") {
+  if (user?.role !== "ADMIN" && user?.role !== "COACH") {
     return (
       <div className="py-20 text-center text-rose-400 text-sm">
-        {isZh ? "访问受限：需要管理员最高权限" : "Access Denied: Admin authorization required"}
+        {isZh ? "访问受限：需要主教练 (COACH) 或管理员 (ADMIN) 权限" : "Access Denied: Coach or Admin authorization required"}
       </div>
     );
   }

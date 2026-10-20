@@ -64,8 +64,8 @@ export async function POST(request: NextRequest) {
     if (!sessionToken) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const session = await verifySessionToken(sessionToken);
-    if (!session || session.role !== "ADMIN") {
-      return NextResponse.json({ error: "Forbidden: Admin required" }, { status: 403 });
+    if (!session || (session.role !== "ADMIN" && session.role !== "COACH")) {
+      return NextResponse.json({ error: "Forbidden: Admin or Coach required" }, { status: 403 });
     }
 
     const body = await request.json();
@@ -178,8 +178,8 @@ export async function PATCH(request: NextRequest) {
     if (!sessionToken) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const session = await verifySessionToken(sessionToken);
-    if (!session || session.role !== "ADMIN") {
-      return NextResponse.json({ error: "Forbidden: Admin required" }, { status: 403 });
+    if (!session || (session.role !== "ADMIN" && session.role !== "COACH")) {
+      return NextResponse.json({ error: "Forbidden: Admin or Coach required" }, { status: 403 });
     }
 
     const body = await request.json();

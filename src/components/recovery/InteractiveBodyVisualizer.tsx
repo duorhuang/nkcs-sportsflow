@@ -54,6 +54,7 @@ export default function InteractiveBodyVisualizer({
   onSelectPart,
 }: InteractiveBodyVisualizerProps) {
   const mountRef = useRef<HTMLDivElement | null>(null);
+  const [viewMode, setViewMode] = useState<"3D" | "2D">("3D");
   const [hoveredPart, setHoveredPart] = useState<BodyPartKey | null>(null);
   const [autoRotate, setAutoRotate] = useState(false);
   const [currentAngleView, setCurrentAngleView] = useState<"FRONT" | "BACK" | "LEFT" | "RIGHT">("FRONT");
@@ -484,49 +485,77 @@ export default function InteractiveBodyVisualizer({
         <div className="flex items-center space-x-2">
           <HeartPulse className="w-4 h-4 text-amber-500" />
           <h3 className="text-xs font-serif font-black tracking-wide text-stone-200 uppercase">
-            3D 竞技解剖交互定位仪 (WebGL)
+            {viewMode === "3D" ? "3D 竞技解剖定位仪 (WebGL)" : "2D 人体肌群解剖图谱 (SVG)"}
           </h3>
         </div>
 
-        <div className="flex items-center space-x-1.5">
-          <button
-            onClick={() => setAutoRotate(!autoRotate)}
-            className={`px-2 py-1 rounded-md text-[11px] font-semibold transition-colors flex items-center space-x-1 ${
-              autoRotate
-                ? "bg-amber-700/40 text-amber-300 border border-amber-600/50"
-                : "bg-stone-800 text-stone-300 hover:bg-stone-700"
-            }`}
-            title="360° 自动环绕"
-          >
-            <RotateCcw className={`w-3 h-3 ${autoRotate ? "animate-spin" : ""}`} />
-            <span>自转</span>
-          </button>
+        <div className="flex items-center space-x-2">
+          {/* 3D vs 2D Mode Switcher */}
+          <div className="flex items-center rounded-lg bg-stone-900 border border-stone-800 p-0.5 text-[11px] font-bold">
+            <button
+              onClick={() => setViewMode("3D")}
+              className={`px-2 py-0.5 rounded-md transition-all ${
+                viewMode === "3D"
+                  ? "bg-amber-600 text-stone-950 font-black shadow-sm"
+                  : "text-stone-400 hover:text-stone-200"
+              }`}
+            >
+              🧊 3D模型
+            </button>
+            <button
+              onClick={() => setViewMode("2D")}
+              className={`px-2 py-0.5 rounded-md transition-all ${
+                viewMode === "2D"
+                  ? "bg-amber-600 text-stone-950 font-black shadow-sm"
+                  : "text-stone-400 hover:text-stone-200"
+              }`}
+            >
+              📐 2D图谱
+            </button>
+          </div>
+
+          {viewMode === "3D" && (
+            <button
+              onClick={() => setAutoRotate(!autoRotate)}
+              className={`px-2 py-1 rounded-md text-[11px] font-semibold transition-colors flex items-center space-x-1 ${
+                autoRotate
+                  ? "bg-amber-700/40 text-amber-300 border border-amber-600/50"
+                  : "bg-stone-800 text-stone-300 hover:bg-stone-700"
+              }`}
+              title="360° 自动环绕"
+            >
+              <RotateCcw className={`w-3 h-3 ${autoRotate ? "animate-spin" : ""}`} />
+              <span>自转</span>
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Preset View Angles */}
-      <div className="flex items-center justify-center gap-1.5 w-full my-3 px-1">
-        {(
-          [
-            { id: "FRONT", label: "正面 (Front)" },
-            { id: "BACK", label: "背面 (Back)" },
-            { id: "LEFT", label: "左侧 (Left)" },
-            { id: "RIGHT", label: "右侧 (Right)" },
-          ] as const
-        ).map((item) => (
-          <button
-            key={item.id}
-            onClick={() => setPresetAngle(item.id)}
-            className={`flex-1 py-1 px-2 rounded-lg text-xs font-medium transition-all ${
-              currentAngleView === item.id && !autoRotate
-                ? "bg-stone-200 text-stone-900 font-bold shadow-sm"
-                : "bg-stone-900/80 text-stone-400 hover:text-stone-200 hover:bg-stone-800 border border-stone-800/60"
-            }`}
-          >
-            {item.label}
-          </button>
-        ))}
-      </div>
+      {/* Preset View Angles (3D Only) */}
+      {viewMode === "3D" && (
+        <div className="flex items-center justify-center gap-1.5 w-full my-3 px-1">
+          {(
+            [
+              { id: "FRONT", label: "正面 (Front)" },
+              { id: "BACK", label: "背面 (Back)" },
+              { id: "LEFT", label: "左侧 (Left)" },
+              { id: "RIGHT", label: "右侧 (Right)" },
+            ] as const
+          ).map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setPresetAngle(item.id)}
+              className={`flex-1 py-1 px-2 rounded-lg text-xs font-medium transition-all ${
+                currentAngleView === item.id && !autoRotate
+                  ? "bg-stone-200 text-stone-900 font-bold shadow-sm"
+                  : "bg-stone-900/80 text-stone-400 hover:text-stone-200 hover:bg-stone-800 border border-stone-800/60"
+              }`}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* 3D WebGL Canvas Container */}
       <div
@@ -534,7 +563,8 @@ export default function InteractiveBodyVisualizer({
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
-        className="relative w-full max-w-[360px] aspect-[360/540] rounded-xl overflow-hidden cursor-grab active:cursor-grabbing bg-radial from-[#1e2722]/60 to-[#0e1411] border border-stone-800/70 shadow-inner flex items-center justify-center"
+        style={{ display: viewMode === "3D" ? "flex" : "none" }}
+        className="relative w-full max-w-[360px] aspect-[360/540] rounded-xl overflow-hidden cursor-grab active:cursor-grabbing bg-radial from-[#1e2722]/60 to-[#0e1411] border border-stone-800/70 shadow-inner items-center justify-center"
       >
         {/* Subtle Canvas Watermark & Instruction */}
         <div className="absolute top-3 left-3 pointer-events-none text-[10px] text-stone-400 font-mono flex items-center space-x-1 bg-black/40 px-2 py-1 rounded backdrop-blur-sm">
@@ -550,6 +580,393 @@ export default function InteractiveBodyVisualizer({
           </div>
         )}
       </div>
+
+      {/* 2D Anatomical SVG Map Container */}
+      {viewMode === "2D" && (
+        <div className="relative w-full max-w-[360px] aspect-[360/540] rounded-xl overflow-hidden bg-radial from-[#1a231f]/70 to-[#0a0f0d] border border-stone-800/80 p-3 my-2 flex flex-col justify-between select-none">
+          {/* Header labels */}
+          <div className="flex items-center justify-around text-[10px] font-mono text-stone-400 font-bold border-b border-stone-800/60 pb-1.5">
+            <span>[人体前侧视图 · FRONT]</span>
+            <span>[人体后侧视图 · BACK]</span>
+          </div>
+
+          <svg viewBox="0 0 360 480" className="w-full h-full">
+            {/* FRONT VIEW (x: 0..180) */}
+            <g transform="translate(10, 10)">
+              {/* Head Silhouette */}
+              <circle cx="80" cy="40" r="22" fill="#15201A" stroke="#2D3B32" strokeWidth="1.5" />
+
+              {/* Neck */}
+              <rect
+                x="68"
+                y="64"
+                width="24"
+                height="18"
+                rx="4"
+                onClick={() => onSelectPart("neck")}
+                onMouseEnter={() => setHoveredPart("neck")}
+                onMouseLeave={() => setHoveredPart(null)}
+                className="cursor-pointer transition-colors"
+                fill={selectedPart === "neck" ? "#C5A059" : hoveredPart === "neck" ? "#D97706" : "#1B2A22"}
+                stroke={selectedPart === "neck" ? "#FDE68A" : "#394D40"}
+                strokeWidth="1.5"
+              />
+
+              {/* Shoulders Left & Right */}
+              <rect
+                x="34"
+                y="84"
+                width="26"
+                height="28"
+                rx="6"
+                onClick={() => onSelectPart("shoulders")}
+                onMouseEnter={() => setHoveredPart("shoulders")}
+                onMouseLeave={() => setHoveredPart(null)}
+                className="cursor-pointer transition-colors"
+                fill={selectedPart === "shoulders" ? "#C5A059" : hoveredPart === "shoulders" ? "#D97706" : "#1B2A22"}
+                stroke={selectedPart === "shoulders" ? "#FDE68A" : "#394D40"}
+                strokeWidth="1.5"
+              />
+              <rect
+                x="100"
+                y="84"
+                width="26"
+                height="28"
+                rx="6"
+                onClick={() => onSelectPart("shoulders")}
+                onMouseEnter={() => setHoveredPart("shoulders")}
+                onMouseLeave={() => setHoveredPart(null)}
+                className="cursor-pointer transition-colors"
+                fill={selectedPart === "shoulders" ? "#C5A059" : hoveredPart === "shoulders" ? "#D97706" : "#1B2A22"}
+                stroke={selectedPart === "shoulders" ? "#FDE68A" : "#394D40"}
+                strokeWidth="1.5"
+              />
+
+              {/* Chest */}
+              <rect
+                x="56"
+                y="88"
+                width="48"
+                height="38"
+                rx="6"
+                onClick={() => onSelectPart("chest")}
+                onMouseEnter={() => setHoveredPart("chest")}
+                onMouseLeave={() => setHoveredPart(null)}
+                className="cursor-pointer transition-colors"
+                fill={selectedPart === "chest" ? "#C5A059" : hoveredPart === "chest" ? "#D97706" : "#1E2F26"}
+                stroke={selectedPart === "chest" ? "#FDE68A" : "#394D40"}
+                strokeWidth="1.5"
+              />
+              <text x="80" y="112" fill="#FFFFFF" fontSize="9" fontWeight="bold" textAnchor="middle" pointerEvents="none">
+                胸大肌
+              </text>
+
+              {/* Core / Abs */}
+              <rect
+                x="58"
+                y="130"
+                width="44"
+                height="48"
+                rx="6"
+                onClick={() => onSelectPart("core")}
+                onMouseEnter={() => setHoveredPart("core")}
+                onMouseLeave={() => setHoveredPart(null)}
+                className="cursor-pointer transition-colors"
+                fill={selectedPart === "core" ? "#C5A059" : hoveredPart === "core" ? "#D97706" : "#1B2A22"}
+                stroke={selectedPart === "core" ? "#FDE68A" : "#394D40"}
+                strokeWidth="1.5"
+              />
+              <text x="80" y="158" fill="#FFFFFF" fontSize="9" fontWeight="bold" textAnchor="middle" pointerEvents="none">
+                核心腹肌
+              </text>
+
+              {/* Groin */}
+              <rect
+                x="65"
+                y="182"
+                width="30"
+                height="22"
+                rx="4"
+                onClick={() => onSelectPart("groin")}
+                onMouseEnter={() => setHoveredPart("groin")}
+                onMouseLeave={() => setHoveredPart(null)}
+                className="cursor-pointer transition-colors"
+                fill={selectedPart === "groin" ? "#C5A059" : hoveredPart === "groin" ? "#D97706" : "#1E2F26"}
+                stroke={selectedPart === "groin" ? "#FDE68A" : "#394D40"}
+                strokeWidth="1.5"
+              />
+              <text x="80" y="196" fill="#FFFFFF" fontSize="8" fontWeight="bold" textAnchor="middle" pointerEvents="none">
+                腹股沟
+              </text>
+
+              {/* Quads Left & Right */}
+              <rect
+                x="48"
+                y="210"
+                width="28"
+                height="92"
+                rx="8"
+                onClick={() => onSelectPart("quads")}
+                onMouseEnter={() => setHoveredPart("quads")}
+                onMouseLeave={() => setHoveredPart(null)}
+                className="cursor-pointer transition-colors"
+                fill={selectedPart === "quads" ? "#C5A059" : hoveredPart === "quads" ? "#D97706" : "#1B2A22"}
+                stroke={selectedPart === "quads" ? "#FDE68A" : "#394D40"}
+                strokeWidth="1.5"
+              />
+              <rect
+                x="84"
+                y="210"
+                width="28"
+                height="92"
+                rx="8"
+                onClick={() => onSelectPart("quads")}
+                onMouseEnter={() => setHoveredPart("quads")}
+                onMouseLeave={() => setHoveredPart(null)}
+                className="cursor-pointer transition-colors"
+                fill={selectedPart === "quads" ? "#C5A059" : hoveredPart === "quads" ? "#D97706" : "#1B2A22"}
+                stroke={selectedPart === "quads" ? "#FDE68A" : "#394D40"}
+                strokeWidth="1.5"
+              />
+              <text x="80" y="258" fill="#FFFFFF" fontSize="9" fontWeight="bold" textAnchor="middle" pointerEvents="none">
+                股四头肌
+              </text>
+
+              {/* Knees */}
+              <circle
+                cx="62"
+                cy="316"
+                r="11"
+                onClick={() => onSelectPart("knees")}
+                onMouseEnter={() => setHoveredPart("knees")}
+                onMouseLeave={() => setHoveredPart(null)}
+                className="cursor-pointer transition-colors"
+                fill={selectedPart === "knees" ? "#C5A059" : hoveredPart === "knees" ? "#D97706" : "#1E2F26"}
+                stroke={selectedPart === "knees" ? "#FDE68A" : "#394D40"}
+                strokeWidth="1.5"
+              />
+              <circle
+                cx="98"
+                cy="316"
+                r="11"
+                onClick={() => onSelectPart("knees")}
+                onMouseEnter={() => setHoveredPart("knees")}
+                onMouseLeave={() => setHoveredPart(null)}
+                className="cursor-pointer transition-colors"
+                fill={selectedPart === "knees" ? "#C5A059" : hoveredPart === "knees" ? "#D97706" : "#1E2F26"}
+                stroke={selectedPart === "knees" ? "#FDE68A" : "#394D40"}
+                strokeWidth="1.5"
+              />
+              <text x="80" y="320" fill="#FFFFFF" fontSize="8" fontWeight="bold" textAnchor="middle" pointerEvents="none">
+                膝
+              </text>
+
+              {/* Ankles */}
+              <rect
+                x="52"
+                y="410"
+                width="20"
+                height="18"
+                rx="4"
+                onClick={() => onSelectPart("ankles")}
+                onMouseEnter={() => setHoveredPart("ankles")}
+                onMouseLeave={() => setHoveredPart(null)}
+                className="cursor-pointer transition-colors"
+                fill={selectedPart === "ankles" ? "#C5A059" : hoveredPart === "ankles" ? "#D97706" : "#1E2F26"}
+                stroke={selectedPart === "ankles" ? "#FDE68A" : "#394D40"}
+                strokeWidth="1.5"
+              />
+              <rect
+                x="88"
+                y="410"
+                width="20"
+                height="18"
+                rx="4"
+                onClick={() => onSelectPart("ankles")}
+                onMouseEnter={() => setHoveredPart("ankles")}
+                onMouseLeave={() => setHoveredPart(null)}
+                className="cursor-pointer transition-colors"
+                fill={selectedPart === "ankles" ? "#C5A059" : hoveredPart === "ankles" ? "#D97706" : "#1E2F26"}
+                stroke={selectedPart === "ankles" ? "#FDE68A" : "#394D40"}
+                strokeWidth="1.5"
+              />
+            </g>
+
+            {/* BACK VIEW (x: 180..360) */}
+            <g transform="translate(190, 10)">
+              {/* Head Silhouette */}
+              <circle cx="80" cy="40" r="22" fill="#15201A" stroke="#2D3B32" strokeWidth="1.5" />
+
+              {/* Upper Trapezius / Neck */}
+              <rect
+                x="66"
+                y="64"
+                width="28"
+                height="22"
+                rx="4"
+                onClick={() => onSelectPart("neck")}
+                onMouseEnter={() => setHoveredPart("neck")}
+                onMouseLeave={() => setHoveredPart(null)}
+                className="cursor-pointer transition-colors"
+                fill={selectedPart === "neck" ? "#C5A059" : hoveredPart === "neck" ? "#D97706" : "#1B2A22"}
+                stroke={selectedPart === "neck" ? "#FDE68A" : "#394D40"}
+                strokeWidth="1.5"
+              />
+              <text x="80" y="78" fill="#FFFFFF" fontSize="8" fontWeight="bold" textAnchor="middle" pointerEvents="none">
+                斜方肌
+              </text>
+
+              {/* Rear Deltoids */}
+              <rect
+                x="34"
+                y="86"
+                width="26"
+                height="28"
+                rx="6"
+                onClick={() => onSelectPart("shoulders")}
+                onMouseEnter={() => setHoveredPart("shoulders")}
+                onMouseLeave={() => setHoveredPart(null)}
+                className="cursor-pointer transition-colors"
+                fill={selectedPart === "shoulders" ? "#C5A059" : hoveredPart === "shoulders" ? "#D97706" : "#1B2A22"}
+                stroke={selectedPart === "shoulders" ? "#FDE68A" : "#394D40"}
+                strokeWidth="1.5"
+              />
+              <rect
+                x="100"
+                y="86"
+                width="26"
+                height="28"
+                rx="6"
+                onClick={() => onSelectPart("shoulders")}
+                onMouseEnter={() => setHoveredPart("shoulders")}
+                onMouseLeave={() => setHoveredPart(null)}
+                className="cursor-pointer transition-colors"
+                fill={selectedPart === "shoulders" ? "#C5A059" : hoveredPart === "shoulders" ? "#D97706" : "#1B2A22"}
+                stroke={selectedPart === "shoulders" ? "#FDE68A" : "#394D40"}
+                strokeWidth="1.5"
+              />
+
+              {/* Lower Back / Lats */}
+              <rect
+                x="56"
+                y="94"
+                width="48"
+                height="80"
+                rx="8"
+                onClick={() => onSelectPart("lower_back")}
+                onMouseEnter={() => setHoveredPart("lower_back")}
+                onMouseLeave={() => setHoveredPart(null)}
+                className="cursor-pointer transition-colors"
+                fill={selectedPart === "lower_back" ? "#C5A059" : hoveredPart === "lower_back" ? "#D97706" : "#1E2F26"}
+                stroke={selectedPart === "lower_back" ? "#FDE68A" : "#394D40"}
+                strokeWidth="1.5"
+              />
+              <text x="80" y="136" fill="#FFFFFF" fontSize="9" fontWeight="bold" textAnchor="middle" pointerEvents="none">
+                背阔/竖脊肌
+              </text>
+
+              {/* Hamstrings Left & Right */}
+              <rect
+                x="48"
+                y="190"
+                width="28"
+                height="110"
+                rx="8"
+                onClick={() => onSelectPart("hamstrings")}
+                onMouseEnter={() => setHoveredPart("hamstrings")}
+                onMouseLeave={() => setHoveredPart(null)}
+                className="cursor-pointer transition-colors"
+                fill={selectedPart === "hamstrings" ? "#C5A059" : hoveredPart === "hamstrings" ? "#D97706" : "#1B2A22"}
+                stroke={selectedPart === "hamstrings" ? "#FDE68A" : "#394D40"}
+                strokeWidth="1.5"
+              />
+              <rect
+                x="84"
+                y="190"
+                width="28"
+                height="110"
+                rx="8"
+                onClick={() => onSelectPart("hamstrings")}
+                onMouseEnter={() => setHoveredPart("hamstrings")}
+                onMouseLeave={() => setHoveredPart(null)}
+                className="cursor-pointer transition-colors"
+                fill={selectedPart === "hamstrings" ? "#C5A059" : hoveredPart === "hamstrings" ? "#D97706" : "#1B2A22"}
+                stroke={selectedPart === "hamstrings" ? "#FDE68A" : "#394D40"}
+                strokeWidth="1.5"
+              />
+              <text x="80" y="248" fill="#FFFFFF" fontSize="9" fontWeight="bold" textAnchor="middle" pointerEvents="none">
+                大腿腘绳肌
+              </text>
+
+              {/* Calves Left & Right */}
+              <rect
+                x="48"
+                y="312"
+                width="26"
+                height="86"
+                rx="8"
+                onClick={() => onSelectPart("calves")}
+                onMouseEnter={() => setHoveredPart("calves")}
+                onMouseLeave={() => setHoveredPart(null)}
+                className="cursor-pointer transition-colors"
+                fill={selectedPart === "calves" ? "#C5A059" : hoveredPart === "calves" ? "#D97706" : "#1E2F26"}
+                stroke={selectedPart === "calves" ? "#FDE68A" : "#394D40"}
+                strokeWidth="1.5"
+              />
+              <rect
+                x="86"
+                y="312"
+                width="26"
+                height="86"
+                rx="8"
+                onClick={() => onSelectPart("calves")}
+                onMouseEnter={() => setHoveredPart("calves")}
+                onMouseLeave={() => setHoveredPart(null)}
+                className="cursor-pointer transition-colors"
+                fill={selectedPart === "calves" ? "#C5A059" : hoveredPart === "calves" ? "#D97706" : "#1E2F26"}
+                stroke={selectedPart === "calves" ? "#FDE68A" : "#394D40"}
+                strokeWidth="1.5"
+              />
+              <text x="80" y="358" fill="#FFFFFF" fontSize="9" fontWeight="bold" textAnchor="middle" pointerEvents="none">
+                小腿腓肠肌
+              </text>
+
+              {/* Ankles / Achilles */}
+              <rect
+                x="52"
+                y="410"
+                width="20"
+                height="18"
+                rx="4"
+                onClick={() => onSelectPart("ankles")}
+                onMouseEnter={() => setHoveredPart("ankles")}
+                onMouseLeave={() => setHoveredPart(null)}
+                className="cursor-pointer transition-colors"
+                fill={selectedPart === "ankles" ? "#C5A059" : hoveredPart === "ankles" ? "#D97706" : "#1B2A22"}
+                stroke={selectedPart === "ankles" ? "#FDE68A" : "#394D40"}
+                strokeWidth="1.5"
+              />
+              <rect
+                x="88"
+                y="410"
+                width="20"
+                height="18"
+                rx="4"
+                onClick={() => onSelectPart("ankles")}
+                onMouseEnter={() => setHoveredPart("ankles")}
+                onMouseLeave={() => setHoveredPart(null)}
+                className="cursor-pointer transition-colors"
+                fill={selectedPart === "ankles" ? "#C5A059" : hoveredPart === "ankles" ? "#D97706" : "#1B2A22"}
+                stroke={selectedPart === "ankles" ? "#FDE68A" : "#394D40"}
+                strokeWidth="1.5"
+              />
+              <text x="80" y="423" fill="#FFFFFF" fontSize="7.5" fontWeight="bold" textAnchor="middle" pointerEvents="none">
+                跟腱
+              </text>
+            </g>
+          </svg>
+        </div>
+      )}
 
       {/* Currently Selected Anatomical Zone Card */}
       <div className="w-full mt-3 p-3 rounded-xl bg-stone-900/90 border border-stone-800 flex items-center justify-between">

@@ -17,12 +17,15 @@ import {
   User,
   Globe,
   ChevronRight,
+  Bell,
+  Check,
 } from "lucide-react";
 
 export const Navbar: React.FC = () => {
   const pathname = usePathname();
   const { sport, setSport, locale, setLocale, t, user, logout } = useApp();
   const isZh = locale === "zh";
+  const [showNotifications, setShowNotifications] = React.useState(false);
 
   const sportLower = sport.toLowerCase();
 
@@ -159,12 +162,77 @@ export const Navbar: React.FC = () => {
             {/* Language Switcher */}
             <button
               onClick={() => setLocale(locale === "zh" ? "en" : "zh")}
-              className="flex items-center space-x-1 px-2.5 py-1 rounded-md bg-white/5 hover:bg-white/10 text-xs text-gray-300 border border-white/10 transition-colors"
+              className="flex items-center space-x-1 px-2.5 py-1 rounded-md bg-stone-900 hover:bg-stone-800 text-xs text-stone-300 border border-stone-800 transition-colors"
               title={isZh ? "Switch to English" : "切换为中文"}
             >
-              <Globe className="w-3.5 h-3.5 text-gray-400" />
+              <Globe className="w-3.5 h-3.5 text-stone-400" />
               <span className="font-semibold">{locale === "zh" ? "EN" : "中"}</span>
             </button>
+
+            {/* Notification Bell Dropdown */}
+            {user && (
+              <div className="relative">
+                <button
+                  onClick={() => setShowNotifications(!showNotifications)}
+                  className="p-1.5 rounded-md bg-stone-900 hover:bg-stone-800 text-stone-300 border border-stone-800 transition-colors relative"
+                  title={isZh ? "队内通知" : "Notifications"}
+                >
+                  <Bell className="w-3.5 h-3.5" />
+                  <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                </button>
+
+                {showNotifications && (
+                  <div className="absolute right-0 mt-2 w-80 rounded-xl bg-[#141B18] border border-stone-800 shadow-2xl p-3 z-50 animate-fadeIn space-y-2 text-xs">
+                    <div className="flex items-center justify-between pb-2 border-b border-stone-800">
+                      <span className="font-bold text-stone-100 flex items-center space-x-1.5">
+                        <Bell className="w-3.5 h-3.5 text-amber-500" />
+                        <span>{isZh ? "队内实时动态通知" : "Team Notifications"}</span>
+                      </span>
+                      <span className="text-[10px] text-amber-400 font-mono">3条未读</span>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <div className="p-2 rounded-lg bg-stone-900/90 border border-stone-800/80">
+                        <div className="flex items-center justify-between text-[11px] font-bold text-stone-200">
+                          <span>📅 今日训练课重点已下发</span>
+                          <span className="text-[10px] text-stone-500 font-mono">10m前</span>
+                        </div>
+                        <p className="text-[11px] text-stone-400 mt-0.5">
+                          主教练发布了今日 16:30 场地 2 的防反与定位球战术科目。
+                        </p>
+                      </div>
+
+                      <div className="p-2 rounded-lg bg-stone-900/90 border border-stone-800/80">
+                        <div className="flex items-center justify-between text-[11px] font-bold text-amber-300">
+                          <span>🏆 赛后 1对1 专属复盘卡</span>
+                          <span className="text-[10px] text-stone-500 font-mono">1h前</span>
+                        </div>
+                        <p className="text-[11px] text-stone-400 mt-0.5">
+                          你收到了一张赛后表现评分卡与 8 分钟针对性疲劳恢复处方。
+                        </p>
+                      </div>
+
+                      <div className="p-2 rounded-lg bg-stone-900/90 border border-stone-800/80">
+                        <div className="flex items-center justify-between text-[11px] font-bold text-stone-200">
+                          <span>📖 战术白皮书新相位推演</span>
+                          <span className="text-[10px] text-stone-500 font-mono">3h前</span>
+                        </div>
+                        <p className="text-[11px] text-stone-400 mt-0.5">
+                          更新了经典边后卫套边内切攻防转换动画相位。
+                        </p>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => setShowNotifications(false)}
+                      className="w-full mt-2 py-1 rounded bg-stone-900 text-[11px] text-stone-400 hover:text-stone-200 transition-colors"
+                    >
+                      全部标为已读
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* User Session Status */}
             {user ? (
@@ -244,13 +312,27 @@ export const Navbar: React.FC = () => {
               );
             })}
 
-            {/* Admin Only: Roster Admin Page */}
+            {/* Admin / Coach Governance Links */}
+            {(user?.role === "ADMIN" || user?.role === "COACH") && (
+              <Link
+                href="/admin/review"
+                className={`flex items-center space-x-1.5 px-3 py-2 text-xs font-semibold rounded-t-md transition-all whitespace-nowrap ${
+                  pathname.startsWith("/admin/review")
+                    ? "bg-amber-950/70 text-amber-200 border-b-2 border-amber-600 font-bold"
+                    : "text-amber-400/80 hover:text-amber-300"
+                }`}
+              >
+                <Shield className="w-3.5 h-3.5" />
+                <span>{isZh ? "共建审核中心" : "UGC Review"}</span>
+              </Link>
+            )}
+
             {user?.role === "ADMIN" && (
               <Link
                 href="/admin/roster"
                 className={`flex items-center space-x-1.5 px-3 py-2 text-xs font-semibold rounded-t-md transition-all whitespace-nowrap ${
                   pathname.startsWith("/admin/roster")
-                    ? "bg-purple-500/20 text-purple-300 border-b-2 border-purple-400"
+                    ? "bg-purple-950/70 text-purple-200 border-b-2 border-purple-500 font-bold"
                     : "text-purple-400/80 hover:text-purple-300"
                 }`}
               >

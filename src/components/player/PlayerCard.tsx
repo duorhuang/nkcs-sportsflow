@@ -46,12 +46,16 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
         isSelected ? "ring-2 ring-[#C5A059] shadow-lg scale-[1.01]" : ""
       } ${
         isHallOfFame
-          ? "bg-[#1A130C] border border-[#B59247]/60 shadow-md hover:border-[#C5A059]"
+          ? "bg-[#1A130C] border-2 border-[#C5A059]/80 shadow-md hover:border-[#F59E0B]"
           : isRegularAlumni
           ? "bg-[#131922] border border-stone-700 shadow-md hover:border-stone-500"
           : "bg-[#0E1A14] border border-stone-800 shadow-md hover:border-stone-700"
       } ${isCompact ? "p-3" : "p-4"} hover:-translate-y-0.5`}
     >
+      {/* Hall of Fame Laurel Top Crest Accent */}
+      {isHallOfFame && (
+        <div className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-amber-600 via-amber-300 to-amber-600" />
+      )}
       {/* Top Header: Varsity Numeral & Status Badges */}
       <div className="flex items-center justify-between relative z-10 mb-2">
         <div className="flex items-center space-x-1.5">
@@ -144,16 +148,26 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
         </div>
 
         <div className="flex items-center justify-between text-xs text-stone-400 pt-1 border-t border-stone-800">
-          <span>{isZh ? positionTitleZh : positionTitleEn}</span>
-          <span className="font-mono text-[11px] text-stone-400">
+          <span className="font-medium text-stone-300">{isZh ? positionTitleZh : positionTitleEn}</span>
+          <span className="font-mono text-[11px] text-amber-400 font-bold">
             {player.xpPoints || 0} XP
           </span>
         </div>
 
-        {player.honors && !isCompact && (
-          <p className="text-[10px] text-amber-200/90 line-clamp-1 italic pt-0.5">
-            ★ {player.honors}
-          </p>
+        {/* Comfortable Tag Ribbon */}
+        {!isCompact && (player.positionGroup || player.honors) && (
+          <div className="flex flex-wrap gap-1 pt-1.5">
+            {player.positionGroup && (
+              <span className="px-2 py-0.5 rounded-md bg-stone-800/90 text-stone-300 text-[10px] font-medium border border-stone-700/70">
+                {player.positionGroup}
+              </span>
+            )}
+            {player.honors && (
+              <span className="px-2 py-0.5 rounded-md bg-amber-950/60 text-amber-200 text-[10px] font-medium border border-amber-700/60">
+                ★ {player.honors}
+              </span>
+            )}
+          </div>
         )}
       </div>
     </div>

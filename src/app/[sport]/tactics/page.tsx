@@ -93,22 +93,23 @@ export default function TacticsPage() {
     loadData();
   }, [sport]);
 
-  // Handle tactical token additions from Character Tray
+  // Handle tactical token additions from Character Tray (adds to all phases seamlessly)
   const handleAddTokenToCurrentPhase = (newToken: TacticToken) => {
     if (!selectedTactic) return;
     const currentPhases = [...selectedTactic.phases];
     if (currentPhases.length === 0) return;
 
-    // Add token to the current first phase or active phase
-    const updatedPhase = {
-      ...currentPhases[0],
-      tokens: [...currentPhases[0].tokens, newToken],
-    };
-    currentPhases[0] = updatedPhase;
+    const updatedPhases = currentPhases.map((phase) => {
+      if (phase.tokens.some((t) => t.id === newToken.id)) return phase;
+      return {
+        ...phase,
+        tokens: [...phase.tokens, { ...newToken }],
+      };
+    });
 
     setSelectedTactic({
       ...selectedTactic,
-      phases: currentPhases,
+      phases: updatedPhases,
     });
   };
 
@@ -371,14 +372,16 @@ export default function TacticsPage() {
               onPrintA4={() => window.print()}
             />
 
-            {/* Game Character Select Tray (角色选择器) */}
-            <CharacterTray
-              players={players}
-              onAddToken={handleAddTokenToCurrentPhase}
-              deployedTokenIds={
-                selectedTactic.phases[0]?.tokens.map((t) => t.id) || []
-              }
-            />
+            {/* Game Character Select Tray (角色选择器，仅教练/管理员可见) */}
+            {isCoachOrAdmin && (
+              <CharacterTray
+                players={players}
+                onAddToken={handleAddTokenToCurrentPhase}
+                deployedTokenIds={
+                  selectedTactic.phases[0]?.tokens.map((t) => t.id) || []
+                }
+              />
+            )}
 
             {/* Tactical Brief & Locker Room Discussion */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

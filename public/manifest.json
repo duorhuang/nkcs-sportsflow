@@ -1,0 +1,35 @@
+{
+  "name": "NKCS SportsFlow - 球队战术与综合竞技管理平台",
+  "short_name": "NKCS SportsFlow",
+  "description": "南京金陵中学球队战术白皮书与竞技训练管理中心",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#080E0B",
+  "theme_color": "#0C1A14",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/assets/crests/nkcs-football-crest.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "足球战术白皮书",
+      "url": "/football/tactics",
+      "description": "查看最新 4-3-3 肋部渗透与战术动画"
+    },
+    {
+      "name": "3D 身体康复白皮书",
+      "url": "/football/recovery",
+      "description": "3D 肌群定位与宿舍零成本放松处方"
+    },
+    {
+      "name": "今日训前 5 分钟速览",
+      "url": "/football/schedule",
+      "description": "训前快速确认今日科目与个人跑位"
+    }
+  ]
+}

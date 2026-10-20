@@ -35,6 +35,7 @@ import {
   Flag,
   Undo2,
 } from "lucide-react";
+import { useApp } from "@/context/AppContext";
 
 export type BoardTool = "SELECT" | "PASS" | "RUN" | "DRIBBLE" | "ERASE";
 
@@ -57,6 +58,11 @@ export default function TacticsBoard({
   onOpenBigScreen,
   onPrintA4,
 }: TacticsBoardProps) {
+  const { user, locale } = useApp();
+  const isZh = locale === "zh";
+  const isPlayer = user?.role === "PLAYER";
+  const canEdit = editable && !isPlayer;
+
   const [currentPhaseIdx, setCurrentPhaseIdx] = useState(0);
   const [selectedTokenId, setSelectedTokenId] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -80,6 +86,31 @@ export default function TacticsBoard({
     titleEn: "Phase 1",
     tokens: [],
     trajectories: [],
+  };
+
+  // Athlete matching
+  const myPlayerProfile = players?.find(
+    (p) =>
+      p.userId === user?.id ||
+      p.user?.username === user?.username ||
+      p.user?.nameZh === user?.nameZh ||
+      p.user?.nameEn === user?.nameEn
+  );
+
+  const myToken = currentPhase?.tokens?.find(
+    (t) =>
+      (myPlayerProfile && t.jerseyNumber && t.jerseyNumber === myPlayerProfile.jerseyNumber) ||
+      t.label === user?.nameZh ||
+      t.label === user?.nameEn ||
+      (user?.nameZh && t.label?.includes(user?.nameZh))
+  );
+
+  const handlePrevPhase = () => {
+    if (currentPhaseIdx > 0) setCurrentPhaseIdx(currentPhaseIdx - 1);
+  };
+
+  const handleNextPhase = () => {
+    if (currentPhaseIdx < phases.length - 1) setCurrentPhaseIdx(currentPhaseIdx + 1);
   };
 
   // Dragging & Drawing State
@@ -190,6 +221,15 @@ export default function TacticsBoard({
     const clickedToken = currentPhase.tokens.find(
       (t) => Math.hypot(t.x - coords.x, t.y - coords.y) <= 28
     );
+
+    if (!canEdit) {
+      if (clickedToken) {
+        setSelectedTokenId(clickedToken.id);
+      } else {
+        setSelectedTokenId(null);
+      }
+      return;
+    }
 
     if (activeTool === "ERASE") {
       if (clickedToken) {
@@ -456,110 +496,164 @@ export default function TacticsBoard({
         </div>
       </div>
 
-      {/* ================= 2. TACTICAL TOOLBOX (MODE PALETTE) ================= */}
-      <div className="flex flex-wrap items-center justify-between gap-2 p-2 rounded-xl bg-stone-900/90 border border-stone-800">
-        {/* Drawing & Interaction Modes */}
-        <div className="flex items-center space-x-1 flex-wrap gap-y-1">
-          <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider px-2">
-            工具:
-          </span>
+      {/* ================= 2. TACTICAL TOOLBOX (MODE PALETTE) vs ATHLETE SPOTLIGHT ================= */}
+      {canEdit ? (
+        <div className="flex flex-wrap items-center justify-between gap-2 p-2 rounded-xl bg-stone-900/90 border border-stone-800">
+          {/* Drawing & Interaction Modes */}
+          <div className="flex items-center space-x-1 flex-wrap gap-y-1">
+            <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider px-2">
+              工具:
+            </span>
 
-          <button
-            onClick={() => setActiveTool("SELECT")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1.5 transition-all ${
-              activeTool === "SELECT"
-                ? "bg-amber-600 text-stone-950 font-black shadow-sm"
-                : "bg-stone-800/80 text-stone-300 hover:bg-stone-700 hover:text-white"
-            }`}
-          >
-            <Move className="w-3.5 h-3.5" />
-            <span>✋ 选人移动</span>
-          </button>
+            <button
+              onClick={() => setActiveTool("SELECT")}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1.5 transition-all ${
+                activeTool === "SELECT"
+                  ? "bg-amber-600 text-stone-950 font-black shadow-sm"
+                  : "bg-stone-800/80 text-stone-300 hover:bg-stone-700 hover:text-white"
+              }`}
+            >
+              <Move className="w-3.5 h-3.5" />
+              <span>✋ 选人移动</span>
+            </button>
 
-          <button
-            onClick={() => setActiveTool("PASS")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1.5 transition-all ${
-              activeTool === "PASS"
-                ? "bg-amber-500 text-stone-950 font-black shadow-sm"
-                : "bg-stone-800/80 text-amber-300/90 hover:bg-stone-700"
-            }`}
-          >
-            <ArrowRight className="w-3.5 h-3.5 text-amber-400" />
-            <span>➡️ 传球路线</span>
-          </button>
+            <button
+              onClick={() => setActiveTool("PASS")}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1.5 transition-all ${
+                activeTool === "PASS"
+                  ? "bg-amber-500 text-stone-950 font-black shadow-sm"
+                  : "bg-stone-800/80 text-amber-300/90 hover:bg-stone-700"
+              }`}
+            >
+              <ArrowRight className="w-3.5 h-3.5 text-amber-400" />
+              <span>➡️ 传球路线</span>
+            </button>
 
-          <button
-            onClick={() => setActiveTool("RUN")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1.5 transition-all ${
-              activeTool === "RUN"
-                ? "bg-sky-500 text-stone-950 font-black shadow-sm"
-                : "bg-stone-800/80 text-sky-300/90 hover:bg-stone-700"
-            }`}
-          >
-            <Footprints className="w-3.5 h-3.5 text-sky-400" />
-            <span>🏃 跑位路线</span>
-          </button>
+            <button
+              onClick={() => setActiveTool("RUN")}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1.5 transition-all ${
+                activeTool === "RUN"
+                  ? "bg-sky-500 text-stone-950 font-black shadow-sm"
+                  : "bg-stone-800/80 text-sky-300/90 hover:bg-stone-700"
+              }`}
+            >
+              <Footprints className="w-3.5 h-3.5 text-sky-400" />
+              <span>🏃 跑位路线</span>
+            </button>
 
-          <button
-            onClick={() => setActiveTool("DRIBBLE")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1.5 transition-all ${
-              activeTool === "DRIBBLE"
-                ? "bg-orange-500 text-stone-950 font-black shadow-sm"
-                : "bg-stone-800/80 text-orange-300/90 hover:bg-stone-700"
-            }`}
-          >
-            <Zap className="w-3.5 h-3.5 text-orange-400" />
-            <span>⚡ 运球突破</span>
-          </button>
+            <button
+              onClick={() => setActiveTool("DRIBBLE")}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1.5 transition-all ${
+                activeTool === "DRIBBLE"
+                  ? "bg-orange-500 text-stone-950 font-black shadow-sm"
+                  : "bg-stone-800/80 text-orange-300/90 hover:bg-stone-700"
+              }`}
+            >
+              <Zap className="w-3.5 h-3.5 text-orange-400" />
+              <span>⚡ 运球突破</span>
+            </button>
 
-          <button
-            onClick={() => setActiveTool("ERASE")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1.5 transition-all ${
-              activeTool === "ERASE"
-                ? "bg-rose-700 text-white font-black shadow-sm"
-                : "bg-stone-800/80 text-rose-300/90 hover:bg-stone-700"
-            }`}
-          >
-            <Eraser className="w-3.5 h-3.5 text-rose-400" />
-            <span>🧹 橡皮擦</span>
-          </button>
+            <button
+              onClick={() => setActiveTool("ERASE")}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1.5 transition-all ${
+                activeTool === "ERASE"
+                  ? "bg-rose-700 text-white font-black shadow-sm"
+                  : "bg-stone-800/80 text-rose-300/90 hover:bg-stone-700"
+              }`}
+            >
+              <Eraser className="w-3.5 h-3.5 text-rose-400" />
+              <span>🧹 橡皮擦</span>
+            </button>
+          </div>
+
+          {/* Quick Stamp Tokens & Clear Trajectories */}
+          <div className="flex items-center space-x-1.5">
+            <button
+              onClick={() => handleAddToken("BALL")}
+              className="px-2 py-1 rounded-md bg-stone-800 hover:bg-stone-700 text-stone-200 text-xs font-semibold flex items-center space-x-1"
+              title="添加比赛球"
+            >
+              <span>+ ⚽ 球</span>
+            </button>
+
+            <button
+              onClick={() => handleAddToken("OPPONENT")}
+              className="px-2 py-1 rounded-md bg-stone-800 hover:bg-stone-700 text-red-300 text-xs font-semibold flex items-center space-x-1"
+              title="添加防守人"
+            >
+              <span>+ 🛡️ 防守人</span>
+            </button>
+
+            <button
+              onClick={() => handleAddToken("CONE")}
+              className="px-2 py-1 rounded-md bg-stone-800 hover:bg-stone-700 text-amber-300 text-xs font-semibold flex items-center space-x-1"
+              title="添加标志锥"
+            >
+              <span>+ 🚩 标志锥</span>
+            </button>
+
+            <button
+              onClick={handleClearTrajectories}
+              className="px-2 py-1 rounded-md bg-stone-800/60 hover:bg-stone-800 text-stone-400 hover:text-stone-200 text-xs"
+              title="清空当前阶段所有箭头"
+            >
+              清空箭头
+            </button>
+          </div>
         </div>
+      ) : (
+        <div className="p-3.5 rounded-xl bg-gradient-to-r from-amber-950/50 via-stone-900 to-stone-900 border border-amber-600/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
+          <div className="flex items-start sm:items-center space-x-3">
+            <div className="w-9 h-9 rounded-lg bg-amber-600/20 border border-amber-500/40 flex items-center justify-center shrink-0">
+              <Zap className="w-5 h-5 text-amber-400" />
+            </div>
+            <div>
+              <div className="flex items-center space-x-2">
+                <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                  {isZh ? "我的战术跑位任务" : "My Tactical Duty"}
+                </span>
+                {myToken && (
+                  <span className="text-xs font-bold text-stone-200">
+                    #{myToken.jerseyNumber || (myPlayerProfile?.jerseyNumber ?? "")} {myToken.label || user?.nameZh} ({myToken.position || (myPlayerProfile?.primaryPosition ?? "")})
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-stone-300 mt-1 font-medium leading-relaxed">
+                {myToken?.dutyZh || myToken?.dutyEn || (isZh ? `本阶段请密切注意纵深跑位，与队友形成交叉换位掩护！` : `Hold positioning and execute coordinated movement.`)}
+              </p>
+            </div>
+          </div>
 
-        {/* Quick Stamp Tokens & Clear Trajectories */}
-        <div className="flex items-center space-x-1.5">
-          <button
-            onClick={() => handleAddToken("BALL")}
-            className="px-2 py-1 rounded-md bg-stone-800 hover:bg-stone-700 text-stone-200 text-xs font-semibold flex items-center space-x-1"
-            title="添加比赛球"
-          >
-            <span>+ ⚽ 球</span>
-          </button>
-
-          <button
-            onClick={() => handleAddToken("OPPONENT")}
-            className="px-2 py-1 rounded-md bg-stone-800 hover:bg-stone-700 text-red-300 text-xs font-semibold flex items-center space-x-1"
-            title="添加防守人"
-          >
-            <span>+ 🛡️ 防守人</span>
-          </button>
-
-          <button
-            onClick={() => handleAddToken("CONE")}
-            className="px-2 py-1 rounded-md bg-stone-800 hover:bg-stone-700 text-amber-300 text-xs font-semibold flex items-center space-x-1"
-            title="添加标志锥"
-          >
-            <span>+ 🚩 标志锥</span>
-          </button>
-
-          <button
-            onClick={handleClearTrajectories}
-            className="px-2 py-1 rounded-md bg-stone-800/60 hover:bg-stone-800 text-stone-400 hover:text-stone-200 text-xs"
-            title="清空当前阶段所有箭头"
-          >
-            清空箭头
-          </button>
+          <div className="flex items-center space-x-2 shrink-0">
+            <button
+              onClick={handlePrevPhase}
+              disabled={currentPhaseIdx === 0}
+              className="px-3 py-1.5 rounded-lg bg-stone-800 hover:bg-stone-700 disabled:opacity-40 text-stone-200 text-xs font-bold flex items-center space-x-1 border border-stone-700 transition-all"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              <span>{isZh ? "拆解上一步" : "Prev Step"}</span>
+            </button>
+            <button
+              onClick={handleNextPhase}
+              disabled={currentPhaseIdx === phases.length - 1}
+              className="px-3 py-1.5 rounded-lg bg-stone-800 hover:bg-stone-700 disabled:opacity-40 text-stone-200 text-xs font-bold flex items-center space-x-1 border border-stone-700 transition-all"
+            >
+              <span>{isZh ? "拆解下一步" : "Next Step"}</span>
+              <ChevronRight className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => {
+                setIsPlaying(!isPlaying);
+                setAnimProgress(0);
+              }}
+              className="px-3.5 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-stone-950 font-black text-xs flex items-center space-x-1.5 shadow-sm transition-all"
+            >
+              <Play className="w-3.5 h-3.5 fill-current" />
+              <span>{isPlaying ? (isZh ? "暂停演练" : "Pause") : (isZh ? "连贯推演" : "Play Run")}</span>
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Phase Description Banner */}
       <div className="px-3.5 py-2 rounded-xl bg-stone-900/60 border border-stone-800 flex items-center justify-between text-xs text-stone-300">
@@ -1118,16 +1212,44 @@ export default function TacticsBoard({
             );
             const photo = token.photoUrl || matchedPlayer?.photoUrl;
 
+            const isMe = myToken && token.id === myToken.id;
+            const isDimmed = !canEdit && myToken && !isMe;
+
             return (
               <g
                 key={token.id}
                 transform={`translate(${token.x}, ${token.y})`}
+                opacity={isDimmed ? 0.6 : 1}
                 className={`${
-                  activeTool === "SELECT" ? "cursor-grab active:cursor-grabbing" : ""
-                } ${isSelected ? "scale-105" : ""} ${isDragging ? "opacity-90" : ""}`}
+                  canEdit && activeTool === "SELECT" ? "cursor-grab active:cursor-grabbing" : "cursor-pointer"
+                } ${isSelected ? "scale-105" : ""} ${isDragging ? "opacity-90" : ""} transition-opacity duration-300`}
               >
+                {/* Athlete Spotlight (Golden Halo & Pulsing Rings) */}
+                {isMe && (
+                  <g>
+                    <circle
+                      cx="0"
+                      cy="0"
+                      r="29"
+                      fill="none"
+                      stroke="#F59E0B"
+                      strokeWidth="3.5"
+                    />
+                    <circle
+                      cx="0"
+                      cy="0"
+                      r="36"
+                      fill="none"
+                      stroke="#F59E0B"
+                      strokeWidth="1.5"
+                      strokeDasharray="4 2"
+                      opacity="0.8"
+                    />
+                  </g>
+                )}
+
                 {/* Selection Ring (Matte Gold) */}
-                {isSelected && (
+                {isSelected && !isMe && (
                   <circle
                     cx="0"
                     cy="0"
@@ -1235,6 +1357,32 @@ export default function TacticsBoard({
                     {token.label}
                   </text>
                 </g>
+
+                {/* Spotlight label for the logged-in athlete */}
+                {isMe && (
+                  <g transform="translate(0, 48)">
+                    <rect
+                      x="-38"
+                      y="-7"
+                      width="76"
+                      height="14"
+                      rx="3"
+                      fill="#D97706"
+                      stroke="#FDE68A"
+                      strokeWidth="1"
+                    />
+                    <text
+                      x="0"
+                      y="3.5"
+                      fill="#1C1917"
+                      fontSize="8.5"
+                      fontWeight="900"
+                      textAnchor="middle"
+                    >
+                      ★ 我的点位 (YOU)
+                    </text>
+                  </g>
+                )}
               </g>
             );
           })}

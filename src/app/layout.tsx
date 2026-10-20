@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { AppProvider } from "@/context/AppContext";
 import AppShell from "@/components/layout/AppShell";
@@ -7,6 +7,11 @@ export const metadata: Metadata = {
   title: "NKCS SportsFlow | 球队战术与综合竞技管理平台",
   description:
     "NKCS Athletics Legacy, Tactics Playbook, Precision Training Schedules, and Recovery Hub",
+  manifest: "/manifest.json",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0C1A14",
 };
 
 export default function RootLayout({
