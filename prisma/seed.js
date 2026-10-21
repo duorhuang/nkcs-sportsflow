@@ -278,57 +278,66 @@ async function main() {
               { id: "p1", type: "PLAYER", label: "门将", jerseyNumber: 1, position: "GK", x: 100, y: 350, dutyZh: "后场开球指挥，控制禁区出球角度", dutyEn: "Distribute calmly and organize defensive line" },
               { id: "p2", type: "PLAYER", label: "中卫", jerseyNumber: 4, position: "CB", x: 260, y: 240, dutyZh: "持球推进，观察对手压迫间隙", dutyEn: "Step out with ball, assess passing lane" },
               { id: "p3", type: "PLAYER", label: "中卫", jerseyNumber: 5, position: "CB", x: 260, y: 460, dutyZh: "拖后协防保护，随时防备对手快速反击", dutyEn: "Cover depth and provide sweeper security" },
-              { id: "p4", type: "PLAYER", label: "后腰", jerseyNumber: 6, position: "CDM", x: 420, y: 350, dutyZh: "回撤形成出球支点，接球后快速转移弱侧", dutyEn: "Pivot presence, receive under pressure and switch" },
-              { id: "p5", type: "PLAYER", label: "前锋", jerseyNumber: 9, position: "ST", x: 740, y: 350, dutyZh: "压制对手双中卫，准备随时前插反越位", dutyEn: "Pin opposition center-backs on offside line" },
+              { id: "p4", type: "PLAYER", label: "边卫", jerseyNumber: 2, position: "RB", x: 340, y: 560, dutyZh: "右路拉开进攻宽度，随时准备高速套边", dutyEn: "Hold width on right touchline, ready for overlap" },
+              { id: "p5", type: "PLAYER", label: "后腰", jerseyNumber: 6, position: "CDM", x: 420, y: 350, dutyZh: "回撤形成出球支点，接球后快速转移弱侧", dutyEn: "Pivot presence, receive under pressure and switch" },
+              { id: "p6", type: "PLAYER", label: "中前卫", jerseyNumber: 8, position: "CM", x: 500, y: 240, dutyZh: "中场游弋接应，伺机前插禁区空当", dutyEn: "Roam between lines, prepare late arrival in box" },
+              { id: "p7", type: "PLAYER", label: "边锋", jerseyNumber: 7, position: "RW", x: 640, y: 540, dutyZh: "右路压制对手边后卫，准备内切拉扯防线", dutyEn: "Pin opposition fullback, prepare inside cut" },
+              { id: "p8", type: "PLAYER", label: "前锋", jerseyNumber: 9, position: "ST", x: 720, y: 350, dutyZh: "压制对手双中卫，准备随时前插反越位", dutyEn: "Pin opposition center-backs on offside line" },
               { id: "ball", type: "BALL", label: "⚽", jerseyNumber: 0, position: "BALL", x: 275, y: 250, dutyZh: "皮球位于持球中卫脚下", dutyEn: "Possession with center-back" },
               { id: "opp1", type: "OPPONENT", label: "防守 1", jerseyNumber: 0, position: "FW", x: 380, y: 280, dutyZh: "对手前锋上前逼抢持球队员", dutyEn: "Pressing front-man" },
-              { id: "opp2", type: "OPPONENT", label: "防守 2", jerseyNumber: 0, position: "DF", x: 760, y: 330, dutyZh: "对手中卫贴身盯防前锋", dutyEn: "Marking striker" }
+              { id: "opp2", type: "OPPONENT", label: "防守 2", jerseyNumber: 0, position: "DF", x: 680, y: 500, dutyZh: "对手左边后卫贴身盯防边锋", dutyEn: "Marking winger tightly" }
             ]),
             trajectoriesJson: JSON.stringify([
-              { id: "t1", type: "PASS", startX: 280, startY: 250, controlX: 350, controlY: 300, endX: 410, endY: 340, label: "精准斜传" },
-              { id: "t2", type: "RUN", startX: 420, startY: 350, controlX: 460, controlY: 320, endX: 520, endY: 260, label: "接应转身" }
+              { id: "t1", type: "PASS", startX: 280, startY: 250, controlX: 350, controlY: 300, endX: 410, endY: 340, label: "精准斜传后腰" },
+              { id: "t2", type: "RUN", startX: 420, startY: 350, controlX: 470, controlY: 360, endX: 510, endY: 350, label: "后腰接球向前摆脱" }
             ])
           },
           {
             phaseIndex: 2,
-            titleZh: "阶段二：肋部穿透与边卫套边",
-            titleEn: "Phase 2: Half-Space Penetration & Overlap",
-            notesZh: "后腰直塞送达肋部空当，边锋内切吸引防守，边后卫从外侧以最高速度套边插上。",
-            notesEn: "CDM delivers an incision pass into the half-space pocket. Winger cuts inside, creating wide corridor for fullback sprint.",
+            titleZh: "阶段二：边锋内切扯动与边卫弧线套边",
+            titleEn: "Phase 2: Half-Space Penetration & Fullback Overlap",
+            notesZh: "后腰送出手术刀直塞，边锋突然内切肋部带走防守人，边后卫沿外侧以最高速度拉出大弧线套边狂飙下底！",
+            notesEn: "CDM delivers an incision through-ball. Winger cuts inside dragging defender, opening wide corridor for fullback overlap sprint.",
             tokensJson: JSON.stringify([
-              { id: "p1", type: "PLAYER", label: "门将", jerseyNumber: 1, position: "GK", x: 120, y: 350, dutyZh: "门线前压，保持防线联系", dutyEn: "High starting position" },
-              { id: "p2", type: "PLAYER", label: "中卫", jerseyNumber: 4, position: "CB", x: 450, y: 220, dutyZh: "前移至中线压迫，封锁防守反击路线", dutyEn: "Step up to halfway line" },
+              { id: "p1", type: "PLAYER", label: "门将", jerseyNumber: 1, position: "GK", x: 130, y: 350, dutyZh: "门线前压，保持防线联系", dutyEn: "High starting position" },
+              { id: "p2", type: "PLAYER", label: "中卫", jerseyNumber: 4, position: "CB", x: 420, y: 220, dutyZh: "前移至中线压迫，封锁防守反击路线", dutyEn: "Step up to halfway line" },
               { id: "p3", type: "PLAYER", label: "中卫", jerseyNumber: 5, position: "CB", x: 380, y: 440, dutyZh: "在中后场保持纵深警戒", dutyEn: "Deep cover vigilance" },
-              { id: "p4", type: "PLAYER", label: "后腰", jerseyNumber: 6, position: "CDM", x: 540, y: 330, dutyZh: "送出手术刀直塞，随后前压保护弧顶", dutyEn: "Play through-ball then protect edge of box" },
-              { id: "p5", type: "PLAYER", label: "边卫", jerseyNumber: 2, position: "RB", x: 680, y: 550, dutyZh: "外侧极速下底，准备传中", dutyEn: "Drive to byline on overlap" },
-              { id: "ball", type: "BALL", label: "⚽", jerseyNumber: 0, position: "BALL", x: 555, y: 340, dutyZh: "皮球精准穿透肋部防线", dutyEn: "Ball travelling into half-space" },
-              { id: "opp1", type: "OPPONENT", label: "防守 1", jerseyNumber: 0, position: "FW", x: 440, y: 290, dutyZh: "回追逼抢", dutyEn: "Tracking back" },
-              { id: "opp2", type: "OPPONENT", label: "防守 2", jerseyNumber: 0, position: "DF", x: 660, y: 390, dutyZh: "防守重心被内切扯动", dutyEn: "Drawn out of shape" }
+              { id: "p4", type: "PLAYER", label: "边卫", jerseyNumber: 2, position: "RB", x: 720, y: 570, dutyZh: "外侧极速大弧线套边下底，准备接球传中", dutyEn: "Drive to byline on explosive overlap run" },
+              { id: "p5", type: "PLAYER", label: "后腰", jerseyNumber: 6, position: "CDM", x: 520, y: 340, dutyZh: "送出手术刀直塞，随后前压保护弧顶", dutyEn: "Play through-ball then protect edge of box" },
+              { id: "p6", type: "PLAYER", label: "中前卫", jerseyNumber: 8, position: "CM", x: 600, y: 260, dutyZh: "前插至大禁区前沿，准备后排插上", dutyEn: "Advance toward box edge for late run" },
+              { id: "p7", type: "PLAYER", label: "边锋", jerseyNumber: 7, position: "RW", x: 680, y: 430, dutyZh: "果断内切肋部接球并带走防守人，顺势斜塞边路真空", dutyEn: "Cut inside to half-space, slip ball wide to fullback" },
+              { id: "p8", type: "PLAYER", label: "前锋", jerseyNumber: 9, position: "ST", x: 760, y: 300, dutyZh: "前点斜插牵制防守中卫", dutyEn: "Near-post dart pinning defenders" },
+              { id: "ball", type: "BALL", label: "⚽", jerseyNumber: 0, position: "BALL", x: 730, y: 560, dutyZh: "皮球被斜塞到下底边卫脚下", dutyEn: "Ball travelling into wide overlapping channel" },
+              { id: "opp1", type: "OPPONENT", label: "防守 1", jerseyNumber: 0, position: "FW", x: 460, y: 290, dutyZh: "回追逼抢", dutyEn: "Tracking back" },
+              { id: "opp2", type: "OPPONENT", label: "防守 2", jerseyNumber: 0, position: "DF", x: 660, y: 460, dutyZh: "被边锋内切吸引走，边路防区彻底放空！", dutyEn: "Drawn inside by winger cut, flank exposed" }
             ]),
             trajectoriesJson: JSON.stringify([
-              { id: "t3", type: "PASS", startX: 550, startY: 330, controlX: 620, controlY: 420, endX: 670, endY: 530, label: "致命直塞" },
-              { id: "t4", type: "RUN", startX: 680, startY: 550, controlX: 780, controlY: 560, endX: 860, endY: 560, label: "边卫狂飙下底" }
+              { id: "t3", type: "PASS", startX: 520, startY: 340, controlX: 600, controlY: 380, endX: 670, endY: 420, label: "肋部直塞" },
+              { id: "t4", type: "RUN", startX: 340, startY: 560, controlX: 540, controlY: 580, endX: 710, endY: 570, label: "边卫弧线大套边" }
             ])
           },
           {
             phaseIndex: 3,
-            titleZh: "阶段三：倒三角传中与后插上终结",
-            titleEn: "Phase 3: Cutback Delivery & Box Finish",
-            notesZh: "边路到底线倒三角回传大禁区弧顶，中前卫后排高速插上迎球推射死角破门！",
-            notesEn: "Fullback reaches byline and cuts ball back towards top of penalty box. Oncoming midfielder arrives late to finish into corner!",
+            titleZh: "阶段三：底线倒三角传中与后插上推射破门",
+            titleEn: "Phase 3: Byline Cutback Delivery & Midfield Finish",
+            notesZh: "边卫狂飙下底后倒三角精准回传禁区弧顶，中前卫从后排高速冲入空当迎球爆射死角破门！",
+            notesEn: "Fullback reaches byline and cuts ball back towards penalty spot. Midfielder arrives late at full speed to finish into the corner!",
             tokensJson: JSON.stringify([
-              { id: "p1", type: "PLAYER", label: "门将", jerseyNumber: 1, position: "GK", x: 180, y: 350, dutyZh: "站上大禁区线提供大范围出球策应", dutyEn: "High sweeper position" },
-              { id: "p2", type: "PLAYER", label: "中卫", jerseyNumber: 4, position: "CB", x: 580, y: 260, dutyZh: "前插至对方半场实施反抢压迫", dutyEn: "Counter-press on opposition half" },
-              { id: "p3", type: "PLAYER", label: "中卫", jerseyNumber: 5, position: "CB", x: 520, y: 450, dutyZh: "拖后锁死长传反击点", dutyEn: "Rest-defense anchor" },
-              { id: "p4", type: "PLAYER", label: "后插上", jerseyNumber: 8, position: "CM", x: 760, y: 350, dutyZh: "点球点前沿迎球爆射死角！", dutyEn: "First-time strike into corner!" },
-              { id: "p5", type: "PLAYER", label: "下底边卫", jerseyNumber: 2, position: "RB", x: 860, y: 560, dutyZh: "底线送出精准倒三角地面球", dutyEn: "Accurate low cutback delivery" },
-              { id: "ball", type: "BALL", label: "⚽", jerseyNumber: 0, position: "BALL", x: 775, y: 360, dutyZh: "球贴地急速滚向推射落点", dutyEn: "Ball cut back to shooting zone" },
-              { id: "opp1", type: "OPPONENT", label: "防守 1", jerseyNumber: 0, position: "DF", x: 800, y: 280, dutyZh: "被前点前锋带走", dutyEn: "Drawn to front post" },
+              { id: "p1", type: "PLAYER", label: "门将", jerseyNumber: 1, position: "GK", x: 180, y: 350, dutyZh: "大禁区边缘提供大范围出球策应", dutyEn: "High sweeper position" },
+              { id: "p2", type: "PLAYER", label: "中卫", jerseyNumber: 4, position: "CB", x: 580, y: 240, dutyZh: "压制对方半场，就地组织反抢", dutyEn: "Counter-press on opposition half" },
+              { id: "p3", type: "PLAYER", label: "中卫", jerseyNumber: 5, position: "CB", x: 520, y: 440, dutyZh: "拖后锁死长传反击点", dutyEn: "Rest-defense anchor" },
+              { id: "p4", type: "PLAYER", label: "边卫", jerseyNumber: 2, position: "RB", x: 860, y: 560, dutyZh: "底线送出致命低平倒三角传中！", dutyEn: "Accurate low cutback delivery from byline" },
+              { id: "p5", type: "PLAYER", label: "后腰", jerseyNumber: 6, position: "CDM", x: 620, y: 350, dutyZh: "弧顶保护防范二点球", dutyEn: "Second ball protection" },
+              { id: "p6", type: "PLAYER", label: "中前卫", jerseyNumber: 8, position: "CM", x: 770, y: 350, dutyZh: "后排高速冲入空当，迎球爆射球门死角破门！", dutyEn: "First-time strike into top corner!" },
+              { id: "p7", type: "PLAYER", label: "边锋", jerseyNumber: 7, position: "RW", x: 740, y: 420, dutyZh: "禁区前沿虚晃掩护", dutyEn: "Decoy run creating space" },
+              { id: "p8", type: "PLAYER", label: "前锋", jerseyNumber: 9, position: "ST", x: 830, y: 280, dutyZh: "前点抢点带走门将重心", dutyEn: "Front-post run disrupting keeper" },
+              { id: "ball", type: "BALL", label: "⚽", jerseyNumber: 0, position: "BALL", x: 785, y: 350, dutyZh: "球应声入网！", dutyEn: "Ball hitting net!" },
+              { id: "opp1", type: "OPPONENT", label: "防守 1", jerseyNumber: 0, position: "DF", x: 820, y: 320, dutyZh: "被前点前锋带走", dutyEn: "Drawn to front post" },
               { id: "opp2", type: "OPPONENT", label: "防守 2", jerseyNumber: 0, position: "GK", x: 920, y: 350, dutyZh: "对方门将扑救不及", dutyEn: "Beaten goalkeeper" }
             ]),
             trajectoriesJson: JSON.stringify([
-              { id: "t5", type: "PASS", startX: 860, startY: 550, controlX: 820, controlY: 450, endX: 770, endY: 360, label: "倒三角传中" },
-              { id: "t6", type: "RUN", startX: 620, startY: 350, controlX: 690, controlY: 350, endX: 755, endY: 350, label: "致命后插上" }
+              { id: "t5", type: "PASS", startX: 860, startY: 550, controlX: 820, controlY: 450, endX: 780, endY: 360, label: "精准倒三角回传" },
+              { id: "t6", type: "RUN", startX: 600, startY: 260, controlX: 680, controlY: 310, endX: 765, endY: 350, label: "后排雷霆前插推射" }
             ])
           }
         ]
@@ -355,53 +364,62 @@ async function main() {
         create: [
           {
             phaseIndex: 1,
-            titleZh: "阶段一：W型稳定接发球与二传插上",
-            titleEn: "Phase 1: W Serve Receive & Setter Run",
-            notesZh: "接发球阵型展开，二传迅速插上网前2号位组织进攻。",
-            notesEn: "Receive formation absorbs serve, setter accelerates into target setting zone 2.",
+            titleZh: "阶段一：W型稳定接发球与二传启动插上",
+            titleEn: "Phase 1: W-Formation Receive & Setter Penetration Sprint",
+            notesZh: "接发球阵型展开，二传在对手发球出手瞬间从后排1号位高速插上网前2号位组织进攻。",
+            notesEn: "Receive formation absorbs serve, setter accelerates from back-row Zone 1 into target setting Zone 2 at the net.",
             tokensJson: JSON.stringify([
-              { id: "v1", type: "PLAYER", label: "二传", jerseyNumber: 1, position: "SET", x: 440, y: 500, dutyZh: "准备启动插上网前2号位", dutyEn: "Anticipate pass to zone 2" },
-              { id: "v2", type: "PLAYER", label: "主攻", jerseyNumber: 4, position: "OH", x: 420, y: 180, dutyZh: "前排左侧待命", dutyEn: "Outside hitter ready at net" },
-              { id: "v3", type: "PLAYER", label: "副攻", jerseyNumber: 3, position: "MB", x: 420, y: 350, dutyZh: "副攻手网前待命", dutyEn: "Middle blocker alert at net" },
-              { id: "v4", type: "PLAYER", label: "自由人", jerseyNumber: 5, position: "LIB", x: 220, y: 180, dutyZh: "后排精准接一传", dutyEn: "Primary passer on receive" },
-              { id: "v5", type: "PLAYER", label: "后排主攻", jerseyNumber: 6, position: "OH", x: 220, y: 350, dutyZh: "后排接发球防守", dutyEn: "Back-row receiver" },
-              { id: "v6", type: "PLAYER", label: "接应", jerseyNumber: 2, position: "OPP", x: 220, y: 500, dutyZh: "后排右侧保护", dutyEn: "Right back defender" },
-              { id: "ball", type: "BALL", label: "🏐", jerseyNumber: 0, position: "BALL", x: 300, y: 350, dutyZh: "接发球向网前高弧度送出", dutyEn: "Serve receive targeted to setter" }
+              { id: "v1", type: "PLAYER", label: "二传", jerseyNumber: 1, position: "SET", x: 440, y: 520, dutyZh: "后排1号位准备启动插上网前2号位", dutyEn: "Zone 1 setter starting penetration run" },
+              { id: "v2", type: "PLAYER", label: "前排主攻", jerseyNumber: 4, position: "OH", x: 420, y: 180, dutyZh: "前排4号位准备拉开4号位平拉开快球", dutyEn: "Zone 4 outside hitter ready for quick set" },
+              { id: "v3", type: "PLAYER", label: "副攻", jerseyNumber: 3, position: "MB", x: 420, y: 350, dutyZh: "前排3号位准备跑动背飞路线", dutyEn: "Zone 3 middle blocker eyeing slide run" },
+              { id: "v4", type: "PLAYER", label: "自由人", jerseyNumber: 5, position: "LIB", x: 220, y: 180, dutyZh: "后排5号位核心接发球点", dutyEn: "Zone 5 libero primary receive coverage" },
+              { id: "v5", type: "PLAYER", label: "后排主攻", jerseyNumber: 6, position: "OH", x: 220, y: 350, dutyZh: "后排6号位接发球，兼顾后排立体插上进攻", dutyEn: "Zone 6 outside hitter receive & pipe approach" },
+              { id: "v6", type: "PLAYER", label: "接应", jerseyNumber: 2, position: "OPP", x: 220, y: 500, dutyZh: "后排右侧保障防守与备选后攻", dutyEn: "Zone 1 right-back defensive cover" },
+              { id: "ball", type: "BALL", label: "🏐", jerseyNumber: 0, position: "BALL", x: 280, y: 260, dutyZh: "对手发球下落，自由人稳稳垫起一传送往网前", dutyEn: "Libero passes high ball toward setter target zone" }
             ]),
             trajectoriesJson: JSON.stringify([
-              { id: "vt1", type: "PASS", startX: 300, startY: 350, controlX: 380, controlY: 420, endX: 430, endY: 480, label: "精准一传" }
+              { id: "vt1", type: "PASS", startX: 230, startY: 190, controlX: 340, controlY: 340, endX: 450, endY: 480, label: "精准一传弧线" },
+              { id: "vt2", type: "RUN", startX: 440, startY: 520, controlX: 450, controlY: 500, endX: 455, endY: 480, label: "二传插上网前" }
             ])
           },
           {
             phaseIndex: 2,
-            titleZh: "阶段二：副攻背飞佯攻与拦网牵制",
-            titleEn: "Phase 2: Middle Slide Decoy & Block Shift",
-            notesZh: "二传网前组织，副攻大范围跑动背飞，强力牵制对方主拦网手。",
-            notesEn: "Setter feints dump, middle slide pulls opposition blockers toward antenna.",
+            titleZh: "阶段二：二传网前跳传与副攻2号位背飞佯攻",
+            titleEn: "Phase 2: Setter Jump-Feint & Middle Slide Decoy",
+            notesZh: "二传网前跃起做推攻假动作，副攻高速跑向2号位做背飞佯攻，彻底吸引对手副攻与边拦网重心！",
+            notesEn: "Setter leaps at net. Middle blocker slides behind setter to Zone 2, committing both opposition blockers and vacating center court.",
             tokensJson: JSON.stringify([
-              { id: "v1", type: "PLAYER", label: "二传", jerseyNumber: 1, position: "SET", x: 440, y: 480, dutyZh: "跃起虚晃，双手背传中央高空", dutyEn: "Jump set deceptively to pipe line" },
-              { id: "v2", type: "PLAYER", label: "后排强攻", jerseyNumber: 6, position: "OH", x: 340, y: 350, dutyZh: "从6号位后排开始发力助跑，3米线外踏跳", dutyEn: "Accelerate approach behind 3m line" },
-              { id: "v3", type: "PLAYER", label: "副攻", jerseyNumber: 3, position: "MB", x: 440, y: 220, dutyZh: "跑动背飞起跳佯攻，带走双人拦网", dutyEn: "Fast slide takeoff drawing block" },
-              { id: "ball", type: "BALL", label: "🏐", jerseyNumber: 0, position: "BALL", x: 440, y: 460, dutyZh: "球至击球高点", dutyEn: "Set reaches apex" }
+              { id: "v1", type: "PLAYER", label: "二传", jerseyNumber: 1, position: "SET", x: 460, y: 480, dutyZh: "网前高位起跳做单手假动作，脑后背传中路高球", dutyEn: "Jump-set deception, feeds back to Zone 6 pipe" },
+              { id: "v2", type: "PLAYER", label: "前排主攻", jerseyNumber: 4, position: "OH", x: 440, y: 160, dutyZh: "4号位拉开牵制对手副攻防线", dutyEn: "Zone 4 wide spread pinning right blocker" },
+              { id: "v3", type: "PLAYER", label: "副攻", jerseyNumber: 3, position: "MB", x: 460, y: 530, dutyZh: "极速背飞跑向2号位起跳假扣，带走双人拦网！", dutyEn: "Aggressive slide takeoff to Zone 2 drawing double block" },
+              { id: "v4", type: "PLAYER", label: "自由人", jerseyNumber: 5, position: "LIB", x: 260, y: 200, dutyZh: "网下保护，随时准备保护拦网被拦球", dutyEn: "Floor cover under the block" },
+              { id: "v5", type: "PLAYER", label: "后排主攻", jerseyNumber: 6, position: "OH", x: 330, y: 350, dutyZh: "从6号位全力助跑，于3米线前蓄力起跳！", dutyEn: "Accelerate forward, jump behind 3-meter line" },
+              { id: "v6", type: "PLAYER", label: "接应", jerseyNumber: 2, position: "OPP", x: 250, y: 490, dutyZh: "后排防守保护", dutyEn: "Back-row balance cover" },
+              { id: "ball", type: "BALL", label: "🏐", jerseyNumber: 0, position: "BALL", x: 450, y: 470, dutyZh: "二传双手触球，高位隐蔽向身后6号位弧顶送出", dutyEn: "Ball dispatched backwards into central pipe corridor" }
             ]),
             trajectoriesJson: JSON.stringify([
-              { id: "vt2", type: "PASS", startX: 440, startY: 480, controlX: 400, controlY: 400, endX: 380, endY: 350, label: "后排立体快球" }
+              { id: "vt3", type: "RUN", startX: 420, startY: 350, controlX: 440, controlY: 460, endX: 460, endY: 530, label: "副攻大弧线背飞" },
+              { id: "vt4", type: "PASS", startX: 455, startY: 475, controlX: 400, controlY: 410, endX: 350, endY: 350, label: "背传后排立体中路" }
             ])
           },
           {
             phaseIndex: 3,
-            titleZh: "阶段三：后排立体强攻与超手重扣",
-            titleEn: "Phase 3: Back-Row Pipe Spike & Kill",
-            notesZh: "主攻手在6号位3米线后高空雷霆拔起，利用中路真空以时速重扣得分！",
-            notesEn: "Outside hitter leaps behind 3m line, finding vacant deep court for a thunderous kill!",
+            titleZh: "阶段三：6号位3米线后排立体超手重扣",
+            titleEn: "Phase 3: Zone 6 Back-Row Pipe Spike & Floor Kill",
+            notesZh: "主攻手在6号位3米线后如大鹏展翅高空雷霆拔起，利用对手中路空虚以时速110km/h重扣钉地板破门！",
+            notesEn: "Outside hitter launches from behind 3m line into apex, hammering an unblockable pipe spike straight down into opponent split!",
             tokensJson: JSON.stringify([
-              { id: "v1", type: "PLAYER", label: "二传", jerseyNumber: 1, position: "SET", x: 440, y: 480, dutyZh: "保护网前", dutyEn: "Cover net floor" },
-              { id: "v2", type: "PLAYER", label: "主攻手", jerseyNumber: 6, position: "OH", x: 420, y: 350, dutyZh: "超高击球点重扣砸向对手深区中路！", dutyEn: "Apex contact spike deep into court split!" },
-              { id: "v3", type: "PLAYER", label: "副攻", jerseyNumber: 3, position: "MB", x: 440, y: 200, dutyZh: "完成佯攻掩护任务", dutyEn: "Decoy execution complete" },
-              { id: "ball", type: "BALL", label: "🏐", jerseyNumber: 0, position: "BALL", x: 430, y: 350, dutyZh: "重扣砸向对手地板", dutyEn: "Spike hitting court floor" }
+              { id: "v1", type: "PLAYER", label: "二传", jerseyNumber: 1, position: "SET", x: 460, y: 470, dutyZh: "保护网下二点球", dutyEn: "Cover setter area" },
+              { id: "v2", type: "PLAYER", label: "前排主攻", jerseyNumber: 4, position: "OH", x: 440, y: 150, dutyZh: "4号位就地防守准备", dutyEn: "Transition defense alert" },
+              { id: "v3", type: "PLAYER", label: "副攻", jerseyNumber: 3, position: "MB", x: 470, y: 540, dutyZh: "背飞落地迅速回撤防守", dutyEn: "Decoy complete, drop into cover" },
+              { id: "v4", type: "PLAYER", label: "自由人", jerseyNumber: 5, position: "LIB", x: 270, y: 220, dutyZh: "后场防守站位", dutyEn: "Backcourt readiness" },
+              { id: "v5", type: "PLAYER", label: "后排主攻", jerseyNumber: 6, position: "OH", x: 420, y: 350, dutyZh: "空中超手暴扣，球重重砸在对方场地中央！", dutyEn: "Apex contact spike deep into floor split!" },
+              { id: "v6", type: "PLAYER", label: "接应", jerseyNumber: 2, position: "OPP", x: 260, y: 480, dutyZh: "右后卫稳健防守", dutyEn: "Right back defensive stance" },
+              { id: "ball", type: "BALL", label: "🏐", jerseyNumber: 0, position: "BALL", x: 680, y: 350, dutyZh: "重扣砸在对方半场死角，直接得分！", dutyEn: "Ball slamming down on opponent court!" }
             ]),
             trajectoriesJson: JSON.stringify([
-              { id: "vt3", type: "PASS", startX: 430, startY: 350, controlX: 550, controlY: 350, endX: 720, endY: 350, label: "致命重扣" }
+              { id: "vt5", type: "RUN", startX: 330, startY: 350, controlX: 375, controlY: 350, endX: 420, endY: 350, label: "3米线蹬地起跳" },
+              { id: "vt6", type: "PASS", startX: 430, startY: 350, controlX: 550, controlY: 350, endX: 680, endY: 350, label: "雷霆万钧暴扣" }
             ])
           }
         ]
@@ -434,15 +452,16 @@ async function main() {
             notesEn: "Point guard initiates at top of key, dual bigs station at elbows, wings spread to corners.",
             tokensJson: JSON.stringify([
               { id: "b1", type: "PLAYER", label: "控卫", jerseyNumber: 1, position: "PG", x: 540, y: 350, dutyZh: "弧顶持球观察，准备向右侧借掩护发动", dutyEn: "Initiate at top of key, read drop coverage" },
-              { id: "b2", type: "PLAYER", label: "中锋", jerseyNumber: 5, position: "C", x: 680, y: 260, dutyZh: "左肘区站位，准备上前做扎实高质量挡拆", dutyEn: "Elbow stance, ready to set solid screen" },
-              { id: "b3", type: "PLAYER", label: "分卫", jerseyNumber: 2, position: "SG", x: 680, y: 440, dutyZh: "右肘区站位，准备空切实施背掩护", dutyEn: "Elbow stance, preparing blind back-screen" },
-              { id: "b4", type: "PLAYER", label: "大前", jerseyNumber: 4, position: "PF", x: 800, y: 180, dutyZh: "左侧底角三分线拉开空间", dutyEn: "Corner floor spacing" },
-              { id: "b5", type: "PLAYER", label: "小前", jerseyNumber: 3, position: "SF", x: 800, y: 520, dutyZh: "右侧底角三分线拉开空间", dutyEn: "Corner floor spacing" },
+              { id: "b2", type: "PLAYER", label: "中锋", jerseyNumber: 5, position: "C", x: 670, y: 260, dutyZh: "左肘区站位，准备上前做扎实高质量挡拆", dutyEn: "Elbow stance, ready to set solid screen" },
+              { id: "b3", type: "PLAYER", label: "分卫", jerseyNumber: 2, position: "SG", x: 670, y: 440, dutyZh: "右肘区站位，准备空切实施背掩护", dutyEn: "Elbow stance, preparing blind back-screen" },
+              { id: "b4", type: "PLAYER", label: "大前", jerseyNumber: 4, position: "PF", x: 820, y: 160, dutyZh: "左侧底角三分线拉开空间", dutyEn: "Corner floor spacing" },
+              { id: "b5", type: "PLAYER", label: "小前", jerseyNumber: 3, position: "SF", x: 820, y: 540, dutyZh: "右侧底角三分线拉开空间", dutyEn: "Corner floor spacing" },
               { id: "ball", type: "BALL", label: "🏀", jerseyNumber: 0, position: "BALL", x: 555, y: 350, dutyZh: "皮球位于控卫手中", dutyEn: "Ball in point guard hands" },
-              { id: "opp1", type: "OPPONENT", label: "防守 1", jerseyNumber: 0, position: "PG", x: 600, y: 350, dutyZh: "领防控卫", dutyEn: "Point of attack defender" }
+              { id: "opp1", type: "OPPONENT", label: "防守 1", jerseyNumber: 0, position: "PG", x: 580, y: 350, dutyZh: "领防控卫", dutyEn: "Point of attack defender" },
+              { id: "opp2", type: "OPPONENT", label: "防守 2", jerseyNumber: 0, position: "C", x: 690, y: 280, dutyZh: "盯防中锋", dutyEn: "Rim protector on center" }
             ]),
             trajectoriesJson: JSON.stringify([
-              { id: "bt1", type: "RUN", startX: 680, startY: 260, controlX: 640, controlY: 300, endX: 580, endY: 330, label: "上前掩护" }
+              { id: "bt1", type: "RUN", startX: 670, startY: 260, controlX: 630, controlY: 300, endX: 570, endY: 330, label: "中锋上提挡拆" }
             ])
           },
           {
@@ -452,13 +471,18 @@ async function main() {
             notesZh: "中锋结实挡住防守人，控卫向右侧运球突破；与此同时，分卫闪电切入给中锋的防守人设立背掩护！",
             notesEn: "Center sets brick wall screen, PG drives right. Wing dives inside to set blind back-screen on rim protector!",
             tokensJson: JSON.stringify([
-              { id: "b1", type: "PLAYER", label: "控卫", jerseyNumber: 1, position: "PG", x: 680, y: 440, dutyZh: "运球突破吸引双人注意，准备高抛击地", dutyEn: "Drive right and draw drop defender" },
-              { id: "b2", type: "PLAYER", label: "中锋", jerseyNumber: 5, position: "C", x: 740, y: 310, dutyZh: "摆脱防守，全速直冲篮下篮筐！", dutyEn: "Slip free after back-screen, rim-run full speed" },
-              { id: "b3", type: "PLAYER", label: "分卫", jerseyNumber: 2, position: "SG", x: 720, y: 360, dutyZh: "设立扎实背掩护挡死中锋防守人，随后向底角外弹", dutyEn: "Set rock-solid back-screen, pop to perimeter" },
-              { id: "ball", type: "BALL", label: "🏀", jerseyNumber: 0, position: "BALL", x: 690, y: 440, dutyZh: "控卫高抛空接传球送往篮筐上空", dutyEn: "Lob pass over the top to rim" }
+              { id: "b1", type: "PLAYER", label: "控卫", jerseyNumber: 1, position: "PG", x: 660, y: 420, dutyZh: "运球突破吸引双人注意，准备高抛送出空接", dutyEn: "Drive right and draw drop defender" },
+              { id: "b2", type: "PLAYER", label: "中锋", jerseyNumber: 5, position: "C", x: 740, y: 320, dutyZh: "摆脱防守，全速直冲篮下篮筐！", dutyEn: "Slip free after back-screen, rim-run full speed" },
+              { id: "b3", type: "PLAYER", label: "分卫", jerseyNumber: 2, position: "SG", x: 710, y: 340, dutyZh: "设立扎实背掩护挡死中锋防守人，随后向底角外弹", dutyEn: "Set rock-solid back-screen, pop to perimeter" },
+              { id: "b4", type: "PLAYER", label: "大前", jerseyNumber: 4, position: "PF", x: 820, y: 180, dutyZh: "左侧底角牵制防守，随时准备外拆接应", dutyEn: "Corner floor spacing" },
+              { id: "b5", type: "PLAYER", label: "小前", jerseyNumber: 3, position: "SF", x: 840, y: 540, dutyZh: "右侧底角拉开空间，锁定空位投篮点", dutyEn: "Corner floor spacing" },
+              { id: "ball", type: "BALL", label: "🏀", jerseyNumber: 0, position: "BALL", x: 700, y: 380, dutyZh: "控卫高抛空接传球送往篮筐上空", dutyEn: "Lob pass over the top to rim" },
+              { id: "opp1", type: "OPPONENT", label: "防守 1", jerseyNumber: 0, position: "PG", x: 650, y: 360, dutyZh: "被高位挡拆挂住", dutyEn: "Caught on high screen" },
+              { id: "opp2", type: "OPPONENT", label: "防守 2", jerseyNumber: 0, position: "C", x: 720, y: 320, dutyZh: "被分卫盲区背掩护完全卡住，无法回防篮下！", dutyEn: "Blocked by Spanish screen" }
             ]),
             trajectoriesJson: JSON.stringify([
-              { id: "bt2", type: "PASS", startX: 690, startY: 440, controlX: 740, controlY: 380, endX: 790, endY: 350, label: "空接高抛" }
+              { id: "bt2", type: "PASS", startX: 665, startY: 415, controlX: 720, controlY: 370, endX: 780, endY: 340, label: "高抛空接" },
+              { id: "bt3", type: "RUN", startX: 670, startY: 440, controlX: 700, controlY: 390, endX: 710, endY: 340, label: "西班牙背掩护" }
             ])
           },
           {
@@ -468,13 +492,18 @@ async function main() {
             notesZh: "中锋在篮筐上方单手接球泰山压顶暴扣得分！若对手收缩包夹，控卫则瞬间将球甩到底角命中三分！",
             notesEn: "Center flushes thunderous alley-oop dunk! If defense collapses, kick out to corner for wide-open three-pointer!",
             tokensJson: JSON.stringify([
-              { id: "b1", type: "PLAYER", label: "控卫", jerseyNumber: 1, position: "PG", x: 700, y: 450, dutyZh: "送出精准助攻", dutyEn: "Dish highlight assist" },
-              { id: "b2", type: "PLAYER", label: "中锋", jerseyNumber: 5, position: "C", x: 820, y: 350, dutyZh: "泰山压顶双手暴扣，篮筐轰鸣！", dutyEn: "Monstrous two-handed alley-oop slam!" },
-              { id: "b3", type: "PLAYER", label: "分卫", jerseyNumber: 2, position: "SG", x: 820, y: 550, dutyZh: "底角三分大空位待命接球射门", dutyEn: "Wide-open corner 3pt option locked" },
-              { id: "ball", type: "BALL", label: "🏀", jerseyNumber: 0, position: "BALL", x: 820, y: 350, dutyZh: "皮球被狠狠灌入篮筐！", dutyEn: "Ball slammed through rim!" }
+              { id: "b1", type: "PLAYER", label: "控卫", jerseyNumber: 1, position: "PG", x: 680, y: 430, dutyZh: "送出精准助攻，就地退防", dutyEn: "Dish highlight assist and track back" },
+              { id: "b2", type: "PLAYER", label: "中锋", jerseyNumber: 5, position: "C", x: 830, y: 350, dutyZh: "泰山压顶双手暴扣，篮筐轰鸣！", dutyEn: "Monstrous two-handed alley-oop slam!" },
+              { id: "b3", type: "PLAYER", label: "分卫", jerseyNumber: 2, position: "SG", x: 700, y: 470, dutyZh: "外弹至三分线弧顶，防范对手反击", dutyEn: "Pop to 3pt line safety" },
+              { id: "b4", type: "PLAYER", label: "大前", jerseyNumber: 4, position: "PF", x: 830, y: 180, dutyZh: "左侧底角锁定篮板球", dutyEn: "Crash weakside offensive rebound" },
+              { id: "b5", type: "PLAYER", label: "小前", jerseyNumber: 3, position: "SF", x: 840, y: 540, dutyZh: "右侧底角空位三分点待命", dutyEn: "Corner 3pt option" },
+              { id: "ball", type: "BALL", label: "🏀", jerseyNumber: 0, position: "BALL", x: 830, y: 350, dutyZh: "皮球被狠狠灌入篮筐！", dutyEn: "Ball slammed through rim!" },
+              { id: "opp1", type: "OPPONENT", label: "防守 1", jerseyNumber: 0, position: "PG", x: 730, y: 380, dutyZh: "回防不及", dutyEn: "Late recovery" },
+              { id: "opp2", type: "OPPONENT", label: "防守 2", jerseyNumber: 0, position: "C", x: 790, y: 320, dutyZh: "目送中锋扣篮", dutyEn: "Sealed off from play" }
             ]),
             trajectoriesJson: JSON.stringify([
-              { id: "bt3", type: "PASS", startX: 820, startY: 350, controlX: 820, controlY: 350, endX: 820, endY: 350, label: "空中接力灌篮" }
+              { id: "bt4", type: "RUN", startX: 740, startY: 320, controlX: 790, controlY: 330, endX: 830, endY: 350, label: "直冲篮筐" },
+              { id: "bt5", type: "PASS", startX: 780, startY: 340, controlX: 810, controlY: 345, endX: 830, endY: 350, label: "空接灌篮" }
             ])
           }
         ]

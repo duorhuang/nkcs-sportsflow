@@ -37,8 +37,12 @@ export default function LoginPage() {
       }
 
       await refreshUser();
-      // Redirect immediately to /football
-      router.push("/football");
+      let targetPath = "/football";
+      const u = username.toLowerCase();
+      if (u.includes("volleyball")) targetPath = "/volleyball";
+      else if (u.includes("basketball")) targetPath = "/basketball";
+      else if (u === "admin") targetPath = "/";
+      router.push(targetPath);
       router.refresh();
     } catch {
       setError("An unexpected network error occurred");
@@ -147,7 +151,7 @@ export default function LoginPage() {
             <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2.5 text-center">
               {isZh ? "一键快捷测试账号体验" : "Quick Role Presets"}
             </p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
               <button
                 type="button"
                 onClick={() => selectPreset("admin", "admin123")}
@@ -160,35 +164,21 @@ export default function LoginPage() {
                 onClick={() => selectPreset("football", "coach123")}
                 className="px-2 py-1.5 rounded bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 hover:text-white text-left transition-colors truncate"
               >
-                <strong className="text-emerald-300">⚽ Coach</strong> (football)
+                <strong className="text-emerald-300">⚽ Football</strong> (coach)
               </button>
               <button
                 type="button"
                 onClick={() => selectPreset("volleyball", "coach123")}
                 className="px-2 py-1.5 rounded bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 hover:text-white text-left transition-colors truncate"
               >
-                <strong className="text-orange-300">🏐 Coach</strong> (volleyball)
+                <strong className="text-orange-300">🏐 Volleyball</strong> (coach)
               </button>
               <button
                 type="button"
                 onClick={() => selectPreset("basketball", "coach123")}
                 className="px-2 py-1.5 rounded bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 hover:text-white text-left transition-colors truncate"
               >
-                <strong className="text-amber-400">🏀 Coach</strong> (basketball)
-              </button>
-              <button
-                type="button"
-                onClick={() => selectPreset("zhangwei", "player123")}
-                className="px-2 py-1.5 rounded bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 hover:text-white text-left transition-colors truncate"
-              >
-                <strong className="text-cyan-300">🏃 Athlete</strong> (zhangwei)
-              </button>
-              <button
-                type="button"
-                onClick={() => selectPreset("songjia", "player123")}
-                className="px-2 py-1.5 rounded bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 hover:text-white text-left transition-colors truncate"
-              >
-                <strong className="text-amber-300">🏆 Legend</strong> (songjia)
+                <strong className="text-amber-400">🏀 Basketball</strong> (coach)
               </button>
             </div>
           </div>

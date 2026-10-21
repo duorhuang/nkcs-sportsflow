@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
 import { SportChannel } from "@/types";
 import {
@@ -23,6 +23,7 @@ import {
 
 export const Navbar: React.FC = () => {
   const pathname = usePathname();
+  const router = useRouter();
   const { sport, setSport, locale, setLocale, t, user, logout } = useApp();
   const isZh = locale === "zh";
   const [showNotifications, setShowNotifications] = React.useState(false);
@@ -35,6 +36,21 @@ export const Navbar: React.FC = () => {
     { key: "VOLLEYBALL" as SportChannel, icon: "🏐", labelZh: "排球专区", labelEn: "Volleyball", path: "/volleyball" },
     { key: "BASKETBALL" as SportChannel, icon: "🏀", labelZh: "篮球专区", labelEn: "Basketball", path: "/basketball" },
   ];
+
+  const handleSportSwitch = (targetSport: SportChannel, targetPath: string) => {
+    setSport(targetSport);
+    const currentSegments = pathname.split("/").filter(Boolean);
+    if (
+      currentSegments[0] === "football" ||
+      currentSegments[0] === "volleyball" ||
+      currentSegments[0] === "basketball"
+    ) {
+      const subRoute = currentSegments.slice(1).join("/");
+      router.push(`/${targetSport.toLowerCase()}${subRoute ? `/${subRoute}` : ""}`);
+    } else {
+      router.push(targetPath);
+    }
+  };
 
   // Secondary submodules navigation for active sport
   const navTabs = [
@@ -70,7 +86,7 @@ export const Navbar: React.FC = () => {
       key: "squad",
       path: `/${sportLower}/squad`,
       labelZh: "队伍花名册",
-      labelEn: "Squad Roster",
+      labelEn: "Squad",
       icon: Users,
     },
   ];
@@ -106,12 +122,13 @@ export const Navbar: React.FC = () => {
   return (
     <header className="sticky top-0 z-50 w-full backdrop-blur-md">
       {/* ================= BAR 1: 全局专区切换、国际化与用户状态 ================= */}
-      <div className="bg-black/85 border-b border-white/10 px-4 lg:px-8 py-2.5">
+      <div className="bg-black/90 border-b border-white/10 px-4 lg:px-8 py-2.5">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-          {/* Brand Logo & Classical Emblem */}
+          {/* Brand Logo & Classical Emblem -> Direct Portal Link */}
           <Link
-            href={`/${sportLower}`}
+            href="/"
             className="flex items-center space-x-3 shrink-0 group select-none"
+            title={isZh ? "返回 NKCS 体育总门户" : "Return to NKCS Varsity Portal"}
           >
             <div className="w-9 h-9 rounded-xl overflow-hidden bg-[#140D05] border border-heritage-gold/50 flex items-center justify-center shadow-md p-0.5 group-hover:scale-105 transition-transform">
               <img
@@ -121,23 +138,44 @@ export const Navbar: React.FC = () => {
               />
             </div>
             <div>
-              <span className="font-serif font-black tracking-wider text-sm lg:text-base text-gold-foil uppercase">
-                NKCS SPORTSFLOW
-              </span>
+              <div className="flex items-center space-x-2">
+                <span className="font-serif font-black tracking-wider text-sm lg:text-base text-gold-foil uppercase">
+                  NKCS SPORTSFLOW
+                </span>
+                <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-300 font-bold border border-amber-500/30 hidden sm:inline">
+                  BILINGUAL 双语
+                </span>
+              </div>
               <p className="text-[10px] text-gray-400 -mt-0.5 tracking-tight hidden sm:block">
-                {t("appSub")}
+                {isZh ? "三大校队专属战术·康复·执教中枢" : "Varsity Tactics, Training & Health Hub"}
               </p>
             </div>
           </Link>
 
-          {/* Center: 3-Sport Classical Channel Switchers (Accessible for all users to test and inspect) */}
-          <nav className="flex items-center space-x-1.5 md:space-x-2 bg-stone-900/90 p-1 rounded-full border border-stone-800">
+          {/* Center: Portal & 3-Sport Classical Channel Switchers */}
+          <nav className="flex items-center space-x-1 md:space-x-1.5 bg-stone-900/95 p-1 rounded-full border border-stone-800">
+            {/* Top-Level Portal Link */}
+            <Link
+              href="/"
+              className={`flex items-center space-x-1 px-2.5 py-1.5 rounded-full text-xs font-bold transition-all ${
+                pathname === "/"
+                  ? "bg-amber-600/20 text-amber-300 border border-amber-500/50 shadow-sm"
+                  : "text-stone-400 hover:text-stone-200 hover:bg-stone-800/50"
+              }`}
+              title={isZh ? "校园体育总门户" : "Varsity Sports Portal"}
+            >
+              <span>🏛️</span>
+              <span className="hidden md:inline">{isZh ? "总门户 Portal" : "Portal"}</span>
+            </Link>
+
+            <span className="w-[1px] h-4 bg-white/10 mx-0.5" />
+
             {sports.map((item) => {
-              const isSelected = sport === item.key;
+              const isSelected = sport === item.key && pathname !== "/";
               return (
                 <button
                   key={item.key}
-                  onClick={() => setSport(item.key)}
+                  onClick={() => handleSportSwitch(item.key, item.path)}
                   className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-200 ${
                     isSelected
                       ? item.key === "FOOTBALL"
@@ -149,9 +187,8 @@ export const Navbar: React.FC = () => {
                   }`}
                 >
                   <span className="text-sm">{item.icon}</span>
-                  <span className="hidden sm:inline">
-                    {isZh ? item.labelZh : item.labelEn}
-                  </span>
+                  <span>{item.labelZh}</span>
+                  <span className="text-[10px] opacity-75 hidden xl:inline">({item.labelEn})</span>
                 </button>
               );
             })}
@@ -166,7 +203,7 @@ export const Navbar: React.FC = () => {
               title={isZh ? "Switch to English" : "切换为中文"}
             >
               <Globe className="w-3.5 h-3.5 text-amber-400" />
-              <span>{locale === "zh" ? "🇨🇳 中文" : "🇬🇧 English"}</span>
+              <span>{locale === "zh" ? "🇨🇳 中文 / EN" : "🇬🇧 English / 中"}</span>
             </button>
 
             {/* Notification Bell Dropdown */}
@@ -175,7 +212,7 @@ export const Navbar: React.FC = () => {
                 <button
                   onClick={() => setShowNotifications(!showNotifications)}
                   className="p-1.5 rounded-md bg-stone-900 hover:bg-stone-800 text-stone-300 border border-stone-800 transition-colors relative"
-                  title={isZh ? "队内通知" : "Notifications"}
+                  title={isZh ? "队内通知 / Notifications" : "Team Notifications"}
                 >
                   <Bell className="w-3.5 h-3.5" />
                   <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
@@ -186,7 +223,7 @@ export const Navbar: React.FC = () => {
                     <div className="flex items-center justify-between pb-2 border-b border-stone-800">
                       <span className="font-bold text-stone-100 flex items-center space-x-1.5">
                         <Bell className="w-3.5 h-3.5 text-amber-500" />
-                        <span>{isZh ? "队内实时动态通知" : "Team Notifications"}</span>
+                        <span>{isZh ? "队内动态 / Notifications" : "Team Notifications"}</span>
                       </span>
                       <span className="text-[10px] text-amber-400 font-mono">3条未读</span>
                     </div>
@@ -227,7 +264,7 @@ export const Navbar: React.FC = () => {
                       onClick={() => setShowNotifications(false)}
                       className="w-full mt-2 py-1 rounded bg-stone-900 text-[11px] text-stone-400 hover:text-stone-200 transition-colors"
                     >
-                      全部标为已读
+                      {isZh ? "全部标为已读 / Mark All Read" : "Mark All Read"}
                     </button>
                   </div>
                 )}
@@ -251,35 +288,35 @@ export const Navbar: React.FC = () => {
                     <User className="w-3.5 h-3.5 text-heritage-antiqueGold" />
                   )}
                   <span className="font-bold hidden md:inline">
-                    {isZh ? user.nameZh : user.nameEn}
+                    {user.nameZh} / {user.nameEn}
                   </span>
                   <span className="text-[10px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-bold border border-amber-500/40">
-                    {user.role === "COACH" ? (isZh ? "教练" : "COACH") : user.role === "ADMIN" ? (isZh ? "总监" : "ADMIN") : (isZh ? "队员" : "PLAYER")}
+                    {user.role === "COACH" ? "教练 COACH" : user.role === "ADMIN" ? "总监 ADMIN" : "队员 ATHLETE"}
                   </span>
                 </Link>
 
                 <button
                   onClick={logout}
                   className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-rose-950/80 hover:bg-rose-900 border border-rose-700/60 text-rose-200 text-xs font-bold transition-all shadow-sm"
-                  title="退出当前账号并切换队伍"
+                  title={isZh ? "退出当前账号并切换队伍" : "Sign out of current account"}
                 >
                   <LogOut className="w-3.5 h-3.5 text-rose-400" />
-                  <span className="hidden sm:inline">{isZh ? "退出登录" : "Sign Out"}</span>
+                  <span className="hidden sm:inline">退出 Sign Out</span>
                 </button>
               </div>
             ) : (
               <Link
                 href="/login"
-                className="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-stone-950 text-xs font-bold transition-colors shadow-sm"
+                className="px-3.5 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-stone-950 text-xs font-bold transition-colors shadow-sm"
               >
-                {isZh ? "登录" : "Log In"}
+                登录 Sign In
               </Link>
             )}
           </div>
         </div>
       </div>
 
-      {/* ================= BAR 2: 专区二级功能子模块导航 ================= */}
+      {/* ================= BAR 2: 专区二级功能子模块导航 (严格双语对照) ================= */}
       <div className={`${accent.glow} px-4 lg:px-8 transition-colors duration-300`}>
         <div className="max-w-7xl mx-auto flex items-center justify-between overflow-x-auto no-scrollbar">
           <div className="flex items-center space-x-1 py-1">
@@ -292,7 +329,7 @@ export const Navbar: React.FC = () => {
                   : "text-gray-400 hover:text-white"
               }`}
             >
-              <span>{t("todayBrief")}</span>
+              <span>{isZh ? "今日聚焦 Overview" : "Overview"}</span>
             </Link>
 
             {/* Submodule Tabs */}
@@ -308,7 +345,8 @@ export const Navbar: React.FC = () => {
                   }`}
                 >
                   <Icon className="w-3.5 h-3.5" />
-                  <span>{isZh ? tab.labelZh : tab.labelEn}</span>
+                  <span>{tab.labelZh}</span>
+                  <span className="text-[10px] opacity-75 font-normal">({tab.labelEn})</span>
                 </Link>
               );
             })}
@@ -324,7 +362,8 @@ export const Navbar: React.FC = () => {
                 }`}
               >
                 <Shield className="w-3.5 h-3.5" />
-                <span>{isZh ? "共建审核中心" : "UGC Review"}</span>
+                <span>共建审核</span>
+                <span className="text-[10px] opacity-75 font-normal">(Review)</span>
               </Link>
             )}
 
@@ -338,7 +377,8 @@ export const Navbar: React.FC = () => {
                 }`}
               >
                 <Settings className="w-3.5 h-3.5" />
-                <span>{t("rosterAdmin")}</span>
+                <span>花名册管理</span>
+                <span className="text-[10px] opacity-75 font-normal">(Admin Roster)</span>
               </Link>
             )}
           </div>
@@ -347,7 +387,7 @@ export const Navbar: React.FC = () => {
           <div className="hidden lg:flex items-center space-x-1.5 text-[11px] text-gray-500 font-mono">
             <span>NKCS</span>
             <ChevronRight className="w-3 h-3 text-gray-600" />
-            <span className="text-gray-300 font-bold uppercase">{sport}</span>
+            <span className="text-amber-300 font-bold uppercase">{sport}</span>
           </div>
         </div>
       </div>

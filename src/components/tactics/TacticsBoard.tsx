@@ -74,6 +74,10 @@ export default function TacticsBoard({
   const [phases, setPhases] = useState<TacticPhaseData[]>(tactic.phases || []);
   const phasesRef = useRef<TacticPhaseData[]>(phases);
 
+  // Ghost motion trail toggle (displays Phase N-1 position ghost and movement vector to Phase N)
+  const [showGhostTrails, setShowGhostTrails] = useState<boolean>(true);
+  const [athletePovId, setAthletePovId] = useState<string | null>(null);
+
   useEffect(() => {
     phasesRef.current = phases;
   }, [phases]);
@@ -133,6 +137,50 @@ export default function TacticsBoard({
       t.label === user?.nameEn ||
       (user?.nameZh && t.label?.includes(user?.nameZh))
   );
+
+  // Compute ghost movement pairs from previous phase (Phase N-1 to Phase N transition)
+  const prevPhase = currentPhaseIdx > 0 ? phases[currentPhaseIdx - 1] : null;
+  const ghostMovementPairs = React.useMemo(() => {
+    if (!prevPhase || !showGhostTrails) return [];
+    const pairs: {
+      tokenId: string;
+      label: string;
+      jerseyNumber?: number;
+      prevX: number;
+      prevY: number;
+      currX: number;
+      currY: number;
+      distance: number;
+      type: string;
+    }[] = [];
+
+    currentPhase.tokens.forEach((currToken) => {
+      if (currToken.type === "TEXT" || currToken.type === "CONE") return;
+      const prevToken = prevPhase.tokens.find(
+        (p) =>
+          p.id === currToken.id ||
+          (currToken.jerseyNumber && p.jerseyNumber === currToken.jerseyNumber && p.type === currToken.type)
+      );
+      if (prevToken) {
+        const dist = Math.hypot(currToken.x - prevToken.x, currToken.y - prevToken.y);
+        if (dist >= 12) {
+          pairs.push({
+            tokenId: currToken.id,
+            label: currToken.label,
+            jerseyNumber: currToken.jerseyNumber,
+            prevX: prevToken.x,
+            prevY: prevToken.y,
+            currX: currToken.x,
+            currY: currToken.y,
+            distance: Math.round(dist / 10), // approximate meters on field
+            type: currToken.type,
+          });
+        }
+      }
+    });
+
+    return pairs;
+  }, [currentPhase, prevPhase, showGhostTrails]);
 
   // Setup animated playback loop
   useEffect(() => {
@@ -778,12 +826,12 @@ export default function TacticsBoard({
         </div>
       </div>
 
-      {/* ================= 2. COMPLETE TACTICAL TOOLBOX ================= */}
+      {/* ================= 2. COMPLETE TACTICAL TOOLBOX (STRICTLY BILINGUAL) ================= */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 p-2.5 rounded-xl bg-[#141923] border border-white/[0.08]">
         {/* Drawing & Mode Tools */}
         <div className="flex items-center space-x-1 flex-wrap gap-y-1">
           <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider px-1.5">
-            模式:
+            {isZh ? "战术绘制:" : "Tools:"}
           </span>
 
           <button
@@ -793,10 +841,10 @@ export default function TacticsBoard({
                 ? "bg-emerald-600 text-white font-black shadow-sm"
                 : "bg-[#1C2331] text-stone-300 hover:bg-[#252E40] hover:text-white"
             }`}
-            title="点击场上任意人员或球直接拖拽挪动"
+            title={isZh ? "点击场上任意人员或球直接拖拽挪动 (Move Token)" : "Click and drag any player or ball"}
           >
             <Move className="w-3.5 h-3.5" />
-            <span>✋ 自由挪人</span>
+            <span>✋ 挪人 Move</span>
           </button>
 
           <button
@@ -806,10 +854,10 @@ export default function TacticsBoard({
                 ? "bg-amber-500 text-stone-950 font-black shadow-sm"
                 : "bg-[#1C2331] text-amber-300 hover:bg-[#252E40]"
             }`}
-            title="拖拽拉出直线传球黄色箭头"
+            title={isZh ? "拖拽拉出直线传球黄色箭头 (Straight Pass)" : "Draw straight pass vector"}
           >
             <ArrowRight className="w-3.5 h-3.5 text-amber-400" />
-            <span>➡️ 直线传球</span>
+            <span>➡️ 直传 Pass</span>
           </button>
 
           <button
@@ -819,10 +867,10 @@ export default function TacticsBoard({
                 ? "bg-amber-400 text-stone-950 font-black shadow-sm"
                 : "bg-[#1C2331] text-amber-200 hover:bg-[#252E40]"
             }`}
-            title="拖拽拉出弧线传球（长传、挑传、过顶弧度）"
+            title={isZh ? "拖拽拉出大弧线传球（长传、过顶、倒三角弧线）" : "Draw curved lob or cutback pass"}
           >
             <CornerUpRight className="w-3.5 h-3.5 text-amber-300" />
-            <span>⤴️ 弧线传球</span>
+            <span>⤴️ 弧传 Lob</span>
           </button>
 
           <button
@@ -832,10 +880,10 @@ export default function TacticsBoard({
                 ? "bg-sky-500 text-stone-950 font-black shadow-sm"
                 : "bg-[#1C2331] text-sky-300 hover:bg-[#252E40]"
             }`}
-            title="拖拽拉出无球跑位直线虚线箭头"
+            title={isZh ? "拖拽拉出无球跑位直线虚线箭头 (Straight Run)" : "Draw straight off-ball run"}
           >
             <Footprints className="w-3.5 h-3.5 text-sky-400" />
-            <span>🏃 直线跑位</span>
+            <span>🏃 直跑 Run</span>
           </button>
 
           <button
@@ -845,10 +893,10 @@ export default function TacticsBoard({
                 ? "bg-sky-400 text-stone-950 font-black shadow-sm"
                 : "bg-[#1C2331] text-sky-200 hover:bg-[#252E40]"
             }`}
-            title="拖拽拉出弧线绕桩/套边跑位箭头"
+            title={isZh ? "拖拽拉出弧线绕桩/边路套边跑位箭头 (Curved Overlap Run)" : "Draw curved overlap sprint"}
           >
             <CornerUpRight className="w-3.5 h-3.5 text-sky-300" />
-            <span>⤴️ 弧线跑位</span>
+            <span>⤴️ 套边 Overlap</span>
           </button>
 
           <button
@@ -858,10 +906,10 @@ export default function TacticsBoard({
                 ? "bg-orange-500 text-stone-950 font-black shadow-sm"
                 : "bg-[#1C2331] text-orange-300 hover:bg-[#252E40]"
             }`}
-            title="拖拽拉出运球突破橙色虚线"
+            title={isZh ? "拖拽拉出运球突破橙色虚线 (Dribble Drive)" : "Draw dribble penetration"}
           >
             <Zap className="w-3.5 h-3.5 text-orange-400" />
-            <span>⚡ 运球突破</span>
+            <span>⚡ 突破 Dribble</span>
           </button>
 
           <button
@@ -874,10 +922,10 @@ export default function TacticsBoard({
                 ? "bg-purple-600 text-white font-black shadow-sm"
                 : "bg-[#1C2331] text-purple-300 hover:bg-[#252E40]"
             }`}
-            title="选择或输入战术文字标注"
+            title={isZh ? "选择或输入战术文字标注 (Tactical Text)" : "Annotate tactical cue"}
           >
             <Type className="w-3.5 h-3.5 text-purple-400" />
-            <span>🔤 战术文字</span>
+            <span>🔤 文字 Text</span>
           </button>
 
           <button
@@ -887,10 +935,23 @@ export default function TacticsBoard({
                 ? "bg-rose-700 text-white font-black shadow-sm"
                 : "bg-[#1C2331] text-rose-300 hover:bg-[#252E40]"
             }`}
-            title="点击任意球员、箭头或文字立即清除"
+            title={isZh ? "点击任意球员、箭头或文字立即清除 (Erase)" : "Erase any element"}
           >
             <Eraser className="w-3.5 h-3.5 text-rose-400" />
-            <span>🧹 橡皮擦</span>
+            <span>🧹 橡皮 Erase</span>
+          </button>
+
+          {/* Ghost Trail Toggle Button */}
+          <button
+            onClick={() => setShowGhostTrails(!showGhostTrails)}
+            className={`px-2.5 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1.5 transition-all ${
+              showGhostTrails
+                ? "bg-blue-600/30 text-blue-300 border border-blue-500/50 shadow-sm"
+                : "bg-[#1C2331] text-stone-400 hover:text-stone-200"
+            }`}
+            title={isZh ? "显示或隐藏上一阶段位置残影与跑位动向矢量" : "Toggle ghost motion trail from previous phase"}
+          >
+            <span>👻 跑位残影 {showGhostTrails ? "ON" : "OFF"}</span>
           </button>
         </div>
 
@@ -899,33 +960,33 @@ export default function TacticsBoard({
           <button
             onClick={() => handleAddToken("PLAYER")}
             className="px-2.5 py-1.5 rounded-lg bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-600/60 text-emerald-300 text-xs font-bold flex items-center space-x-1 transition-colors"
-            title="添加我方进攻队员"
+            title="添加我方队员 (Add Home Player)"
           >
-            <span>+ 👕 我方队员</span>
+            <span>+ 👕 我方 Home</span>
           </button>
 
           <button
             onClick={() => handleAddToken("OPPONENT")}
             className="px-2.5 py-1.5 rounded-lg bg-rose-950/80 hover:bg-rose-900 border border-rose-600/60 text-rose-300 text-xs font-bold flex items-center space-x-1 transition-colors"
-            title="添加对方防守人"
+            title="添加对方防守人 (Add Opponent)"
           >
-            <span>+ 🛡️ 防守人</span>
+            <span>+ 🛡️ 防守 Opp</span>
           </button>
 
           <button
             onClick={() => handleAddToken("BALL")}
             className="px-2 py-1.5 rounded-lg bg-[#1C2331] hover:bg-[#252E40] text-stone-200 text-xs font-semibold flex items-center space-x-1"
-            title="添加比赛球"
+            title="添加比赛球 (Add Ball)"
           >
-            <span>+ ⚽ 球</span>
+            <span>+ ⚽ 球 Ball</span>
           </button>
 
           <button
             onClick={() => handleAddToken("CONE")}
             className="px-2 py-1.5 rounded-lg bg-[#1C2331] hover:bg-[#252E40] text-amber-300 text-xs font-semibold flex items-center space-x-1"
-            title="添加标志锥"
+            title="添加训练标志锥 (Add Cone)"
           >
-            <span>+ 🚩 锥</span>
+            <span>+ 🚩 锥 Cone</span>
           </button>
 
           {/* Quick Formation Presets Dropdown */}
@@ -941,31 +1002,31 @@ export default function TacticsBoard({
               className="px-2.5 py-1.5 rounded-lg bg-[#1C2331] hover:bg-[#252E40] border border-white/[0.08] text-emerald-400 text-xs font-bold outline-none cursor-pointer"
             >
               <option value="" disabled>
-                📐 一键阵型部署...
+                📐 一键阵型 Formations...
               </option>
               {sport === "FOOTBALL" && (
                 <>
-                  <option value="4-3-3">⚽ 4-3-3 阵型 (11人部署)</option>
-                  <option value="4-4-2">⚽ 4-4-2 平行阵型 (11人)</option>
-                  <option value="3-5-2">⚽ 3-5-2 攻守兼备 (11人)</option>
+                  <option value="4-3-3">⚽ 4-3-3 阵型 (11 Players)</option>
+                  <option value="4-4-2">⚽ 4-4-2 平行阵型 (11 Players)</option>
+                  <option value="3-5-2">⚽ 3-5-2 攻守兼备 (11 Players)</option>
                 </>
               )}
               {sport === "VOLLEYBALL" && (
-                <option value="VOLLEYBALL_5_1">🏐 5-1 室内排球轮转 (6人)</option>
+                <option value="VOLLEYBALL_5_1">🏐 5-1 室内排球轮转 (6 Players)</option>
               )}
               {sport === "BASKETBALL" && (
-                <option value="BASKETBALL_1_2_2">🏀 1-2-2 篮球半场攻防 (5人)</option>
+                <option value="BASKETBALL_1_2_2">🏀 1-2-2 篮球半场攻防 (5 Players)</option>
               )}
-              <option value="CLEAR_ALL">🗑️ 清空全场人员</option>
+              <option value="CLEAR_ALL">🗑️ 清空全场人员 (Clear All)</option>
             </select>
           </div>
 
           <button
             onClick={handleClearTrajectories}
             className="px-2 py-1.5 rounded-lg bg-[#1C2331]/80 hover:bg-[#252E40] text-stone-400 hover:text-stone-200 text-xs"
-            title="清空当前阶段所有路线箭头"
+            title="清空当前阶段所有路线箭头 (Clear Arrows)"
           >
-            清空箭头
+            {isZh ? "清空箭头" : "Clear Arrows"}
           </button>
         </div>
       </div>
@@ -1030,6 +1091,17 @@ export default function TacticsBoard({
               orient="auto-start-reverse"
             >
               <path d="M 0 1 L 10 5 L 0 9 z" fill="#FB923C" />
+            </marker>
+            <marker
+              id="arrow-ghost-trail"
+              viewBox="0 0 10 10"
+              refX="8"
+              refY="5"
+              markerWidth="6"
+              markerHeight="6"
+              orient="auto-start-reverse"
+            >
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#60A5FA" fillOpacity="0.85" />
             </marker>
           </defs>
 
@@ -1155,24 +1227,349 @@ export default function TacticsBoard({
 
           {sport === "VOLLEYBALL" && (
             <g id="volleyballPitchV6">
-              <rect width="1000" height="700" fill="#141D29" />
-              <rect x="100" y="80" width="800" height="540" fill="#8C3F1B" stroke="#FFFFFF" strokeWidth="3" />
-              <line x1="500" y1="80" x2="500" y2="620" stroke="#FFFFFF" strokeWidth="4.5" strokeDasharray="5 3" />
-              <line x1="366" y1="80" x2="366" y2="620" stroke="#FFFFFF" strokeWidth="2.8" strokeDasharray="6 4" />
-              <line x1="634" y1="80" x2="634" y2="620" stroke="#FFFFFF" strokeWidth="2.8" strokeDasharray="6 4" />
+              {/* Outer Arena Surround Flooring */}
+              <rect width="1000" height="700" fill="#0F172A" />
+
+              {/* Taraflex Competition Orange Court (Standard 18m x 9m = 2:1 ratio) */}
+              <rect
+                x="120"
+                y="140"
+                width="760"
+                height="420"
+                rx="6"
+                fill="#C2410C"
+                stroke="#FFFFFF"
+                strokeWidth="3.5"
+              />
+
+              {/* Center Net Line & Net Mesh */}
+              <line
+                x1="500"
+                y1="125"
+                x2="500"
+                y2="575"
+                stroke="#FFFFFF"
+                strokeWidth="4"
+              />
+              {/* Center Net Top Band with mesh shadow */}
+              <line
+                x1="500"
+                y1="130"
+                x2="500"
+                y2="570"
+                stroke="#F8FAFC"
+                strokeWidth="2.5"
+                strokeDasharray="4 2"
+              />
+
+              {/* Antenna Poles at top and bottom */}
+              <rect x="498" y="120" width="4" height="24" fill="#EF4444" stroke="#FFFFFF" strokeWidth="0.8" />
+              <rect x="498" y="556" width="4" height="24" fill="#EF4444" stroke="#FFFFFF" strokeWidth="0.8" />
+
+              {/* 3-Meter Attack Lines */}
+              {/* Left Side (Our Court) 3m Line */}
+              <line
+                x1="373"
+                y1="140"
+                x2="373"
+                y2="560"
+                stroke="#FFFFFF"
+                strokeWidth="3"
+              />
+              {/* Left Attack Line Dashed Extensions Beyond Touchline */}
+              <line x1="373" y1="115" x2="373" y2="140" stroke="#FFFFFF" strokeWidth="2.5" strokeDasharray="5 3" />
+              <line x1="373" y1="560" x2="373" y2="585" stroke="#FFFFFF" strokeWidth="2.5" strokeDasharray="5 3" />
+
+              {/* Right Side (Opponent Court) 3m Line */}
+              <line
+                x1="627"
+                y1="140"
+                x2="627"
+                y2="560"
+                stroke="#FFFFFF"
+                strokeWidth="3"
+              />
+              <line x1="627" y1="115" x2="627" y2="140" stroke="#FFFFFF" strokeWidth="2.5" strokeDasharray="5 3" />
+              <line x1="627" y1="560" x2="627" y2="585" stroke="#FFFFFF" strokeWidth="2.5" strokeDasharray="5 3" />
+
+              {/* Service Zone Guide Ticks */}
+              <line x1="120" y1="115" x2="120" y2="135" stroke="#FFFFFF" strokeWidth="2" />
+              <line x1="120" y1="565" x2="120" y2="585" stroke="#FFFFFF" strokeWidth="2" />
+              <line x1="880" y1="115" x2="880" y2="135" stroke="#FFFFFF" strokeWidth="2" />
+              <line x1="880" y1="565" x2="880" y2="585" stroke="#FFFFFF" strokeWidth="2" />
+
+              {/* Watermark 6-Zone Indicators (Left / Home Side) */}
+              <g opacity="0.3" className="pointer-events-none select-none">
+                <text x="250" y="490" fill="#FFFFFF" fontSize="16" fontWeight="900" textAnchor="middle">1 (后右)</text>
+                <text x="435" y="490" fill="#FFFFFF" fontSize="16" fontWeight="900" textAnchor="middle">2 (前右)</text>
+                <text x="435" y="355" fill="#FFFFFF" fontSize="16" fontWeight="900" textAnchor="middle">3 (前中)</text>
+                <text x="435" y="220" fill="#FFFFFF" fontSize="16" fontWeight="900" textAnchor="middle">4 (前左)</text>
+                <text x="250" y="220" fill="#FFFFFF" fontSize="16" fontWeight="900" textAnchor="middle">5 (后左)</text>
+                <text x="250" y="355" fill="#FFFFFF" fontSize="16" fontWeight="900" textAnchor="middle">6 (后中Pipe)</text>
+              </g>
+
+              {/* Center Watermark Crest */}
+              <text
+                x="500"
+                y="675"
+                fill="#64748B"
+                fontSize="11"
+                fontWeight="bold"
+                textAnchor="middle"
+                letterSpacing="2"
+              >
+                FIVB OFFICIAL VOLLEYBALL 18m x 9m COURT
+              </text>
             </g>
           )}
 
           {sport === "BASKETBALL" && (
             <g id="basketballPitchV6">
+              {/* Outer Arena Surround */}
               <rect width="1000" height="700" fill="#181310" />
-              <rect x="40" y="40" width="920" height="620" fill="#7C2D12" stroke="#F59E0B" strokeWidth="3" />
-              <line x1="500" y1="40" x2="500" y2="660" stroke="#F59E0B" strokeWidth="3" />
-              <circle cx="500" cy="350" r="80" fill="none" stroke="#F59E0B" strokeWidth="3" />
-              <rect x="40" y="240" width="180" height="220" fill="#9A3412" stroke="#F59E0B" strokeWidth="2.5" />
-              <rect x="780" y="240" width="180" height="220" fill="#9A3412" stroke="#F59E0B" strokeWidth="2.5" />
+
+              {/* Polished Hardwood Planks Base */}
+              <rect
+                x="50"
+                y="50"
+                width="900"
+                height="600"
+                rx="6"
+                fill="#92400E"
+                stroke="#F59E0B"
+                strokeWidth="3.5"
+              />
+
+              {/* Hardwood Plank Texture Stripes */}
+              {[70, 110, 150, 190, 230, 270, 310, 350, 390, 430, 470, 510, 550, 590, 630].map((y) => (
+                <line
+                  key={y}
+                  x1="50"
+                  y1={y}
+                  x2="950"
+                  y2={y}
+                  stroke="#78350F"
+                  strokeWidth="1.2"
+                  opacity="0.4"
+                />
+              ))}
+
+              {/* Half-Court Division Line */}
+              <line
+                x1="500"
+                y1="50"
+                x2="500"
+                y2="650"
+                stroke="#F59E0B"
+                strokeWidth="3"
+              />
+
+              {/* Center Circle & Outer Jump Ball Circle */}
+              <circle
+                cx="500"
+                cy="350"
+                r="70"
+                fill="none"
+                stroke="#F59E0B"
+                strokeWidth="3"
+              />
+              <circle
+                cx="500"
+                cy="350"
+                r="24"
+                fill="#78350F"
+                stroke="#F59E0B"
+                strokeWidth="2"
+              />
+
+              {/* === LEFT HOOP & PAINT (HOME COURT) === */}
+              {/* The Key / Paint Lane */}
+              <rect
+                x="50"
+                y="240"
+                width="190"
+                height="220"
+                fill="#7C2D12"
+                stroke="#F59E0B"
+                strokeWidth="3"
+              />
+              {/* Free-Throw Circle (Right Half Solid, Left Half Dashed) */}
+              <path
+                d="M 240 280 A 70 70 0 0 1 240 420"
+                fill="none"
+                stroke="#F59E0B"
+                strokeWidth="3"
+              />
+              <path
+                d="M 240 420 A 70 70 0 0 1 240 280"
+                fill="none"
+                stroke="#F59E0B"
+                strokeWidth="3"
+                strokeDasharray="6 4"
+              />
+              {/* 3-Point Arc */}
+              <path
+                d="M 50 110 L 140 110 A 260 260 0 0 1 140 590 L 50 590"
+                fill="none"
+                stroke="#F59E0B"
+                strokeWidth="3.2"
+              />
+              {/* Restricted Area Arc Under Rim */}
+              <path
+                d="M 105 305 A 45 45 0 0 1 105 395"
+                fill="none"
+                stroke="#F59E0B"
+                strokeWidth="2.2"
+              />
+              {/* Backboard & Rim */}
+              <line x1="80" y1="310" x2="80" y2="390" stroke="#FFFFFF" strokeWidth="4.5" />
+              <line x1="80" y1="350" x2="90" y2="350" stroke="#EA580C" strokeWidth="3" />
+              <circle cx="102" cy="350" r="12" fill="none" stroke="#EA580C" strokeWidth="3.5" />
+
+              {/* === RIGHT HOOP & PAINT (AWAY COURT) === */}
+              {/* The Key / Paint Lane */}
+              <rect
+                x="760"
+                y="240"
+                width="190"
+                height="220"
+                fill="#7C2D12"
+                stroke="#F59E0B"
+                strokeWidth="3"
+              />
+              {/* Free-Throw Circle */}
+              <path
+                d="M 760 280 A 70 70 0 0 0 760 420"
+                fill="none"
+                stroke="#F59E0B"
+                strokeWidth="3"
+              />
+              <path
+                d="M 760 420 A 70 70 0 0 0 760 280"
+                fill="none"
+                stroke="#F59E0B"
+                strokeWidth="3"
+                strokeDasharray="6 4"
+              />
+              {/* 3-Point Arc */}
+              <path
+                d="M 950 110 L 860 110 A 260 260 0 0 0 860 590 L 950 590"
+                fill="none"
+                stroke="#F59E0B"
+                strokeWidth="3.2"
+              />
+              {/* Restricted Area Arc Under Rim */}
+              <path
+                d="M 895 305 A 45 45 0 0 0 895 395"
+                fill="none"
+                stroke="#F59E0B"
+                strokeWidth="2.2"
+              />
+              {/* Backboard & Rim */}
+              <line x1="920" y1="310" x2="920" y2="390" stroke="#FFFFFF" strokeWidth="4.5" />
+              <line x1="920" y1="350" x2="910" y2="350" stroke="#EA580C" strokeWidth="3" />
+              <circle cx="898" cy="350" r="12" fill="none" stroke="#EA580C" strokeWidth="3.5" />
+
+              {/* Center Watermark */}
+              <text
+                x="500"
+                y="675"
+                fill="#78350F"
+                fontSize="11"
+                fontWeight="bold"
+                textAnchor="middle"
+                letterSpacing="2"
+              >
+                FIBA / NCAA HARDWOOD 28m x 15m BASKETBALL COURT
+              </text>
             </g>
           )}
+
+          {/* ================= GHOST TRAILS & PREVIOUS PHASE MOTION VECTORS ================= */}
+          {showGhostTrails && prevPhase && ghostMovementPairs.map((pair) => {
+            const isOpponent = pair.type === "OPPONENT";
+            const isBall = pair.type === "BALL";
+            const strokeColor = isBall ? "#FBBF24" : isOpponent ? "#F87171" : "#60A5FA";
+            const ghostBg = isBall ? "#FEF3C7" : isOpponent ? "#7F1D1D" : "#1E3A8A";
+
+            // Quadratic bezier curve control point offset
+            const midX = (pair.prevX + pair.currX) / 2;
+            const midY = (pair.prevY + pair.currY) / 2;
+            const dx = pair.currX - pair.prevX;
+            const dy = pair.currY - pair.prevY;
+            const perpX = -dy * 0.16;
+            const perpY = dx * 0.16;
+            const ctrlX = Math.round(midX + perpX);
+            const ctrlY = Math.round(midY + perpY);
+
+            const pathD = `M ${pair.prevX} ${pair.prevY} Q ${ctrlX} ${ctrlY} ${pair.currX} ${pair.currY}`;
+
+            return (
+              <g key={`ghost_${pair.tokenId}`} className="pointer-events-none select-none">
+                {/* 1. Ghost origin position marker */}
+                <circle
+                  cx={pair.prevX}
+                  cy={pair.prevY}
+                  r={isBall ? 10 : 16}
+                  fill={ghostBg}
+                  fillOpacity="0.35"
+                  stroke={strokeColor}
+                  strokeWidth="1.8"
+                  strokeDasharray="3 3"
+                />
+                {!isBall && (
+                  <text
+                    x={pair.prevX}
+                    y={pair.prevY + 3.5}
+                    fill={strokeColor}
+                    fontSize="9.5"
+                    fontWeight="bold"
+                    textAnchor="middle"
+                    opacity="0.9"
+                  >
+                    {pair.jerseyNumber || "•"}
+                  </text>
+                )}
+
+                {/* 2. Motion vector connecting Phase N-1 to Phase N */}
+                <path
+                  d={pathD}
+                  fill="none"
+                  stroke={strokeColor}
+                  strokeWidth="2.5"
+                  strokeDasharray="5 3"
+                  strokeLinecap="round"
+                  opacity="0.85"
+                  markerEnd="url(#arrow-ghost-trail)"
+                />
+
+                {/* 3. Distance & Phase Transition Tag */}
+                <g transform={`translate(${ctrlX}, ${ctrlY})`}>
+                  <rect
+                    x="-26"
+                    y="-9"
+                    width="52"
+                    height="18"
+                    rx="5"
+                    fill="#0F172A"
+                    fillOpacity="0.9"
+                    stroke={strokeColor}
+                    strokeWidth="1"
+                  />
+                  <text
+                    x="0"
+                    y="3.5"
+                    fill={strokeColor}
+                    fontSize="8.5"
+                    fontWeight="bold"
+                    textAnchor="middle"
+                  >
+                    跑动 +{pair.distance}m
+                  </text>
+                </g>
+              </g>
+            );
+          })}
 
           {/* ================= 4. TACTICAL TRAJECTORIES (ARROWS WITH BENDABLE CURVES) ================= */}
           {currentPhase.trajectories?.map((traj) => {
@@ -1478,7 +1875,7 @@ export default function TacticsBoard({
             }
 
             // 5. Home Team Player Token (High-contrast Broadcast Emblem)
-            const isMe = myToken && token.id === myToken.id;
+            const isMe = (myToken && token.id === myToken.id) || (athletePovId && token.id === athletePovId);
 
             return (
               <g
@@ -1586,17 +1983,117 @@ export default function TacticsBoard({
                 )}
               </div>
               <p className="text-xs text-stone-300 mt-0.5">
-                <strong className="text-emerald-400">跑位职责：</strong>{" "}
-                {selectedToken.dutyZh || selectedToken.dutyEn || "保持战术位置，随时前插策应。"}
+                <strong className="text-emerald-400">{isZh ? "跑位职责：" : "Duty: "}</strong>{" "}
+                {isZh
+                  ? selectedToken.dutyZh || selectedToken.dutyEn || "保持战术位置，随时前插策应。"
+                  : selectedToken.dutyEn || selectedToken.dutyZh || "Hold tactical position and support play."}
               </p>
             </div>
           </div>
 
           <div className="text-[11px] text-stone-400 font-mono shrink-0">
-            球场坐标: ({selectedToken.x}, {selectedToken.y})
+            {isZh ? "球场坐标" : "Coords"}: ({selectedToken.x}, {selectedToken.y})
           </div>
         </div>
       )}
+
+      {/* ================= 7. STEP STORYBOARD TIMELINE STRIP (连环推演画卷，清晰衔接从阶段1到阶段2) ================= */}
+      <div className="p-3.5 rounded-xl bg-[#141923] border border-white/[0.08] space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div className="flex items-center space-x-2">
+            <span className="text-sm font-bold text-white flex items-center space-x-1.5">
+              <span>🎬</span>
+              <span>{isZh ? "战术演进连环画卷" : "Tactical Step Storyboard"}</span>
+              <span className="text-xs font-normal text-stone-400 font-sans">/ Step Storyboard</span>
+            </span>
+            <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-950/80 text-emerald-300 font-bold border border-emerald-600/40">
+              {isZh ? "阶段衔接一目了然" : "Phase Clarity"}
+            </span>
+          </div>
+
+          {/* Perspective Dropdown (Coach bird-eye vs Athlete POV) */}
+          <div className="flex items-center space-x-2 text-xs">
+            <span className="text-stone-400">{isZh ? "战术视角:" : "POV:"}</span>
+            <select
+              value={athletePovId || ""}
+              onChange={(e) => setAthletePovId(e.target.value || null)}
+              className="px-2.5 py-1 rounded-lg bg-[#1C2331] border border-white/[0.08] text-stone-200 text-xs outline-none cursor-pointer"
+            >
+              <option value="">{isZh ? "👀 全景全局鸟瞰 (Coach Bird-Eye)" : "👀 Coach Bird-Eye View"}</option>
+              {currentPhase.tokens
+                .filter((t) => t.type === "PLAYER" && t.jerseyNumber)
+                .map((t) => (
+                  <option key={t.id} value={t.id}>
+                    👕 #{t.jerseyNumber} {t.label} ({t.position || "Athlete"})
+                  </option>
+                ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Storyboard Phase Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {phases.map((ph, idx) => {
+            const isCurrent = currentPhaseIdx === idx;
+            return (
+              <div
+                key={idx}
+                onClick={() => {
+                  setIsPlaying(false);
+                  setCurrentPhaseIdx(idx);
+                  setAnimProgress(0);
+                }}
+                className={`cursor-pointer p-3.5 rounded-xl border transition-all text-left flex flex-col justify-between group ${
+                  isCurrent
+                    ? "bg-emerald-950/40 border-emerald-500 shadow-lg ring-1 ring-emerald-500/50"
+                    : "bg-[#181F2B] border-white/[0.06] hover:bg-[#1E2736] hover:border-white/20"
+                }`}
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span
+                      className={`text-xs font-black px-2.5 py-0.5 rounded-md ${
+                        isCurrent
+                          ? "bg-emerald-500 text-white"
+                          : "bg-stone-800 text-stone-300 group-hover:bg-stone-700"
+                      }`}
+                    >
+                      {ph.titleZh || `阶段 ${idx + 1}`}
+                    </span>
+                    <span className="text-[10px] text-stone-400 font-mono">
+                      {ph.tokens?.length || 0} {isZh ? "人" : "tokens"} · {ph.trajectories?.length || 0} {isZh ? "线" : "arrows"}
+                    </span>
+                  </div>
+
+                  <h5 className="text-xs font-bold text-white mb-1">
+                    {ph.titleZh}
+                    <span className="text-[10px] text-stone-400 font-normal block">{ph.titleEn}</span>
+                  </h5>
+
+                  <p className="text-xs text-stone-300 leading-relaxed line-clamp-3 mt-1.5">
+                    {ph.notesZh || ph.notesEn}
+                  </p>
+                </div>
+
+                <div className="mt-3 pt-2.5 border-t border-white/[0.06] flex items-center justify-between text-[11px]">
+                  <span className="text-stone-400 font-mono text-[10px]">
+                    {idx === 0
+                      ? isZh ? "起手布阵" : "Kick-off"
+                      : isZh ? `从阶段${idx}跑位演进` : `Transition from P${idx}`}
+                  </span>
+                  <span
+                    className={`font-bold flex items-center space-x-1 ${
+                      isCurrent ? "text-emerald-400" : "text-stone-400 group-hover:text-stone-200"
+                    }`}
+                  >
+                    <span>{isCurrent ? (isZh ? "当前演练中 ✓" : "Active ✓") : isZh ? "切至该阶段 ➔" : "View Phase ➔"}</span>
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
 
       {/* ================= 7. TACTICAL TEXT ANNOTATION MODAL ================= */}
       {showTextModal && (

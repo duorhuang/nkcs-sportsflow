@@ -15,99 +15,59 @@ export const config = {
   ],
 };
 
-function getUserSport(username: string): "football" | "volleyball" | "basketball" {
-  const u = username.toLowerCase();
-  if (u.includes("volleyball")) return "volleyball";
-  if (u.includes("basketball")) return "basketball";
-  return "football";
-}
-
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Public paths that do not require authentication
+  // 1. Static and auth endpoints
   if (
+    pathname === "/" ||
     pathname === "/login" ||
     pathname.startsWith("/api/auth/login") ||
-    pathname.startsWith("/api/auth/logout")
+    pathname.startsWith("/api/auth/logout") ||
+    pathname.startsWith("/assets/") ||
+    pathname.startsWith("/draco/")
   ) {
-    const sessionToken = request.cookies.get("session_token")?.value;
-    if (sessionToken && pathname === "/login") {
-      const session = await verifySessionToken(sessionToken);
-      if (session) {
-        const targetSport = session.role === "ADMIN" ? "football" : getUserSport(session.username);
-        return NextResponse.redirect(new URL(`/${targetSport}`, request.url));
-      }
-    }
     return NextResponse.next();
   }
 
-  // Root redirect to user's assigned sport channel or login
-  if (pathname === "/") {
-    const sessionToken = request.cookies.get("session_token")?.value;
-    if (!sessionToken) {
-      return NextResponse.redirect(new URL("/login", request.url));
-    }
-    const session = await verifySessionToken(sessionToken);
-    if (!session) {
-      return NextResponse.redirect(new URL("/login", request.url));
-    }
-    const targetSport = session.role === "ADMIN" ? "football" : getUserSport(session.username);
-    return NextResponse.redirect(new URL(`/${targetSport}`, request.url));
-  }
-
-  // Check authentication for protected routes
+  // 2. Read session token if present
   const sessionToken = request.cookies.get("session_token")?.value;
-  if (!sessionToken) {
-    if (pathname.startsWith("/api/")) {
-      return NextResponse.next();
-    }
-    const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("redirect", pathname);
-    return NextResponse.redirect(loginUrl);
-  }
-
-  const session = await verifySessionToken(sessionToken);
-  if (!session) {
-    if (pathname.startsWith("/api/")) {
-      const response = NextResponse.json({ error: "Invalid session" }, { status: 401 });
-      response.cookies.delete("session_token");
-      return response;
-    }
-    const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("redirect", pathname);
-    const response = NextResponse.redirect(loginUrl);
-    response.cookies.delete("session_token");
-    return response;
-  }
-
-  // Check admin role guard
-  if (pathname.startsWith("/admin") && session.role !== "ADMIN") {
-    const targetSport = getUserSport(session.username);
-    return NextResponse.redirect(new URL(`/${targetSport}`, request.url));
-  }
-
-  // ================= STRICT CHANNEL ISOLATION GUARD =================
-  // Non-admin coaches and players are strictly isolated to their assigned sport channel.
-  if (session.role !== "ADMIN" && !pathname.startsWith("/api/") && !pathname.startsWith("/profile")) {
-    const userSport = getUserSport(session.username);
-    const sportsList = ["football", "volleyball", "basketball"] as const;
-
-    for (const otherSport of sportsList) {
-      if (otherSport !== userSport && pathname.startsWith(`/${otherSport}`)) {
-        const redirectedPath = pathname.replace(`/${otherSport}`, `/${userSport}`);
-        return NextResponse.redirect(new URL(redirectedPath, request.url));
-      }
+  let session = null;
+  if (sessionToken) {
+    try {
+      session = await verifySessionToken(sessionToken);
+    } catch {
+      session = null;
     }
   }
 
-  // Forward user information in request headers
+  // 3. Admin routes require active ADMIN session
+  if (pathname.startsWith("/admin")) {
+    if (!session || session.role !== "ADMIN") {
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("redirect", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+  }
+
+  // 4. Profile route requires logged in user
+  if (pathname.startsWith("/profile")) {
+    if (!session) {
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("redirect", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+  }
+
+  // 5. Forward user info in request headers if authenticated
   const requestHeaders = new Headers(request.headers);
-  requestHeaders.set("x-user-id", session.userId);
-  requestHeaders.set("x-user-role", session.role);
-  requestHeaders.set("x-user-username", session.username);
-  requestHeaders.set("x-user-name-en", encodeURIComponent(session.nameEn));
-  requestHeaders.set("x-user-name-zh", encodeURIComponent(session.nameZh));
+  if (session) {
+    requestHeaders.set("x-user-id", session.userId);
+    requestHeaders.set("x-user-role", session.role);
+    requestHeaders.set("x-user-username", session.username);
+    requestHeaders.set("x-user-name-en", encodeURIComponent(session.nameEn));
+    requestHeaders.set("x-user-name-zh", encodeURIComponent(session.nameZh));
+  }
 
   return NextResponse.next({
     request: {
