@@ -4,7 +4,12 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { useApp } from "@/context/AppContext";
 import { SportChannel } from "@/types";
-import InteractiveBodyVisualizer, { BodyPartKey } from "@/components/recovery/InteractiveBodyVisualizer";
+import InteractiveBodyVisualizer from "@/components/recovery/InteractiveBodyVisualizer";
+import {
+  BodyPartKey,
+  SpecificMuscle,
+  ANATOMY_DATABASE,
+} from "@/lib/anatomyData";
 import {
   Activity,
   ShieldCheck,
@@ -21,6 +26,9 @@ import {
   XCircle,
   Clock,
   Layers,
+  Crosshair,
+  MapPin,
+  Fingerprint,
 } from "lucide-react";
 
 interface GuideItem {
@@ -52,7 +60,9 @@ export default function RecoveryPage() {
 
   const isCoachOrAdmin = user?.role === "COACH" || user?.role === "ADMIN";
 
-  const [selectedPart, setSelectedPart] = useState<BodyPartKey>("calves");
+  // Selected Zone & Specific Muscle
+  const [selectedPart, setSelectedPart] = useState<BodyPartKey>("hamstrings");
+  const [selectedSpecificMuscle, setSelectedSpecificMuscle] = useState<string>("biceps_femoris");
   const [condition, setCondition] = useState<"DOMS" | "ACUTE" | "CHRONIC">("DOMS");
   const [guides, setGuides] = useState<GuideItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -66,149 +76,34 @@ export default function RecoveryPage() {
   const [ugcDuration, setUgcDuration] = useState("");
   const [submittingUgc, setSubmittingUgc] = useState(false);
 
-  // Default Clinical Knowledge Base
-  const clinicalSpecs: Record<BodyPartKey, any> = {
-    calves: {
-      nameZh: "小腿腓肠肌 / 比目鱼肌 / 跟腱",
-      nameEn: "Calves (Gastrocnemius, Soleus & Achilles)",
-      risk: "频繁急停冲刺、高空起跳落地缓冲冲击、塑胶与硬地摩擦",
-      peaceLove: "【PEACE & LOVE原则】前48小时抬高下肢高于心脏，避免过度冰敷抑制修复；72小时后进行无痛范围的主动背屈活动与温和血流刺激。",
-      dynamic: "轻快脚尖点地连续弹跳 (20次 x 2组) + 支撑位踝关节主动多轴环绕",
-      static: "斜板或推墙站立，前腿弯曲后腿伸直，脚后跟紧贴地面，保持35秒，换侧重复",
-      gun: "平头或气垫头，顺着腓肠肌内外侧肌腹自下向上缓慢移动，2档中频，单次40秒，严禁击打跟腱骨突",
-      scraper: "30度角度涂抹乳液顺向推刮跟腱上方结缔组织，每次5-7遍",
-      zeroCost: "【宿舍零成本替代】：取一瓶冷冻结冰的500ml矿泉水瓶置于地面，足底及小腿下段在其上方缓慢来回滚压；双手大拇指指腹垂直按压酸痛承山穴30秒！",
-      rtpChecks: ["单腿提踵30次无痛", "双脚连续纵跳20次无酸软", "踝关节全范围背屈角度对称 (膝盖触墙试验 > 10cm)"],
-    },
-    hamstrings: {
-      nameZh: "大腿后侧腘绳肌群 (半腱肌/半膜肌/股二头肌)",
-      nameEn: "Hamstrings Complex",
-      risk: "高速冲刺极速离心收缩收步、急停变向撕裂高发区",
-      peaceLove: "【现代拉伤分级】轻度拉伤切忌立即做暴力剧烈拉伸（会撕扯未愈纤维）；采用等长收缩（如仰卧脚跟踩地微屈膝抬臀静态维持）维持肌腱神经适应。",
-      dynamic: "高踢腿行进前迈步 (左右各15次) + 单腿燕式前倾摆动",
-      static: "坐姿双腿伸直，呼气时由髋关节前倾带动躯干向前，双手向脚尖方向延伸，保持40秒",
-      gun: "大球形头，自坐骨结节向膝关节腘窝方向走形，中低频45秒",
-      scraper: "由上至下长程轻推，切勿在腘窝血管神经密集区重刮",
-      zeroCost: "【宿舍零成本替代】：坐在硬木椅边缘，将网球或硬质水杯垫在腘绳肌酸痛结节处，利用自身坐姿体重垂直下压并微动小腿，深层筋膜痛感释放！",
-      rtpChecks: ["仰卧直腿抬高达到 80 度无阻抗痛", "单腿桥式臀推维持 30 秒无痉挛", "次最大速度冲刺 (85%) 跑动无牵扯痛感"],
-    },
-    quads: {
-      nameZh: "大腿股四头肌群 (股直肌/股内外侧肌)",
-      nameEn: "Quadriceps Femoris",
-      risk: "重炮大力抽射、急停跳投制动、深蹲发力过度",
-      peaceLove: "【离心超负荷】剧烈踢球后常发生延迟性酸痛(DOMS)，以泡沫轴轻度低压滚压促进微循环代谢乳酸与炎症介质。",
-      dynamic: "行进间后踢腿折叠小腿贴近臀部 (快速交替 30 次)",
-      static: "单腿站立，手握对侧脚踝向后上方提拉，保持骨盆后倾中立位，拉伸大腿前侧40秒",
-      gun: "扁平头或大球头，沿股直肌走向从中段至髋骨下方推移，频率中等",
-      scraper: "宽刃刀顺纤维走向由下向上轻推，避开髌骨上方肌腱连接点",
-      zeroCost: "【宿舍零成本替代】：侧卧在床铺上，用长浴巾套住脚踝拉向臀部作为牵引器；用肘部在床上对股四头肌痛点进行5点深压！",
-      rtpChecks: ["完全屈膝脚跟触碰臀部无锐痛", "单腿无负重深蹲至 90 度动作稳定", "双腿跳起落地缓冲无膝前压痛"],
-    },
-    knees: {
-      nameZh: "膝关节髌腱 / 前后交叉韧带 / 半月板",
-      nameEn: "Knee Joint, Patellar Tendon & ACL/MCL",
-      risk: "急停变向旋转扭力、高空拦网与争顶落地不稳、草坪/硬木打滑",
-      peaceLove: "【急性扭伤急救】若伴随关节弹响与迅速肿胀，必须立即离场制动加压包扎，转运校医诊断；若为常规髌腱劳损，执行等长靠墙静蹲。",
-      dynamic: "原地轻度微屈膝半蹲提踵 + 直腿后撤步激活",
-      static: "靠墙静蹲 45 度角保持 45 秒 (等长收缩镇痛黄金动作)",
-      gun: "严禁直接击打髌骨及关节间隙！仅可松解股四头肌下段与髂胫束外侧",
-      scraper: "仅在髌腱两侧脂肪垫边缘进行极轻柔微触点刮拭",
-      zeroCost: "【宿舍零成本替代】：背靠宿舍门做靠墙静蹲，大腿之间夹一个厚枕头或水杯激活内收肌协同保护膝关节！",
-      rtpChecks: ["膝关节完全屈伸角度与健侧一致", "单腿下台阶试验无打软腿与酸痛", "单腿侧向跳跃落地平稳无晃动"],
-    },
-    shoulders: {
-      nameZh: "肩袖四肌 (冈上肌/冈下肌/小圆肌/肩胛下肌)",
-      nameEn: "Rotator Cuff & Deltoids",
-      risk: "排球扣杀发球大力挥臂、篮球长传抢断对抗、守门员扑救手腕肩部撞击",
-      peaceLove: "【过头运动过劳】避免在高抬手臂受限时进行暴力甩肩；注重肩胛骨后缩下沉与后侧小圆肌的离心力量维护。",
-      dynamic: "Y-T-W-L 肩胛神经激活操 (各10次) + 弹性阻力带水平外旋",
-      static: "十字交叉跨胸拉伸 (手肘弯曲压住手臂向对侧胸前贴近，保持30秒)",
-      gun: "小球头轻柔按压肩关节后侧冈下肌，避免震击肩峰骨头",
-      scraper: "在肩胛冈下方区域涂抹润滑油，以45度角向外侧推刮",
-      zeroCost: "【宿舍零成本替代】：背靠宿舍墙壁，将网球夹在肩胛骨与墙壁之间，微曲双腿上下蹲动寻找压痛点滚压！",
-      rtpChecks: ["手臂高举过头贴耳无撞击痛", "徒手背手摸后背肩胛骨对称", "模拟扣杀/投篮挥臂动作无受阻感"],
-    },
-    groin: {
-      nameZh: "腹股沟与大腿内收肌群",
-      nameEn: "Groin & Hip Adductors",
-      risk: "足球大脚传中跨步、内切防守横移、侧向大幅度滑步",
-      peaceLove: "【腹股沟拉伤管理】急性期切忌劈叉强拉；采用哥本哈根平板支撑降阶动作（双膝着地支撑）进行等长神经肌肉刺激。",
-      dynamic: "相扑深蹲侧步滑移 + 髋关节内外旋绕环",
-      static: "蝴蝶式坐姿双脚脚心相对，双肘轻压膝关节下沉，保持45秒",
-      gun: "气垫头，在大腿内侧肌腹由膝内上方往大腿根部缓慢推移，低频温和",
-      scraper: "沿内收长肌走向轻刮，禁止高压刺激深层大血管区域",
-      zeroCost: "【宿舍零成本替代】：平躺在床上，双膝夹紧卷紧的厚浴巾全力发力5秒放松5秒，重复10次激活内收肌群！",
-      rtpChecks: ["平躺双腿夹枕头全力无锐痛", "侧向滑步 10 米来回测试无拉扯感", "原地单腿侧向支撑跳跃平稳"],
-    },
-    lower_back: {
-      nameZh: "腰椎竖脊肌 / 腰方肌 / 臀中肌",
-      nameEn: "Lower Back (Erector Spinae & QL)",
-      risk: "躯干频繁扭转抽射、防守卡位碰撞、起跳腾空腰部反弓",
-      peaceLove: "【非特异性腰痛】大多数为臀肌无力引起的腰肌代偿，重点在松解臀大肌与激活腹横肌腹压，切忌强行前屈硬弯腰。",
-      dynamic: "猫牛式骨盆俯卧伸展 (缓慢呼吸 10 组) + 鸟狗式核心对角伸展",
-      static: "仰卧屈膝单膝抱胸拉伸 + 仰卧扭转脊柱伸展 (各保持 30 秒)",
-      gun: "双叉头，顺着脊柱两侧竖脊肌上下移动，绝对严禁直接击打脊椎骨突",
-      scraper: "由外向内顺着肋骨下缘与骨盆上缘之间推刮腰方肌",
-      zeroCost: "【宿舍零成本替代】：平躺在宿舍地板或硬床上，将两个网球装进袜子里做成花生球，垫在腰部两侧进行深度放松！",
-      rtpChecks: ["弯腰前屈指尖碰地无腰痛放射", "平板支撑维持 45 秒无腰部塌陷", "跳起落地腰椎抗震无震动痛"],
-    },
-    ankles: {
-      nameZh: "踝关节韧带 (距腓前韧带) 与距下关节",
-      nameEn: "Ankles & Subtalar Joint",
-      risk: "落地踩在他人脚背内翻扭伤 (崴脚)、变向踩空、人工草坪鞋钉卡死",
-      peaceLove: "【崴脚急救黄金准则】现代医学推荐尽早无痛活动踝泵。若外踝剧痛无法负重超过4步，必须立即就医排查第5跖骨与外踝骨折！",
-      dynamic: "坐姿踝泵练习 (足尖用力下踩与全力勾脚，30次) + 字母空中书写画圆",
-      static: "毛巾套住脚掌前部双手拉向身体做被动背屈拉伸",
-      gun: "禁止直接震击踝关节骨突与韧带撕裂处！仅用于放松小腿胫骨前肌",
-      scraper: "微角度轻柔推刮外踝后方腓骨肌肌腱",
-      zeroCost: "【宿舍零成本替代】：冰块放入保鲜袋加少量水排气，用弹性绷带将冰袋固定于外踝加压冷敷15分钟；之后做坐姿踩毛巾抓握练习！",
-      rtpChecks: ["单腿闭眼站立维持 20 秒不晃动", "单脚原地向前跳跃落地不侧翻", "全身体重完全负重单腿慢跑无不适"],
-    },
-    neck: {
-      nameZh: "颈椎与上斜方肌群",
-      nameEn: "Cervical Spine & Upper Trapezius",
-      risk: "争顶头球冲击、扑救摔倒撞击、比赛紧张耸肩",
-      peaceLove: "【颈部保护】头球后轻微酸痛应进行温和颈部抗阻对抗，切勿暴力做快速甩头旋转动作。",
-      dynamic: "收下巴做双下巴运动 (Chin Tuck 维持5秒 x 10次)",
-      static: "一手固定在椅子边缘，另一手轻扶头部向对侧倾斜拉伸斜方肌 30 秒",
-      gun: "低频气垫头轻触上斜方肌肌腹，避开颈前动脉窦",
-      scraper: "从后脑发际线向肩膀外侧推刮",
-      zeroCost: "【宿舍零成本替代】：双手抱头向后对抗手掌发力，头手互抗保持等长发力10秒！",
-      rtpChecks: ["颈部向左右旋转各达 80 度无卡顿", "抬头仰望天花板无眩晕麻木", "双肩自然下沉无耸肩代偿"],
-    },
-    chest: {
-      nameZh: "胸大肌与前锯肌",
-      nameEn: "Pectoralis Major & Serratus Anterior",
-      risk: "躯干对抗推搡、倒地撑地反作用力",
-      peaceLove: "【胸廓活动度】通过门框拉伸打开胸椎与胸小肌，防止含胸驼背影响比赛呼吸深度。",
-      dynamic: "站姿开合扩胸运动 (20次)",
-      static: "小臂贴在宿舍门框上，身体向前弓步推移拉伸胸大肌 35 秒",
-      gun: "大球头由胸骨向腋下方向缓慢推行，避开锁骨骨头",
-      scraper: "沿胸肋关节向外侧呈放射状轻推",
-      zeroCost: "【宿舍零成本替代】：趴在床上把网球垫在胸肌与肩膀连接处，利用体重轻微画圈松解激痛点！",
-      rtpChecks: ["双手背后十指交叉上提无痛", "做 10 个标准俯卧撑无前肩压痛"],
-    },
-    core: {
-      nameZh: "腹直肌 / 腹内斜肌 / 腹横肌",
-      nameEn: "Core (Rectus & Obliques)",
-      risk: "大幅度射门收腹、滞空腰腹发力",
-      peaceLove: "【核心恢复】赛后通过腹式深呼吸降低交感神经兴奋度，促进胃肠消化与肌糖原再生。",
-      dynamic: "眼镜蛇式温和俯卧伸展 (保持20秒)",
-      static: "仰卧桥式骨盆上推维持与拉伸",
-      gun: "不建议高频震动腹部内脏区",
-      scraper: "腹直肌表面极轻柔由上向下轻刮",
-      zeroCost: "【宿舍零成本替代】：平躺腹部放置一本厚字典，练习用深吸气顶起字典、慢呼气下沉的膈肌深呼吸！",
-      rtpChecks: ["双腿抬离地面 30 度维持 20 秒无腰酸", "侧向平板支撑维持 30 秒动作稳固"],
-    },
+  // Derive current zone and specific muscle from ANATOMY_DATABASE
+  const currentZone = ANATOMY_DATABASE[selectedPart] || ANATOMY_DATABASE.hamstrings;
+  const currentMuscle =
+    currentZone.muscles.find((m) => m.key === selectedSpecificMuscle) ||
+    currentZone.muscles[0];
+
+  const handleSelectZone = (zoneKey: BodyPartKey, specificKey?: string) => {
+    setSelectedPart(zoneKey);
+    const targetZone = ANATOMY_DATABASE[zoneKey];
+    if (specificKey) {
+      setSelectedSpecificMuscle(specificKey);
+    } else if (targetZone && targetZone.muscles.length > 0) {
+      setSelectedSpecificMuscle(targetZone.muscles[0].key);
+    }
   };
 
-  const currentSpec = clinicalSpecs[selectedPart] || clinicalSpecs.calves;
+  const handleSelectSpecificMuscle = (specificKey: string, parentZone: BodyPartKey) => {
+    setSelectedPart(parentZone);
+    setSelectedSpecificMuscle(specificKey);
+  };
 
-  // Load guides
+  // Load community / verified guides for active body part
   const loadGuides = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`/api/recovery?sport=${sport}&bodyPart=${selectedPart}&includePending=${isCoachOrAdmin}`);
+      const res = await fetch(
+        `/api/recovery?sport=${sport}&bodyPart=${selectedPart}&includePending=${isCoachOrAdmin}`
+      );
       if (res.ok) {
         const data = await res.json();
         setGuides(data.guides || []);
@@ -277,7 +172,7 @@ export default function RecoveryPage() {
   };
 
   return (
-    <div className="space-y-6 animate-fadeIn">
+    <div className="space-y-6 animate-fadeIn pb-12">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
         <div>
@@ -286,7 +181,7 @@ export default function RecoveryPage() {
               {sport} ATHLETIC MEDICINE & RECOVERY
             </span>
             <span className="text-xs text-gray-400">
-              现代运动医学标准 · 零成本校园替代
+              现代运动医学标准 · 具体肌肉细分 · 零成本校园自愈
             </span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-serif font-black tracking-wide text-white flex items-center space-x-2.5">
@@ -295,8 +190,8 @@ export default function RecoveryPage() {
           </h1>
           <p className="text-xs text-gray-400 mt-1">
             {isZh
-              ? "3D 解剖人机定位 · 肌肉激痛点精准松解 · 宿舍零成本器械替代 · 返场红绿灯测试 · 师生共建"
-              : "Anatomical map · Trigger point release · Zero-cost dorm substitutes · RTP readiness · UGC review"}
+              ? "3D 空间立体人体模型 · 按具体肌肉精确定位 · 触诊自查指南 · 宿舍零成本自愈替代 · 返场红绿灯达标测试"
+              : "3D musculoskeletal anatomy · Specific muscle breakdown · Tactile palpation · Zero-cost dorm substitutes · RTP readiness tests"}
           </p>
         </div>
 
@@ -311,33 +206,42 @@ export default function RecoveryPage() {
 
       {/* Main Split Workbench: Anatomical Visualizer on Left, Clinical Prescriptions on Right */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left Column: Interactive Body Map (4 cols) */}
+        {/* Left Column: Interactive Body Map (5 cols) */}
         <div className="lg:col-span-5 space-y-4">
           <InteractiveBodyVisualizer
             sport={sport}
             selectedPart={selectedPart}
-            onSelectPart={(part) => setSelectedPart(part)}
+            selectedSpecificMuscle={selectedSpecificMuscle}
+            onSelectPart={handleSelectZone}
+            onSelectSpecificMuscle={handleSelectSpecificMuscle}
           />
 
-          {/* Quick Body Part Selector Pills */}
-          <div className="p-4 rounded-xl bg-[#191919] border border-stone-800">
-            <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider block mb-2">
-              {isZh ? "快速点击选择肌群部位" : "Quick Select Target Zone"}
-            </span>
+          {/* Quick Body Zone Selector Pills */}
+          <div className="p-4 rounded-xl bg-[#141B18] border border-stone-800">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider">
+                {isZh ? "选择大肌群区域 (PRIMARY BODY ZONE)" : "Select Primary Body Zone"}
+              </span>
+              <span className="text-[10px] text-emerald-400 font-mono">
+                {Object.keys(ANATOMY_DATABASE).length} 大核心区域
+              </span>
+            </div>
+
             <div className="flex flex-wrap gap-1.5">
-              {(Object.keys(clinicalSpecs) as BodyPartKey[]).map((key) => {
+              {(Object.keys(ANATOMY_DATABASE) as BodyPartKey[]).map((key) => {
+                const zone = ANATOMY_DATABASE[key];
                 const isSelected = selectedPart === key;
                 return (
                   <button
                     key={key}
-                    onClick={() => setSelectedPart(key)}
+                    onClick={() => handleSelectZone(key)}
                     className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
                       isSelected
-                        ? "bg-rose-700 text-white font-bold shadow-md"
+                        ? "bg-rose-700 text-white font-bold shadow-md ring-1 ring-rose-400"
                         : "bg-stone-900 text-stone-300 hover:bg-stone-800 border border-stone-800"
                     }`}
                   >
-                    {isZh ? clinicalSpecs[key].nameZh.split("/")[0] : clinicalSpecs[key].nameEn.split("(")[0]}
+                    {isZh ? zone.nameZh.split("/")[0] : zone.nameEn.split("(")[0]}
                   </button>
                 );
               })}
@@ -345,19 +249,21 @@ export default function RecoveryPage() {
           </div>
         </div>
 
-        {/* Right Column: Prescriptions & Zero-Cost Protocols (7 cols) */}
+        {/* Right Column: Prescriptions & Specific Muscle Breakdown (7 cols) */}
         <div className="lg:col-span-7 space-y-6">
-          {/* Active Part Overview Card */}
-          <div className="p-6 rounded-2xl bg-[#141B18] border border-stone-800 shadow-xl">
+          {/* Active Specific Muscle Clinical Card */}
+          <div className="p-6 rounded-2xl bg-[#141B18] border border-stone-800 shadow-xl space-y-5">
+            {/* Zone & Sub-Part Title */}
             <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-stone-800">
               <div>
-                <span className="text-[10px] font-mono text-amber-500 font-bold uppercase tracking-wider">
-                  TARGET MUSCLE & JOINT ZONE
+                <span className="text-[10px] font-mono text-amber-500 font-bold uppercase tracking-wider flex items-center space-x-1">
+                  <MapPin className="w-3.5 h-3.5" />
+                  <span>TARGET BODY ZONE · {currentZone.nameEn}</span>
                 </span>
-                <h2 className="text-xl font-serif font-black text-stone-100 mt-0.5">
-                  {currentSpec.nameZh}
+                <h2 className="text-xl sm:text-2xl font-serif font-black text-stone-100 mt-0.5">
+                  {currentMuscle.nameZh}
                 </h2>
-                <p className="text-xs text-stone-400">{currentSpec.nameEn}</p>
+                <p className="text-xs text-stone-400 font-mono">{currentMuscle.nameEn}</p>
               </div>
 
               {/* Condition Switcher Tabs */}
@@ -370,7 +276,7 @@ export default function RecoveryPage() {
                       : "text-stone-400 hover:text-stone-200"
                   }`}
                 >
-                  ⚡ 赛后酸痛 (DOMS)
+                  ⚡ 延迟性酸痛 (DOMS)
                 </button>
                 <button
                   onClick={() => setCondition("ACUTE")}
@@ -395,36 +301,90 @@ export default function RecoveryPage() {
               </div>
             </div>
 
-            {/* Sport Risk Factor */}
-            <div className="mt-4 p-3 rounded-xl bg-amber-950/40 border border-amber-900/50 text-xs text-amber-200 flex items-start space-x-2">
-              <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-              <div>
-                <strong className="text-amber-300">{sport} 常见损伤机制：</strong>
-                <span> {currentSpec.risk}</span>
+            {/* Specific Muscle Sub-Parts Tab Bar */}
+            <div className="p-3.5 rounded-xl bg-[#0D1211] border border-amber-900/40 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-amber-300 uppercase tracking-wider flex items-center space-x-1.5">
+                  <Fingerprint className="w-3.5 h-3.5 text-amber-400" />
+                  <span>
+                    {isZh ? "按具体肌肉部位细分 (SPECIFIC MUSCLE PART)" : "Specific Muscle Part Breakdown"}
+                  </span>
+                </span>
+                <span className="text-[10px] text-stone-400">
+                  {currentZone.muscles.length} 块特定肌肉
+                </span>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                {currentZone.muscles.map((muscle) => {
+                  const isActive = muscle.key === currentMuscle.key;
+                  return (
+                    <button
+                      key={muscle.key}
+                      onClick={() => handleSelectSpecificMuscle(muscle.key, currentZone.key)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 ${
+                        isActive
+                          ? "bg-amber-600 text-stone-950 font-black shadow-lg ring-2 ring-amber-400 scale-[1.02]"
+                          : "bg-stone-900 text-stone-300 hover:bg-stone-800 border border-stone-800"
+                      }`}
+                    >
+                      <Crosshair className={`w-3.5 h-3.5 ${isActive ? "text-stone-950" : "text-amber-400"}`} />
+                      <span>{muscle.nameZh}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
-            {/* Clinical Evidence Directive */}
-            <div className="mt-3 p-3 rounded-xl bg-stone-900/80 border border-stone-800 text-xs text-stone-300">
-              <strong className="text-stone-100 block mb-1">
-                现代运动医学处置黄金准则：
-              </strong>
-              <p className="leading-relaxed text-stone-300">{currentSpec.peaceLove}</p>
+            {/* Exact Anatomical Location & Injury Mechanism */}
+            <div className="p-3.5 rounded-xl bg-stone-900/80 border border-stone-800 text-xs space-y-1.5">
+              <div className="flex items-center space-x-1.5 text-rose-300 font-bold">
+                <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
+                <span>精确解剖定位与损伤机制 (SPECIFIC ANATOMICAL LOCATION)</span>
+              </div>
+              <p className="text-stone-200 leading-relaxed font-medium">
+                {currentMuscle.locationZh}
+              </p>
+              <p className="text-[11px] text-stone-400 font-mono italic">
+                {currentMuscle.locationEn}
+              </p>
+            </div>
+
+            {/* Clinical Tactile Palpation / Self-Check Guide */}
+            <div className="p-3.5 rounded-xl bg-sky-950/30 border border-sky-800/40 text-xs space-y-1">
+              <div className="flex items-center space-x-1.5 text-sky-300 font-bold">
+                <Crosshair className="w-4 h-4 text-sky-400 shrink-0" />
+                <span>临床触诊与自查方法 (TACTILE PALPATION & SELF-CHECK GUIDE)</span>
+              </div>
+              <p className="text-sky-100 leading-relaxed">
+                {currentMuscle.palpationZh}
+              </p>
+            </div>
+
+            {/* Ischemic Trigger Point Release */}
+            <div className="p-3.5 rounded-xl bg-purple-950/30 border border-purple-800/40 text-xs space-y-1">
+              <div className="flex items-center space-x-1.5 text-purple-300 font-bold">
+                <Zap className="w-4 h-4 text-purple-400 shrink-0" />
+                <span>靶向激痛点缺血性按压松解 (TRIGGER POINT RELEASE)</span>
+              </div>
+              <p className="text-purple-100 leading-relaxed">
+                {currentMuscle.triggerPointZh}
+              </p>
             </div>
 
             {/* Zero-Cost Campus / Dormitory Substitute Spotlight */}
-            <div className="mt-4 p-4 rounded-xl bg-stone-900 border border-stone-700/60">
-              <h4 className="text-xs font-black uppercase tracking-wider text-amber-400 mb-1 flex items-center space-x-1.5">
+            <div className="p-4 rounded-xl bg-gradient-to-r from-amber-950/50 to-stone-900 border border-amber-800/50 shadow-md">
+              <h4 className="text-xs font-black uppercase tracking-wider text-amber-300 mb-1.5 flex items-center space-x-1.5">
                 <Sparkles className="w-4 h-4 text-amber-400" />
                 <span>宿舍零成本简易自愈替代手法 (ZERO-COST DORM SUBSTITUTE)</span>
               </h4>
-              <p className="text-xs text-stone-200 leading-relaxed font-medium">
-                {currentSpec.zeroCost}
+              <p className="text-xs text-amber-100 leading-relaxed font-medium">
+                {currentMuscle.dormSubstituteZh}
               </p>
             </div>
 
             {/* Action Matrix Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {/* Dynamic Stretch */}
               <div className="p-3.5 rounded-xl bg-white/5 border border-white/10">
                 <h5 className="text-xs font-bold text-sky-400 mb-1 flex items-center space-x-1.5">
@@ -432,7 +392,7 @@ export default function RecoveryPage() {
                   <span>动态热身与神经激活</span>
                 </h5>
                 <p className="text-xs text-gray-300 leading-relaxed">
-                  {currentSpec.dynamic}
+                  {currentMuscle.dynamicStretchZh}
                 </p>
               </div>
 
@@ -440,47 +400,51 @@ export default function RecoveryPage() {
               <div className="p-3.5 rounded-xl bg-white/5 border border-white/10">
                 <h5 className="text-xs font-bold text-teal-400 mb-1 flex items-center space-x-1.5">
                   <Flame className="w-3.5 h-3.5" />
-                  <span>静态深度拉伸</span>
+                  <span>静态深度牵拉</span>
                 </h5>
                 <p className="text-xs text-gray-300 leading-relaxed">
-                  {currentSpec.static}
+                  {currentMuscle.staticStretchZh}
                 </p>
               </div>
 
-              {/* Massage Gun */}
+              {/* Massage Gun Guidance */}
               <div className="p-3.5 rounded-xl bg-white/5 border border-white/10">
                 <h5 className="text-xs font-bold text-purple-400 mb-1 flex items-center space-x-1.5">
                   <Zap className="w-3.5 h-3.5" />
-                  <span>筋膜枪使用建议</span>
+                  <span>筋膜枪与器械要点</span>
                 </h5>
                 <p className="text-xs text-gray-300 leading-relaxed">
-                  {currentSpec.gun}
+                  {currentMuscle.gunCuesZh}
                 </p>
               </div>
 
-              {/* IASTM Scraper */}
+              {/* Medical Directive */}
               <div className="p-3.5 rounded-xl bg-white/5 border border-white/10">
                 <h5 className="text-xs font-bold text-amber-400 mb-1 flex items-center space-x-1.5">
                   <Layers className="w-3.5 h-3.5" />
-                  <span>筋膜刀技术要点</span>
+                  <span>运动医学处置准则</span>
                 </h5>
                 <p className="text-xs text-gray-300 leading-relaxed">
-                  {currentSpec.scraper}
+                  {currentZone.generalPeaceLoveZh}
                 </p>
               </div>
             </div>
 
             {/* Return to Play Safety Traffic Light Checklist */}
-            <div className="mt-5 pt-4 border-t border-white/10">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-heritage-gold mb-2 flex items-center space-x-2">
-                <ShieldCheck className="w-4 h-4 text-heritage-gold" />
-                <span>返场安全评估红绿灯 (RETURN-TO-PLAY READINESS TEST)</span>
+            <div className="pt-4 border-t border-white/10">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-amber-400 mb-2 flex items-center space-x-2">
+                <ShieldCheck className="w-4 h-4 text-amber-400" />
+                <span>
+                  {isZh
+                    ? `${currentMuscle.nameZh} 返场安全评估红绿灯达标测试`
+                    : "Return-To-Play Readiness Test"}
+                </span>
               </h4>
               <p className="text-[11px] text-gray-400 mb-3">
-                在重新穿上球鞋参加全队高强度合练前，运动员需自主完成以下全部3项达标测试：
+                在重新穿上球鞋参加全队高强度合练前，运动员需自主完成以下全部达标测试：
               </p>
               <div className="space-y-2">
-                {currentSpec.rtpChecks.map((check: string, idx: number) => (
+                {currentMuscle.rtpChecksZh.map((check: string, idx: number) => (
                   <div
                     key={idx}
                     className="flex items-center space-x-2.5 p-2 rounded-lg bg-black/40 border border-white/5 text-xs text-gray-300"

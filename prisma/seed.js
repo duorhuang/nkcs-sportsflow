@@ -84,12 +84,22 @@ async function main() {
   // NOTE: STRICTLY ZERO FABRICATED STUDENT PROFILES CREATED.
   // User instruction: "请不要再自己创建各种名字了。现在先不要创建队员账号，目前里面没有任何学员，不要凭空捏造人物、名字或奇怪的信息。"
 
-  // 5. Training Plans with Drill Cards for Football, Volleyball, Basketball
-  const today = new Date();
+  // 5. Training Plans with Weekly Cadence (Football 2/wk, Volleyball 2/wk, Basketball 1-2/wk) + Archived (>30d)
+  const now = new Date();
+
+  // Helper to get offset date
+  const getOffsetDate = (days) => {
+    const d = new Date(now);
+    d.setDate(d.getDate() + days);
+    return d;
+  };
+
+  // FOOTBALL TRAINING PLANS (2 per week: Tuesday & Thursday cadence)
+  // Plan 1: Active - This Tuesday
   await prisma.trainingPlan.create({
     data: {
       sport: "FOOTBALL",
-      trainingDate: today,
+      trainingDate: getOffsetDate(-1),
       startTime: "16:30",
       endTime: "18:30",
       location: "2号主天然草坪 (Main Grass Pitch 2)",
@@ -154,10 +164,95 @@ async function main() {
     },
   });
 
+  // Plan 2: Active - This Thursday
+  await prisma.trainingPlan.create({
+    data: {
+      sport: "FOOTBALL",
+      trainingDate: getOffsetDate(1),
+      startTime: "16:30",
+      endTime: "18:30",
+      location: "1号主天然草坪 (Main Grass Pitch 1)",
+      titleEn: "Half-Space Combination & Set-Piece Routines",
+      titleZh: "肋部穿插配合与角球任意球进攻战术套路",
+      contentEn:
+        "Train 3-man third-man runs in the half-space, short corner variations, and second-ball defensive structure.",
+      contentZh:
+        "重点演练进攻三区肋部第三人跑位配合、战术角球快速传跑、以及防守反击中前场二点球保护结构。",
+      tags: "肋部渗透, 战术角球, 第三人跑位",
+      drills: {
+        create: [
+          {
+            sport: "FOOTBALL",
+            titleEn: "Passing Diamond & Third Man Run Activation",
+            titleZh: "菱形传球网与第三人跑位神经激活",
+            category: "WARMUP",
+            durationMins: 15,
+            setsAndReps: "左右脚各 6 分钟",
+            pitchSpecs: "20m x 20m 菱形区",
+            playerCount: "全队分成 4 组",
+            coachingCuesEn: "1. Pass with firm inside foot; 2. Check shoulder before receiving; 3. Strike one-touch into stride.",
+            coachingCuesZh: "1. 脚弓出球干脆有力；2. 接球前快速摆头观察；3. 一脚球直接送入队友冲刺跑道。",
+            sortOrder: 1,
+          },
+          {
+            sport: "FOOTBALL",
+            titleEn: "Half-Space 3v2 Overload Drill",
+            titleZh: "肋部 3v2 局部超载进攻演练",
+            category: "TACTICAL",
+            durationMins: 35,
+            setsAndReps: "12 组进攻轮换",
+            pitchSpecs: "禁区前沿 35m x 30m",
+            playerCount: "3 前锋/中场 vs 2 防守中卫 + 门将",
+            coachingCuesEn: "1. Bait defender forward; 2. Overlap with decisive timing; 3. Low hard strike to far corner.",
+            coachingCuesZh: "1. 持球人持球佯动吸引中卫上抢；2. 边路无球人果断斜插肋部空当；3. 射门追求低平球打远角死角。",
+            sortOrder: 2,
+          },
+        ],
+      },
+    },
+  });
+
+  // Plan 3: Archived - 35 days ago (Demonstrating Monthly Archival)
+  await prisma.trainingPlan.create({
+    data: {
+      sport: "FOOTBALL",
+      trainingDate: getOffsetDate(-35),
+      startTime: "16:30",
+      endTime: "18:30",
+      location: "2号主天然草坪 (Main Grass Pitch 2)",
+      titleEn: "Pre-Season Aerobic Capacity & High-Speed Interval Sprints",
+      titleZh: "季初有氧耐力储备与高强度间歇冲刺考核 [已归档]",
+      contentEn:
+        "Aerobic base assessment, 15m/30m sprint timing, and recovery mechanics.",
+      contentZh:
+        "季初全员基础心肺有氧考核、15米/30米折返跑计时测评、以及冲刺后肌肉主动牵拉恢复。",
+      tags: "体能储备, 间歇冲刺, 季初测评",
+      drills: {
+        create: [
+          {
+            sport: "FOOTBALL",
+            titleEn: "Yo-Yo Intermittent Recovery Test Level 1",
+            titleZh: "Yo-Yo 间歇恢复能力 Level 1 达标测试",
+            category: "PHYSICAL",
+            durationMins: 40,
+            setsAndReps: "测试至个人力竭",
+            pitchSpecs: "20m 往返跑道",
+            playerCount: "全队分组测评",
+            coachingCuesEn: "Turn sharply on the line, pace rhythm steadily.",
+            coachingCuesZh: "折返踩线动作紧凑，严格跟上音频节奏，保持躯干稳定。",
+            sortOrder: 1,
+          },
+        ],
+      },
+    },
+  });
+
+  // VOLLEYBALL TRAINING PLANS (2 per week: Wednesday & Friday cadence)
+  // Plan 1: Active - This Wednesday
   await prisma.trainingPlan.create({
     data: {
       sport: "VOLLEYBALL",
-      trainingDate: today,
+      trainingDate: getOffsetDate(-1),
       startTime: "16:30",
       endTime: "18:30",
       location: "室内体育馆排球主场地 (Indoor Volleyball Court)",
@@ -202,10 +297,95 @@ async function main() {
     },
   });
 
+  // Plan 2: Active - This Friday
+  await prisma.trainingPlan.create({
+    data: {
+      sport: "VOLLEYBALL",
+      trainingDate: getOffsetDate(2),
+      startTime: "16:30",
+      endTime: "18:30",
+      location: "室内体育馆排球主场地 (Indoor Volleyball Court)",
+      titleEn: "Jump Serve Reception & Double Block Transition",
+      titleZh: "跳发球接发一传稳定性与双人拦网手型封堵",
+      contentEn:
+        "Hone platform consistency under aggressive top-spin serves and middle/outside synchronized block closing.",
+      contentZh:
+        "针对对手强力大力跳发强化垫球手臂夹角与重心稳定，演练副攻与边攻手快速横移合并双人拦网手型。",
+      tags: "接发球, 双人拦网, 防守起球",
+      drills: {
+        create: [
+          {
+            sport: "VOLLEYBALL",
+            titleEn: "High-Speed Serve Reception Platform Mastery",
+            titleZh: "高速大力跳发接发垫球靶心练习",
+            category: "TECHNICAL",
+            durationMins: 25,
+            setsAndReps: "每人接满 25 个优质球",
+            pitchSpecs: "后排 6 区域",
+            playerCount: "主攻 + 自由人轮换",
+            coachingCuesEn: "Lock elbows straight, angle platform towards setter.",
+            coachingCuesZh: "两臂夹紧伸直锁死肘关节，垫球面对准网前2号半二传位置。",
+            sortOrder: 1,
+          },
+          {
+            sport: "VOLLEYBALL",
+            titleEn: "Synchronized Double Block Lateral Shuffle",
+            titleZh: "双人同步并网移动并拦与手型前撑",
+            category: "TACTICAL",
+            durationMins: 30,
+            setsAndReps: "左右侧各 15 次全速拦网",
+            pitchSpecs: "网前 9 米区域",
+            playerCount: "副攻 + 主攻/接应",
+            coachingCuesEn: "Shuffle fast, penetrate net with broad hands.",
+            coachingCuesZh: "交叉步快速横移到位，起跳手腕用力前下压，双手深探对方过网空间。",
+            sortOrder: 2,
+          },
+        ],
+      },
+    },
+  });
+
+  // Plan 3: Archived - 38 days ago
+  await prisma.trainingPlan.create({
+    data: {
+      sport: "VOLLEYBALL",
+      trainingDate: getOffsetDate(-38),
+      startTime: "16:30",
+      endTime: "18:30",
+      location: "室内体育馆排球副场",
+      titleEn: "Foundational Footwork & Core Shoulder Conditioning",
+      titleZh: "三步助跑起跳步法与肩袖链耐力基础演练 [已归档]",
+      contentEn:
+        "Jump landing mechanics, 3-step spike approach footwork, and kinetic chain endurance.",
+      contentZh:
+        "主攻三步起跳助跑节奏定型、双脚屈膝缓冲落地防护、以及肩袖肌群离心抗阻训练。",
+      tags: "助跑脚步, 落地缓冲, 肩袖耐力",
+      drills: {
+        create: [
+          {
+            sport: "VOLLEYBALL",
+            titleEn: "Spike Approach Rhythm & Landing Cushion Drill",
+            titleZh: "扣球三步助跑与双脚深蹲减震着地定型",
+            category: "PHYSICAL",
+            durationMins: 35,
+            setsAndReps: "3 组 x 15 次无球模拟",
+            pitchSpecs: "3m 线至网前",
+            playerCount: "全队攻手",
+            coachingCuesEn: "Left-right-left approach with soft shock absorption landing.",
+            coachingCuesZh: "一步小二步大三步蹬地腾空，落地屈膝吸收冲击力，严防单膝内扣。",
+            sortOrder: 1,
+          },
+        ],
+      },
+    },
+  });
+
+  // BASKETBALL TRAINING PLANS (1-2 per week: Monday & Saturday cadence)
+  // Plan 1: Active - This Monday
   await prisma.trainingPlan.create({
     data: {
       sport: "BASKETBALL",
-      trainingDate: today,
+      trainingDate: getOffsetDate(-2),
       startTime: "17:00",
       endTime: "19:00",
       location: "主体育馆硬木球场 (Main Hardwood Basketball Court)",
@@ -244,6 +424,76 @@ async function main() {
             coachingCuesEn: "1. Solid contact on pick; 2. Back-screener pops to corner; 3. Ball handler reads drop coverage.",
             coachingCuesZh: "1. 挡拆人双脚站定形成坚固掩护面；2. 背掩护完成后射手光速外弹底角三分线；3. 控卫读懂对手沉退深度送空接传球。",
             sortOrder: 2,
+          },
+        ],
+      },
+    },
+  });
+
+  // Plan 2: Active - This Saturday
+  await prisma.trainingPlan.create({
+    data: {
+      sport: "BASKETBALL",
+      trainingDate: getOffsetDate(3),
+      startTime: "10:00",
+      endTime: "12:00",
+      location: "主体育馆硬木球场 (Main Hardwood Basketball Court)",
+      titleEn: "Full-Court Transition Offense & Drag Screen Early Attack",
+      titleZh: "全场快攻推进与拖曳掩护 (Drag Screen) 追身抢攻",
+      contentEn:
+        "Train rebound outlet passes within 1.5s, wing rim runs, and trailer 3-point pullups.",
+      contentZh:
+        "演练抓下防守篮板后1.5秒内长传一传发动快攻、双侧翼全速冲刺底角、以及拖后大前锋追身拖曳挡拆直接三分投射。",
+      tags: "快攻反击, 追身三分, 拖曳掩护",
+      drills: {
+        create: [
+          {
+            sport: "BASKETBALL",
+            titleEn: "11-Man Continuous Fastbreak Weave",
+            titleZh: "11 人全场连续八字快攻与多打少转换",
+            category: "TACTICAL",
+            durationMins: 25,
+            setsAndReps: "连续运转 15 分钟不失误",
+            pitchSpecs: "28m x 15m 全场",
+            playerCount: "全队轮转",
+            coachingCuesEn: "Sprint wide lanes, finish through contact.",
+            coachingCuesZh: "两翼坚决跑向边线最宽处拉扯空间，内线强硬对抗中完成上篮终结。",
+            sortOrder: 1,
+          },
+        ],
+      },
+    },
+  });
+
+  // Plan 3: Archived - 42 days ago
+  await prisma.trainingPlan.create({
+    data: {
+      sport: "BASKETBALL",
+      trainingDate: getOffsetDate(-42),
+      startTime: "17:00",
+      endTime: "19:00",
+      location: "主体育馆硬木球场",
+      titleEn: "Defensive Slide Mechanics & 2-3 Zone Rotations",
+      titleZh: "防守滑步重心控制与 2-3 联防轮转补位专项演练 [已归档]",
+      contentEn:
+        "Defensive stance endurance, lateral slide speed, and wing rotation coverage.",
+      contentZh:
+        "防守滑步重心压低防突破、底角被压缩时弱侧高位轮转协防补位体系。",
+      tags: "防守滑步, 2-3联防, 弱侧协防",
+      drills: {
+        create: [
+          {
+            sport: "BASKETBALL",
+            titleEn: "Zig-Zag Full-Court Slide Conditioning",
+            titleZh: "全场 Z 字形高强度贴身防守滑步考核",
+            category: "PHYSICAL",
+            durationMins: 30,
+            setsAndReps: "5 组来回全速滑步",
+            pitchSpecs: "全场边线至边线",
+            playerCount: "全队单人抗阻",
+            coachingCuesEn: "Chest out, hips low, never cross feet.",
+            coachingCuesZh: "抬头挺胸重心贴近地面，两脚绝不交叉，双手张开形成合规封堵墙。",
+            sortOrder: 1,
           },
         ],
       },

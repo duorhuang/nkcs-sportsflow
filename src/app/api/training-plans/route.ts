@@ -16,8 +16,8 @@ export async function GET(request: NextRequest) {
           orderBy: { sortOrder: "asc" },
         },
       },
-      orderBy: { trainingDate: "desc" },
-      take: 10,
+      orderBy: { trainingDate: "asc" },
+      take: 50,
     });
 
     return NextResponse.json({ plans });
@@ -44,6 +44,7 @@ export async function POST(request: NextRequest) {
       startTime,
       endTime,
       location,
+      title,
       titleEn,
       titleZh,
       contentEn,
@@ -52,38 +53,46 @@ export async function POST(request: NextRequest) {
       drills,
     } = body;
 
-    if (!sport || !titleEn || !titleZh) {
-      return NextResponse.json({ error: "Missing required training fields" }, { status: 400 });
+    // Single title flexibility: Coach doesn't need to write both Chinese and English!
+    const effectiveTitleZh = (titleZh || title || titleEn || "").trim();
+    const effectiveTitleEn = (titleEn || title || titleZh || effectiveTitleZh).trim();
+
+    if (!sport || !effectiveTitleZh) {
+      return NextResponse.json({ error: "Missing required training plan title" }, { status: 400 });
     }
 
     const plan = await prisma.trainingPlan.create({
       data: {
         sport: sport.toUpperCase(),
         trainingDate: trainingDate ? new Date(trainingDate) : new Date(),
-        startTime,
-        endTime,
-        location,
-        titleEn,
-        titleZh,
+        startTime: startTime || "16:30",
+        endTime: endTime || "18:30",
+        location: location || "主体育场 (Main Stadium)",
+        titleEn: effectiveTitleEn,
+        titleZh: effectiveTitleZh,
         contentEn: contentEn || "",
         contentZh: contentZh || "",
-        tags,
+        tags: tags || "日常备战",
         drills: drills && drills.length > 0 ? {
-          create: drills.map((d: any, index: number) => ({
-            sport: sport.toUpperCase(),
-            titleEn: d.titleEn,
-            titleZh: d.titleZh,
-            category: d.category || "TACTICAL",
-            durationMins: d.durationMins ? Number(d.durationMins) : null,
-            setsAndReps: d.setsAndReps || null,
-            pitchSpecs: d.pitchSpecs || null,
-            playerCount: d.playerCount || null,
-            coachingCuesEn: d.coachingCuesEn || null,
-            coachingCuesZh: d.coachingCuesZh || null,
-            diagramUrl: d.diagramUrl || null,
-            videoUrl: d.videoUrl || null,
-            sortOrder: index + 1,
-          })),
+          create: drills.map((d: any, index: number) => {
+            const dTitleZh = (d.titleZh || d.title || d.titleEn || `科目 ${index + 1}`).trim();
+            const dTitleEn = (d.titleEn || d.title || d.titleZh || dTitleZh).trim();
+            return {
+              sport: sport.toUpperCase(),
+              titleEn: dTitleEn,
+              titleZh: dTitleZh,
+              category: d.category || "TACTICAL",
+              durationMins: d.durationMins ? Number(d.durationMins) : 20,
+              setsAndReps: d.setsAndReps || null,
+              pitchSpecs: d.pitchSpecs || null,
+              playerCount: d.playerCount || null,
+              coachingCuesEn: d.coachingCuesEn || d.coachingCuesZh || null,
+              coachingCuesZh: d.coachingCuesZh || d.coachingCuesEn || null,
+              diagramUrl: d.diagramUrl || null,
+              videoUrl: d.videoUrl || null,
+              sortOrder: index + 1,
+            };
+          }),
         } : undefined,
       },
       include: {
@@ -95,5 +104,29 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("POST /api/training-plans error:", error);
     return NextResponse.json({ error: "Failed to create training plan" }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const sessionToken = request.cookies.get("session_token")?.value;
+    if (!sessionToken) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const session = await verifySessionToken(sessionToken);
+    if (!session || (session.role !== "COACH" && session.role !== "ADMIN")) {
+      return NextResponse.json({ error: "Forbidden: Coach/Admin required" }, { status: 403 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
+    if (!id) return NextResponse.json({ error: "Missing plan id" }, { status: 400 });
+
+    await prisma.trainingDrill.deleteMany({ where: { planId: id } });
+    await prisma.trainingPlan.delete({ where: { id } });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("DELETE /api/training-plans error:", error);
+    return NextResponse.json({ error: "Failed to delete training plan" }, { status: 500 });
   }
 }

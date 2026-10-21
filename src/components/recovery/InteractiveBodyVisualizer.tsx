@@ -1,103 +1,77 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import { SportChannel } from "@/types";
+import {
+  BodyPartKey,
+  SpecificMuscle,
+  ANATOMY_DATABASE,
+} from "@/lib/anatomyData";
 import {
   RotateCcw,
   Sparkles,
   Info,
   Maximize2,
   Activity,
-  HeartPulse,
   Eye,
   Crosshair,
   ShieldAlert,
+  Layers,
+  CheckCircle2,
 } from "lucide-react";
-
-export type BodyPartKey =
-  | "neck"
-  | "shoulders"
-  | "chest"
-  | "core"
-  | "lower_back"
-  | "groin"
-  | "quads"
-  | "hamstrings"
-  | "knees"
-  | "calves"
-  | "ankles";
 
 interface InteractiveBodyVisualizerProps {
   sport: SportChannel;
   selectedPart: BodyPartKey;
-  onSelectPart: (part: BodyPartKey) => void;
+  selectedSpecificMuscle?: string;
+  onSelectPart: (part: BodyPartKey, specificKey?: string) => void;
+  onSelectSpecificMuscle?: (specificKey: string, parentZone: BodyPartKey) => void;
 }
-
-const PART_NAMES: Record<BodyPartKey, { zh: string; en: string }> = {
-  neck: { zh: "颈肩 / 斜方肌", en: "Neck & Trapezius" },
-  shoulders: { zh: "三角肌 / 肩袖肌群", en: "Deltoids & Rotator Cuff" },
-  chest: { zh: "胸大肌", en: "Pectoralis Major" },
-  core: { zh: "腹直肌 / 核心肌群", en: "Core & Abdominals" },
-  lower_back: { zh: "腰椎竖脊肌 / 背阔肌", en: "Lower Back & Erector Spinae" },
-  groin: { zh: "腹股沟 / 髋内收肌", en: "Groin & Hip Adductors" },
-  quads: { zh: "大腿前侧股四头肌", en: "Quadriceps" },
-  hamstrings: { zh: "大腿后侧腘绳肌", en: "Hamstrings Complex" },
-  knees: { zh: "膝关节 / 髌腱韧带", en: "Knee & Patellar Tendon" },
-  calves: { zh: "小腿后侧腓肠肌 / 比目鱼肌", en: "Calves & Gastrocnemius" },
-  ankles: { zh: "踝关节 / 跟腱复合体", en: "Ankles & Achilles Tendon" },
-};
-
-// 3D coordinate mapping on standard athletic human proportions
-const ANATOMY_ANCHORS: Record<BodyPartKey, { x: number; y: number; z: number; isBack?: boolean }[]> = {
-  neck: [{ x: 0, y: 0.62, z: 0 }],
-  shoulders: [
-    { x: -0.26, y: 0.52, z: 0 },
-    { x: 0.26, y: 0.52, z: 0 },
-  ],
-  chest: [{ x: 0, y: 0.40, z: 0.09 }],
-  core: [{ x: 0, y: 0.18, z: 0.08 }],
-  lower_back: [{ x: 0, y: 0.18, z: -0.08, isBack: true }],
-  groin: [{ x: 0, y: -0.02, z: 0.05 }],
-  quads: [
-    { x: -0.13, y: -0.28, z: 0.09 },
-    { x: 0.13, y: -0.28, z: 0.09 },
-  ],
-  hamstrings: [
-    { x: -0.13, y: -0.28, z: -0.09, isBack: true },
-    { x: 0.13, y: -0.28, z: -0.09, isBack: true },
-  ],
-  knees: [
-    { x: -0.13, y: -0.56, z: 0.06 },
-    { x: 0.13, y: -0.56, z: 0.06 },
-  ],
-  calves: [
-    { x: -0.13, y: -0.78, z: -0.06, isBack: true },
-    { x: 0.13, y: -0.78, z: -0.06, isBack: true },
-  ],
-  ankles: [
-    { x: -0.13, y: -0.98, z: 0.02 },
-    { x: 0.13, y: -0.98, z: 0.02 },
-  ],
-};
 
 export default function InteractiveBodyVisualizer({
   sport,
   selectedPart,
+  selectedSpecificMuscle,
   onSelectPart,
+  onSelectSpecificMuscle,
 }: InteractiveBodyVisualizerProps) {
   const mountRef = useRef<HTMLDivElement | null>(null);
   const [viewMode, setViewMode] = useState<"3D" | "2D">("3D");
-  const [hoveredPart, setHoveredPart] = useState<BodyPartKey | null>(null);
+  const [hoveredMuscle, setHoveredMuscle] = useState<{
+    key: string;
+    parentZone: BodyPartKey;
+    nameZh: string;
+    nameEn: string;
+  } | null>(null);
   const [autoRotate, setAutoRotate] = useState(true);
-  const [currentAngleView, setCurrentAngleView] = useState<"FRONT" | "BACK" | "LEFT" | "RIGHT">("FRONT");
+  const [currentAngleView, setCurrentAngleView] = useState<"FRONT" | "BACK" | "SIDE">("FRONT");
   const [modelLoaded, setModelLoaded] = useState(false);
+
+  // Flatten all muscles with their bilaterally mirrored 3D coordinates
+  const allMusclesList = useMemo(() => {
+    const list: SpecificMuscle[] = [];
+    (Object.keys(ANATOMY_DATABASE) as BodyPartKey[]).forEach((zoneKey) => {
+      ANATOMY_DATABASE[zoneKey].muscles.forEach((m) => list.push(m));
+    });
+    return list;
+  }, []);
+
+  // Find currently active specific muscle object
+  const activeMuscleObj = useMemo(() => {
+    if (selectedSpecificMuscle) {
+      const found = allMusclesList.find((m) => m.key === selectedSpecificMuscle);
+      if (found) return found;
+    }
+    // Fallback to first muscle of selected zone
+    return ANATOMY_DATABASE[selectedPart]?.muscles[0];
+  }, [selectedPart, selectedSpecificMuscle, allMusclesList]);
 
   // High-risk parts based on sport
   const isHighRiskForSport = (part: BodyPartKey): boolean => {
-    if (sport === "FOOTBALL") return ["hamstrings", "groin", "knees", "ankles", "calves"].includes(part);
+    if (sport === "FOOTBALL") return ["hamstrings", "groin", "knees", "ankles", "calves", "quads"].includes(part);
     if (sport === "VOLLEYBALL") return ["shoulders", "knees", "ankles", "lower_back", "calves"].includes(part);
     if (sport === "BASKETBALL") return ["ankles", "knees", "groin", "lower_back", "calves"].includes(part);
     return false;
@@ -109,7 +83,7 @@ export default function InteractiveBodyVisualizer({
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const modelGroupRef = useRef<THREE.Group | null>(null);
   const hitObjectsRef = useRef<THREE.Mesh[]>([]);
-  const beaconMeshesRef = useRef<Map<BodyPartKey, THREE.Mesh[]>>(new Map());
+  const beaconMeshesRef = useRef<Map<string, THREE.Mesh[]>>(new Map());
   const reqAnimRef = useRef<number | null>(null);
   const targetRotationYRef = useRef<number>(0);
   const targetRotationXRef = useRef<number>(0);
@@ -123,7 +97,7 @@ export default function InteractiveBodyVisualizer({
     if (!container) return;
 
     const width = container.clientWidth || 360;
-    const height = container.clientHeight || 560;
+    const height = container.clientHeight || 540;
 
     // 1. Scene
     const scene = new THREE.Scene();
@@ -145,14 +119,14 @@ export default function InteractiveBodyVisualizer({
     container.appendChild(renderer.domElement);
 
     // 4. Lighting: Clean Athletic Studio Setup (Key, Fill, Rim)
-    const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.25);
     scene.add(ambientLight);
 
     const keyLight = new THREE.DirectionalLight(0xf8fafc, 2.2);
     keyLight.position.set(2.5, 3.5, 3.5);
     scene.add(keyLight);
 
-    const rimLight = new THREE.DirectionalLight(0x38bdf8, 1.5);
+    const rimLight = new THREE.DirectionalLight(0x38bdf8, 1.6);
     rimLight.position.set(-2.5, 1.0, -3.0);
     scene.add(rimLight);
 
@@ -199,7 +173,7 @@ export default function InteractiveBodyVisualizer({
         humanModel.scale.set(scale, scale, scale);
         humanModel.position.set(-center.x * scale, -center.y * scale - 0.08, -center.z * scale);
 
-        // Professional Athletic Musculoskeletal PBR Materials
+        // Professional Musculoskeletal Athletic PBR Materials
         const muscleMaterial = new THREE.MeshStandardMaterial({
           color: 0x8b2535, // Deep anatomical athletic muscle crimson
           roughness: 0.38,
@@ -230,8 +204,7 @@ export default function InteractiveBodyVisualizer({
       },
       undefined,
       (err) => {
-        console.warn("body_anatomy.glb loading error, falling back to xbot.glb:", err);
-        // Fallback to xbot if needed
+        console.warn("body_anatomy.glb error, falling back to xbot.glb:", err);
         const fallbackLoader = new GLTFLoader();
         fallbackLoader.load("/assets/models/xbot.glb", (fallbackGltf) => {
           const model = fallbackGltf.scene;
@@ -243,26 +216,34 @@ export default function InteractiveBodyVisualizer({
       }
     );
 
-    // 8. Build Interactive Anatomical Raycast Targets & Holographic Beacons
+    // 8. Build Interactive Raycast Targets & Precision Holographic Beacons for EACH Specific Muscle
     const hitList: THREE.Mesh[] = [];
-    const beaconMap = new Map<BodyPartKey, THREE.Mesh[]>();
+    const beaconMap = new Map<string, THREE.Mesh[]>();
 
-    (Object.keys(ANATOMY_ANCHORS) as BodyPartKey[]).forEach((partKey) => {
-      const anchors = ANATOMY_ANCHORS[partKey];
+    allMusclesList.forEach((muscle) => {
+      const anc = muscle.anchor3D;
       const beacons: THREE.Mesh[] = [];
 
-      anchors.forEach((anc) => {
+      // Support bilateral coordinate creation if x is non-zero
+      const coordinates = anc.x !== 0 ? [anc, { ...anc, x: -anc.x }] : [anc];
+
+      coordinates.forEach((pos) => {
         // Invisible Click Target Sphere (for easy pointer raycasting)
-        const hitGeo = new THREE.SphereGeometry(0.12, 12, 12);
+        const hitGeo = new THREE.SphereGeometry(0.09, 12, 12);
         const hitMat = new THREE.MeshBasicMaterial({ visible: false });
         const hitMesh = new THREE.Mesh(hitGeo, hitMat);
-        hitMesh.position.set(anc.x, anc.y, anc.z);
-        hitMesh.userData = { partKey };
+        hitMesh.position.set(pos.x, pos.y, pos.z);
+        hitMesh.userData = {
+          specificKey: muscle.key,
+          parentZone: muscle.parentZone,
+          nameZh: muscle.nameZh,
+          nameEn: muscle.nameEn,
+        };
         modelGroup.add(hitMesh);
         hitList.push(hitMesh);
 
         // Visible Holographic Target Ring
-        const ringGeo = new THREE.RingGeometry(0.035, 0.055, 24);
+        const ringGeo = new THREE.RingGeometry(0.032, 0.048, 24);
         const ringMat = new THREE.MeshBasicMaterial({
           color: 0x94a3b8,
           side: THREE.DoubleSide,
@@ -270,13 +251,13 @@ export default function InteractiveBodyVisualizer({
           opacity: 0.65,
         });
         const ringMesh = new THREE.Mesh(ringGeo, ringMat);
-        ringMesh.position.set(anc.x, anc.y, anc.z + (anc.isBack ? -0.015 : 0.015));
-        if (anc.isBack) ringMesh.rotation.y = Math.PI;
+        ringMesh.position.set(pos.x, pos.y, pos.z + (pos.isBack ? -0.015 : 0.015));
+        if (pos.isBack) ringMesh.rotation.y = Math.PI;
         modelGroup.add(ringMesh);
         beacons.push(ringMesh);
       });
 
-      beaconMap.set(partKey, beacons);
+      beaconMap.set(muscle.key, beacons);
     });
 
     hitObjectsRef.current = hitList;
@@ -310,7 +291,7 @@ export default function InteractiveBodyVisualizer({
     const handleResize = () => {
       if (!container || !renderer || !camera) return;
       const w = container.clientWidth || 360;
-      const h = container.clientHeight || 560;
+      const h = container.clientHeight || 540;
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       renderer.setSize(w, h);
@@ -326,17 +307,19 @@ export default function InteractiveBodyVisualizer({
         container.innerHTML = "";
       }
     };
-  }, []);
+  }, [allMusclesList]);
 
-  // Update Holographic Beacons based on selected/hovered muscle
+  // Update Holographic Beacons based on selected specific muscle & hovered muscle
   useEffect(() => {
     const beaconMap = beaconMeshesRef.current;
     if (!beaconMap) return;
 
     beaconMap.forEach((beacons, key) => {
-      const isSelected = selectedPart === key;
-      const isHovered = hoveredPart === key;
-      const isHighRisk = isHighRiskForSport(key);
+      const isSelected = selectedSpecificMuscle === key;
+      const isHovered = hoveredMuscle?.key === key;
+      const muscle = allMusclesList.find((m) => m.key === key);
+      const isSameZone = muscle?.parentZone === selectedPart;
+      const isHighRisk = muscle ? isHighRiskForSport(muscle.parentZone) : false;
 
       beacons.forEach((mesh) => {
         const mat = mesh.material as THREE.MeshBasicMaterial;
@@ -344,24 +327,28 @@ export default function InteractiveBodyVisualizer({
 
         if (isSelected) {
           mat.color.setHex(0xf59e0b); // Active focus: Rich Amber
-          mat.opacity = 0.95;
+          mat.opacity = 0.98;
           mesh.scale.set(1.4, 1.4, 1.4);
         } else if (isHovered) {
           mat.color.setHex(0x38bdf8); // Hover focus: Tactical Sky Blue
-          mat.opacity = 0.85;
-          mesh.scale.set(1.2, 1.2, 1.2);
+          mat.opacity = 0.88;
+          mesh.scale.set(1.25, 1.25, 1.25);
+        } else if (isSameZone) {
+          mat.color.setHex(0x10b981); // Same body group: Emerald Green
+          mat.opacity = 0.75;
+          mesh.scale.set(1.1, 1.1, 1.1);
         } else if (isHighRisk) {
           mat.color.setHex(0xef4444); // High sport injury risk: Crimson Red
-          mat.opacity = 0.65;
-          mesh.scale.set(1.0, 1.0, 1.0);
+          mat.opacity = 0.55;
+          mesh.scale.set(0.95, 0.95, 0.95);
         } else {
           mat.color.setHex(0x64748b); // Idle: Sleek Slate
-          mat.opacity = 0.45;
-          mesh.scale.set(0.9, 0.9, 0.9);
+          mat.opacity = 0.40;
+          mesh.scale.set(0.85, 0.85, 0.85);
         }
       });
     });
-  }, [selectedPart, hoveredPart, sport]);
+  }, [selectedPart, selectedSpecificMuscle, hoveredMuscle, sport, allMusclesList]);
 
   // Raycasting Handlers
   const raycasterRef = useRef<THREE.Raycaster>(new THREE.Raycaster());
@@ -392,20 +379,27 @@ export default function InteractiveBodyVisualizer({
       const deltaX = e.clientX - prevMouseXRef.current;
       const deltaY = e.clientY - prevMouseYRef.current;
       targetRotationYRef.current += deltaX * 0.012;
-      targetRotationXRef.current = Math.max(-0.45, Math.min(0.45, targetRotationXRef.current + deltaY * 0.008));
+      targetRotationXRef.current = Math.max(
+        -0.45,
+        Math.min(0.45, targetRotationXRef.current + deltaY * 0.008)
+      );
       prevMouseXRef.current = e.clientX;
       prevMouseYRef.current = e.clientY;
     } else {
       const hits = getIntersections(e.clientX, e.clientY);
-      let foundPart: BodyPartKey | null = null;
-      for (const hit of hits) {
-        const key = hit.object.userData?.partKey as BodyPartKey;
-        if (key) {
-          foundPart = key;
-          break;
+      if (hits.length > 0) {
+        const u = hits[0].object.userData;
+        if (u?.specificKey) {
+          setHoveredMuscle({
+            key: u.specificKey,
+            parentZone: u.parentZone,
+            nameZh: u.nameZh,
+            nameEn: u.nameEn,
+          });
+          return;
         }
       }
-      setHoveredPart(foundPart);
+      setHoveredMuscle(null);
     }
   };
 
@@ -423,11 +417,14 @@ export default function InteractiveBodyVisualizer({
 
     if (dragDist < 6) {
       const hits = getIntersections(e.clientX, e.clientY);
-      for (const hit of hits) {
-        const key = hit.object.userData?.partKey as BodyPartKey;
-        if (key) {
-          onSelectPart(key);
-          break;
+      if (hits.length > 0) {
+        const u = hits[0].object.userData;
+        if (u?.specificKey && u?.parentZone) {
+          if (onSelectSpecificMuscle) {
+            onSelectSpecificMuscle(u.specificKey, u.parentZone);
+          } else {
+            onSelectPart(u.parentZone, u.specificKey);
+          }
         }
       }
     }
@@ -435,13 +432,12 @@ export default function InteractiveBodyVisualizer({
     isDraggingRef.current = false;
   };
 
-  const setPresetAngle = (view: "FRONT" | "BACK" | "LEFT" | "RIGHT") => {
+  const setPresetAngle = (view: "FRONT" | "BACK" | "SIDE") => {
     setAutoRotate(false);
     setCurrentAngleView(view);
     if (view === "FRONT") targetRotationYRef.current = 0;
     if (view === "BACK") targetRotationYRef.current = Math.PI;
-    if (view === "LEFT") targetRotationYRef.current = Math.PI / 2;
-    if (view === "RIGHT") targetRotationYRef.current = -Math.PI / 2;
+    if (view === "SIDE") targetRotationYRef.current = Math.PI / 2;
     targetRotationXRef.current = 0;
   };
 
@@ -502,16 +498,15 @@ export default function InteractiveBodyVisualizer({
         <div className="flex items-center justify-center gap-1.5 w-full my-3 px-1">
           {(
             [
-              { id: "FRONT", label: "正面" },
-              { id: "BACK", label: "背面" },
-              { id: "LEFT", label: "左侧" },
-              { id: "RIGHT", label: "右侧" },
+              { id: "FRONT", label: "正面 FRONT" },
+              { id: "BACK", label: "背面 BACK" },
+              { id: "SIDE", label: "侧面 PROFILE" },
             ] as const
           ).map((item) => (
             <button
               key={item.id}
               onClick={() => setPresetAngle(item.id)}
-              className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-medium transition-all ${
+              className={`flex-1 py-1 px-2 rounded-lg text-xs font-medium transition-all ${
                 currentAngleView === item.id && !autoRotate
                   ? "bg-white text-stone-950 font-bold shadow-sm"
                   : "bg-[#181E29] text-stone-400 hover:text-white border border-white/[0.06]"
@@ -536,210 +531,409 @@ export default function InteractiveBodyVisualizer({
         {/* Subtle Canvas Instruction */}
         <div className="absolute top-3 left-3 pointer-events-none text-[10px] text-stone-400 font-mono flex items-center space-x-1.5 bg-black/60 px-2.5 py-1 rounded-md backdrop-blur-sm border border-white/[0.06]">
           <Eye className="w-3.5 h-3.5 text-emerald-400" />
-          <span>360° 拖拽自由旋转 · 点击肌群光标</span>
+          <span>360° 拖拽自由旋转 · 点击具体肌肉光标</span>
         </div>
 
         {/* Live Hover Tag */}
-        {hoveredPart && (
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 pointer-events-none px-3.5 py-1 rounded-full bg-[#181E29]/95 border border-emerald-500/60 text-emerald-300 text-xs font-bold shadow-xl flex items-center space-x-1.5 backdrop-blur-sm">
-            <Crosshair className="w-3.5 h-3.5" />
-            <span>{PART_NAMES[hoveredPart].zh}</span>
+        {hoveredMuscle && (
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 pointer-events-none px-3.5 py-1.5 rounded-full bg-[#181E29]/95 border border-emerald-500/60 text-emerald-300 text-xs font-bold shadow-xl flex items-center space-x-1.5 backdrop-blur-sm whitespace-nowrap">
+            <Crosshair className="w-3.5 h-3.5 text-amber-400" />
+            <span>{hoveredMuscle.nameZh}</span>
           </div>
         )}
       </div>
 
-      {/* 2D Anatomical SVG Map Container */}
+      {/* 2D Anatomical Contoured Vector Map */}
       {viewMode === "2D" && (
         <div className="relative w-full max-w-[360px] aspect-[360/540] rounded-xl overflow-hidden bg-radial from-[#18212D]/80 to-[#0A0D14] border border-white/[0.08] p-3 my-2 flex flex-col justify-between select-none">
           <div className="flex items-center justify-around text-[10px] font-mono text-stone-400 font-bold border-b border-white/[0.08] pb-1.5">
-            <span>[正面视图 · FRONT]</span>
-            <span>[背面视图 · BACK]</span>
+            <span>[ 正面肌肉群 · ANTERIOR ]</span>
+            <span>[ 背面肌肉群 · POSTERIOR ]</span>
           </div>
 
           <svg viewBox="0 0 360 480" className="w-full h-full">
-            {/* Front View */}
+            {/* FRONT (Anterior) Group */}
             <g transform="translate(10, 10)">
-              {/* Head */}
-              <circle cx="80" cy="40" r="24" fill="#242D38" stroke="#475569" strokeWidth="1.5" />
-              {/* Neck */}
-              <rect
-                x="70"
-                y="64"
-                width="20"
-                height="18"
-                rx="4"
+              {/* Head Outline */}
+              <circle cx="80" cy="40" r="22" fill="#1E293B" stroke="#475569" strokeWidth="1.2" />
+
+              {/* Upper Trapezius / Neck */}
+              <path
+                d="M 64 62 L 72 60 L 88 60 L 96 62 L 102 74 L 58 74 Z"
                 fill={selectedPart === "neck" ? "#F59E0B" : "#334155"}
-                className="cursor-pointer transition-colors"
-                onClick={() => onSelectPart("neck")}
-              />
-              {/* Chest */}
-              <rect
-                x="48"
-                y="85"
-                width="64"
-                height="40"
-                rx="6"
+                className="cursor-pointer hover:opacity-80 transition-colors"
+                onClick={() => onSelectPart("neck", "trapezius_upper")}
+              >
+                <title>颈椎与上斜方肌</title>
+              </path>
+
+              {/* Deltoids (Shoulders Anterior) */}
+              <path
+                d="M 52 74 Q 38 85 36 104 Q 46 102 52 90 Z"
+                fill={selectedPart === "shoulders" ? "#F59E0B" : "#334155"}
+                className="cursor-pointer hover:opacity-80 transition-colors"
+                onClick={() => onSelectPart("shoulders", "deltoid_anterior")}
+              >
+                <title>三角肌前束 (左)</title>
+              </path>
+              <path
+                d="M 108 74 Q 122 85 124 104 Q 114 102 108 90 Z"
+                fill={selectedPart === "shoulders" ? "#F59E0B" : "#334155"}
+                className="cursor-pointer hover:opacity-80 transition-colors"
+                onClick={() => onSelectPart("shoulders", "deltoid_anterior")}
+              >
+                <title>三角肌前束 (右)</title>
+              </path>
+
+              {/* Chest (Pectoralis Major) */}
+              <path
+                d="M 54 76 Q 80 80 106 76 Q 106 106 80 114 Q 54 106 54 76 Z"
                 fill={selectedPart === "chest" ? "#F59E0B" : "#334155"}
-                className="cursor-pointer transition-colors"
-                onClick={() => onSelectPart("chest")}
-              />
-              {/* Core */}
-              <rect
-                x="52"
-                y="128"
-                width="56"
-                height="46"
-                rx="6"
+                className="cursor-pointer hover:opacity-80 transition-colors"
+                onClick={() => onSelectPart("chest", "pectoralis_major")}
+              >
+                <title>胸大肌 (Pectoralis Major)</title>
+              </path>
+
+              {/* Core / Rectus Abdominis */}
+              <path
+                d="M 60 116 Q 80 115 100 116 L 96 172 Q 80 174 64 172 Z"
                 fill={selectedPart === "core" ? "#F59E0B" : "#334155"}
-                className="cursor-pointer transition-colors"
-                onClick={() => onSelectPart("core")}
-              />
-              {/* Groin */}
+                className="cursor-pointer hover:opacity-80 transition-colors"
+                onClick={() => onSelectPart("core", "rectus_abdominis")}
+              >
+                <title>腹直肌与核心肌群</title>
+              </path>
+
+              {/* Groin / Adductors (Anterior) */}
               <polygon
-                points="52,176 108,176 80,210"
+                points="66,174 94,174 80,208"
                 fill={selectedPart === "groin" ? "#F59E0B" : "#334155"}
-                className="cursor-pointer transition-colors"
-                onClick={() => onSelectPart("groin")}
-              />
-              {/* Shoulders */}
-              <circle
-                cx="38"
-                cy="92"
-                r="14"
-                fill={selectedPart === "shoulders" ? "#F59E0B" : "#334155"}
-                className="cursor-pointer"
-                onClick={() => onSelectPart("shoulders")}
-              />
-              <circle
-                cx="122"
-                cy="92"
-                r="14"
-                fill={selectedPart === "shoulders" ? "#F59E0B" : "#334155"}
-                className="cursor-pointer"
-                onClick={() => onSelectPart("shoulders")}
-              />
-              {/* Quads */}
-              <rect
-                x="50"
-                y="214"
-                width="26"
-                height="80"
-                rx="8"
+                className="cursor-pointer hover:opacity-80 transition-colors"
+                onClick={() => onSelectPart("groin", "adductor_longus")}
+              >
+                <title>长收肌与腹股沟 (Adductors)</title>
+              </polygon>
+
+              {/* Quads: Rectus Femoris, Vastus Lateralis & Medialis */}
+              {/* Left Quad Outer / Mid */}
+              <path
+                d="M 50 210 Q 42 245 48 290 Q 64 290 68 280 Q 72 235 66 210 Z"
                 fill={selectedPart === "quads" ? "#F59E0B" : "#334155"}
-                className="cursor-pointer"
-                onClick={() => onSelectPart("quads")}
-              />
-              <rect
-                x="84"
-                y="214"
-                width="26"
-                height="80"
-                rx="8"
+                className="cursor-pointer hover:opacity-80 transition-colors"
+                onClick={() => onSelectPart("quads", "rectus_femoris")}
+              >
+                <title>大腿前侧股四头肌 (股直肌/外侧肌)</title>
+              </path>
+              {/* Right Quad Outer / Mid */}
+              <path
+                d="M 110 210 Q 118 245 112 290 Q 96 290 92 280 Q 88 235 94 210 Z"
                 fill={selectedPart === "quads" ? "#F59E0B" : "#334155"}
-                className="cursor-pointer"
-                onClick={() => onSelectPart("quads")}
-              />
-              {/* Knees */}
+                className="cursor-pointer hover:opacity-80 transition-colors"
+                onClick={() => onSelectPart("quads", "rectus_femoris")}
+              >
+                <title>大腿前侧股四头肌 (股直肌/外侧肌)</title>
+              </path>
+
+              {/* Knees & Patellar Tendon */}
               <circle
-                cx="63"
-                cy="306"
-                r="10"
+                cx="58"
+                cy="302"
+                r="9"
                 fill={selectedPart === "knees" ? "#F59E0B" : "#334155"}
-                className="cursor-pointer"
-                onClick={() => onSelectPart("knees")}
-              />
+                className="cursor-pointer hover:opacity-80 transition-colors"
+                onClick={() => onSelectPart("knees", "patellar_tendon")}
+              >
+                <title>膝关节髌腱 (Patellar Tendon)</title>
+              </circle>
               <circle
-                cx="97"
-                cy="306"
-                r="10"
+                cx="102"
+                cy="302"
+                r="9"
                 fill={selectedPart === "knees" ? "#F59E0B" : "#334155"}
-                className="cursor-pointer"
-                onClick={() => onSelectPart("knees")}
-              />
-              {/* Ankles */}
-              <rect
-                x="55"
-                y="400"
-                width="16"
-                height="24"
-                rx="4"
+                className="cursor-pointer hover:opacity-80 transition-colors"
+                onClick={() => onSelectPart("knees", "patellar_tendon")}
+              >
+                <title>膝关节髌腱 (Patellar Tendon)</title>
+              </circle>
+
+              {/* Shins (Tibialis Anterior) */}
+              <path
+                d="M 52 316 Q 48 355 52 395 L 62 395 Q 64 355 64 316 Z"
+                fill={
+                  selectedPart === "calves" && selectedSpecificMuscle === "tibialis_anterior"
+                    ? "#F59E0B"
+                    : selectedPart === "calves"
+                    ? "#10B981"
+                    : "#334155"
+                }
+                className="cursor-pointer hover:opacity-80 transition-colors"
+                onClick={() => onSelectPart("calves", "tibialis_anterior")}
+              >
+                <title>胫骨前肌 (Tibialis Anterior)</title>
+              </path>
+              <path
+                d="M 108 316 Q 112 355 108 395 L 98 395 Q 96 355 96 316 Z"
+                fill={
+                  selectedPart === "calves" && selectedSpecificMuscle === "tibialis_anterior"
+                    ? "#F59E0B"
+                    : selectedPart === "calves"
+                    ? "#10B981"
+                    : "#334155"
+                }
+                className="cursor-pointer hover:opacity-80 transition-colors"
+                onClick={() => onSelectPart("calves", "tibialis_anterior")}
+              >
+                <title>胫骨前肌 (Tibialis Anterior)</title>
+              </path>
+
+              {/* Ankles / ATFL (Anterior) */}
+              <circle
+                cx="56"
+                cy="410"
+                r="7"
                 fill={selectedPart === "ankles" ? "#F59E0B" : "#334155"}
-                className="cursor-pointer"
-                onClick={() => onSelectPart("ankles")}
-              />
-              <rect
-                x="89"
-                y="400"
-                width="16"
-                height="24"
-                rx="4"
+                className="cursor-pointer hover:opacity-80 transition-colors"
+                onClick={() => onSelectPart("ankles", "atfl")}
+              >
+                <title>距腓前韧带 (ATFL / 踝关节)</title>
+              </circle>
+              <circle
+                cx="104"
+                cy="410"
+                r="7"
                 fill={selectedPart === "ankles" ? "#F59E0B" : "#334155"}
-                className="cursor-pointer"
-                onClick={() => onSelectPart("ankles")}
-              />
+                className="cursor-pointer hover:opacity-80 transition-colors"
+                onClick={() => onSelectPart("ankles", "atfl")}
+              >
+                <title>距腓前韧带 (ATFL / 踝关节)</title>
+              </circle>
             </g>
 
-            {/* Back View */}
+            {/* BACK (Posterior) Group */}
             <g transform="translate(190, 10)">
-              {/* Head */}
-              <circle cx="80" cy="40" r="24" fill="#242D38" stroke="#475569" strokeWidth="1.5" />
-              {/* Lower back */}
-              <rect
-                x="50"
-                y="110"
-                width="60"
-                height="62"
-                rx="6"
+              {/* Head Outline */}
+              <circle cx="80" cy="40" r="22" fill="#1E293B" stroke="#475569" strokeWidth="1.2" />
+
+              {/* Upper Back / Trapezius / Shoulders Infraspinatus */}
+              <path
+                d="M 52 74 Q 80 82 108 74 L 118 106 Q 80 114 42 106 Z"
+                fill={selectedPart === "shoulders" ? "#F59E0B" : "#334155"}
+                className="cursor-pointer hover:opacity-80 transition-colors"
+                onClick={() => onSelectPart("shoulders", "infraspinatus")}
+              >
+                <title>肩袖冈下肌与小圆肌 (Infraspinatus)</title>
+              </path>
+
+              {/* Lower Back (Erector Spinae & QL) */}
+              <path
+                d="M 54 116 Q 80 114 106 116 L 102 168 Q 80 170 58 168 Z"
                 fill={selectedPart === "lower_back" ? "#F59E0B" : "#334155"}
-                className="cursor-pointer"
-                onClick={() => onSelectPart("lower_back")}
-              />
-              {/* Hamstrings */}
+                className="cursor-pointer hover:opacity-80 transition-colors"
+                onClick={() => onSelectPart("lower_back", "erector_spinae")}
+              >
+                <title>竖脊肌与腰方肌 (Lower Back)</title>
+              </path>
+
+              {/* Glutes (Gluteus Maximus & Medius) */}
+              <path
+                d="M 48 170 Q 80 166 112 170 Q 116 208 80 216 Q 44 208 48 170 Z"
+                fill={selectedPart === "glutes" ? "#F59E0B" : "#334155"}
+                className="cursor-pointer hover:opacity-80 transition-colors"
+                onClick={() => onSelectPart("glutes", "glute_maximus")}
+              >
+                <title>臀大肌与臀中肌 (Gluteus)</title>
+              </path>
+
+              {/* Hamstrings: Biceps Femoris (Outer) & Semitendinosus (Inner) */}
+              {/* Left Hamstring (Outer: Biceps Femoris) */}
+              <path
+                d="M 48 218 Q 40 255 48 290 L 64 290 Q 68 255 64 218 Z"
+                fill={
+                  selectedPart === "hamstrings" && selectedSpecificMuscle === "biceps_femoris"
+                    ? "#F59E0B"
+                    : selectedPart === "hamstrings"
+                    ? "#10B981"
+                    : "#334155"
+                }
+                className="cursor-pointer hover:opacity-80 transition-colors"
+                onClick={() => onSelectPart("hamstrings", "biceps_femoris")}
+              >
+                <title>股二头肌长头 (外侧腘绳肌)</title>
+              </path>
+              {/* Left Hamstring (Inner: Semitendinosus) */}
+              <path
+                d="M 64 218 Q 68 255 64 290 L 76 290 Q 74 255 72 218 Z"
+                fill={
+                  selectedPart === "hamstrings" && selectedSpecificMuscle === "semitendinosus"
+                    ? "#F59E0B"
+                    : selectedPart === "hamstrings"
+                    ? "#10B981"
+                    : "#334155"
+                }
+                className="cursor-pointer hover:opacity-80 transition-colors"
+                onClick={() => onSelectPart("hamstrings", "semitendinosus")}
+              >
+                <title>半腱肌/半膜肌 (内侧腘绳肌)</title>
+              </path>
+
+              {/* Right Hamstring (Inner: Semitendinosus) */}
+              <path
+                d="M 88 218 Q 86 255 88 290 L 96 290 Q 94 255 96 218 Z"
+                fill={
+                  selectedPart === "hamstrings" && selectedSpecificMuscle === "semitendinosus"
+                    ? "#F59E0B"
+                    : selectedPart === "hamstrings"
+                    ? "#10B981"
+                    : "#334155"
+                }
+                className="cursor-pointer hover:opacity-80 transition-colors"
+                onClick={() => onSelectPart("hamstrings", "semitendinosus")}
+              >
+                <title>半腱肌/半膜肌 (内侧腘绳肌)</title>
+              </path>
+              {/* Right Hamstring (Outer: Biceps Femoris) */}
+              <path
+                d="M 96 218 Q 94 255 96 290 L 112 290 Q 120 255 112 218 Z"
+                fill={
+                  selectedPart === "hamstrings" && selectedSpecificMuscle === "biceps_femoris"
+                    ? "#F59E0B"
+                    : selectedPart === "hamstrings"
+                    ? "#10B981"
+                    : "#334155"
+                }
+                className="cursor-pointer hover:opacity-80 transition-colors"
+                onClick={() => onSelectPart("hamstrings", "biceps_femoris")}
+              >
+                <title>股二头肌长头 (外侧腘绳肌)</title>
+              </path>
+
+              {/* Calves: Gastrocnemius Medial/Lateral & Soleus */}
+              <path
+                d="M 48 306 Q 40 345 50 380 L 72 380 Q 74 345 68 306 Z"
+                fill={
+                  selectedPart === "calves" && selectedSpecificMuscle === "gastrocnemius_medial"
+                    ? "#F59E0B"
+                    : selectedPart === "calves"
+                    ? "#10B981"
+                    : "#334155"
+                }
+                className="cursor-pointer hover:opacity-80 transition-colors"
+                onClick={() => onSelectPart("calves", "gastrocnemius_medial")}
+              >
+                <title>腓肠肌与比目鱼肌 (左)</title>
+              </path>
+              <path
+                d="M 112 306 Q 120 345 110 380 L 88 380 Q 86 345 92 306 Z"
+                fill={
+                  selectedPart === "calves" && selectedSpecificMuscle === "gastrocnemius_medial"
+                    ? "#F59E0B"
+                    : selectedPart === "calves"
+                    ? "#10B981"
+                    : "#334155"
+                }
+                className="cursor-pointer hover:opacity-80 transition-colors"
+                onClick={() => onSelectPart("calves", "gastrocnemius_medial")}
+              >
+                <title>腓肠肌与比目鱼肌 (右)</title>
+              </path>
+
+              {/* Achilles Tendon */}
               <rect
-                x="50"
-                y="214"
-                width="26"
-                height="80"
-                rx="8"
-                fill={selectedPart === "hamstrings" ? "#F59E0B" : "#334155"}
-                className="cursor-pointer"
-                onClick={() => onSelectPart("hamstrings")}
-              />
+                x="56"
+                y="386"
+                width="8"
+                height="22"
+                rx="2"
+                fill={
+                  selectedPart === "calves" && selectedSpecificMuscle === "achilles_tendon"
+                    ? "#F59E0B"
+                    : selectedPart === "calves"
+                    ? "#10B981"
+                    : "#334155"
+                }
+                className="cursor-pointer hover:opacity-80 transition-colors"
+                onClick={() => onSelectPart("calves", "achilles_tendon")}
+              >
+                <title>跟腱复合体 (Achilles Tendon)</title>
+              </rect>
               <rect
-                x="84"
-                y="214"
-                width="26"
-                height="80"
-                rx="8"
-                fill={selectedPart === "hamstrings" ? "#F59E0B" : "#334155"}
-                className="cursor-pointer"
-                onClick={() => onSelectPart("hamstrings")}
-              />
-              {/* Calves */}
-              <rect
-                x="52"
-                y="320"
-                width="22"
-                height="75"
-                rx="8"
-                fill={selectedPart === "calves" ? "#F59E0B" : "#334155"}
-                className="cursor-pointer"
-                onClick={() => onSelectPart("calves")}
-              />
-              <rect
-                x="86"
-                y="320"
-                width="22"
-                height="75"
-                rx="8"
-                fill={selectedPart === "calves" ? "#F59E0B" : "#334155"}
-                className="cursor-pointer"
-                onClick={() => onSelectPart("calves")}
-              />
+                x="96"
+                y="386"
+                width="8"
+                height="22"
+                rx="2"
+                fill={
+                  selectedPart === "calves" && selectedSpecificMuscle === "achilles_tendon"
+                    ? "#F59E0B"
+                    : selectedPart === "calves"
+                    ? "#10B981"
+                    : "#334155"
+                }
+                className="cursor-pointer hover:opacity-80 transition-colors"
+                onClick={() => onSelectPart("calves", "achilles_tendon")}
+              >
+                <title>跟腱复合体 (Achilles Tendon)</title>
+              </rect>
+
+              {/* Plantar Fascia */}
+              <ellipse
+                cx="60"
+                cy="420"
+                rx="9"
+                ry="5"
+                fill={
+                  selectedPart === "ankles" && selectedSpecificMuscle === "plantar_fascia"
+                    ? "#F59E0B"
+                    : selectedPart === "ankles"
+                    ? "#10B981"
+                    : "#334155"
+                }
+                className="cursor-pointer hover:opacity-80 transition-colors"
+                onClick={() => onSelectPart("ankles", "plantar_fascia")}
+              >
+                <title>足底筋膜 (Plantar Fascia)</title>
+              </ellipse>
+              <ellipse
+                cx="100"
+                cy="420"
+                rx="9"
+                ry="5"
+                fill={
+                  selectedPart === "ankles" && selectedSpecificMuscle === "plantar_fascia"
+                    ? "#F59E0B"
+                    : selectedPart === "ankles"
+                    ? "#10B981"
+                    : "#334155"
+                }
+                className="cursor-pointer hover:opacity-80 transition-colors"
+                onClick={() => onSelectPart("ankles", "plantar_fascia")}
+              >
+                <title>足底筋膜 (Plantar Fascia)</title>
+              </ellipse>
             </g>
           </svg>
         </div>
       )}
+
+      {/* Active Specific Muscle Summary Footer Badge */}
+      <div className="w-full mt-3 p-2.5 rounded-xl bg-[#181E29] border border-white/[0.08] flex items-center justify-between text-xs">
+        <div className="flex items-center space-x-2">
+          <div className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse" />
+          <div className="flex flex-col">
+            <span className="text-stone-300 font-bold">
+              {activeMuscleObj?.nameZh || ANATOMY_DATABASE[selectedPart]?.nameZh}
+            </span>
+            <span className="text-[10px] text-stone-500 font-mono">
+              {activeMuscleObj?.nameEn || ANATOMY_DATABASE[selectedPart]?.nameEn}
+            </span>
+          </div>
+        </div>
+
+        <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 font-mono font-bold">
+          {activeMuscleObj ? "SPECIFIC PART" : "BODY ZONE"}
+        </span>
+      </div>
     </div>
   );
 }
