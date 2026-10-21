@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import { SportChannel } from "@/types";
 import {
   RotateCcw,
@@ -177,21 +178,39 @@ export default function InteractiveBodyVisualizer({
     groundMesh.position.y = -1.15;
     modelGroup.add(groundMesh);
 
-    // 7. Load Real 3D Human Athletic Mesh (GLTF)
+    // 7. Load Real 3D Human Muscle Anatomy Mesh (Z-Anatomy GLTF with DRACO Compression)
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath("/draco/");
+
     const loader = new GLTFLoader();
+    loader.setDRACOLoader(dracoLoader);
+
     loader.load(
-      "/assets/models/xbot.glb",
+      "/assets/models/body_anatomy.glb",
       (gltf) => {
         const humanModel = gltf.scene;
-        // Position and scale real athletic human model
-        humanModel.scale.set(1.18, 1.18, 1.18);
-        humanModel.position.set(0, -1.12, 0);
 
-        // Sleek athletic titanium PBR surface
-        const athleticSkinMaterial = new THREE.MeshStandardMaterial({
-          color: 0x242d38, // Sleek titanium athletic slate
+        // Compute exact bounding box and scale to standard athletic height (1.95m)
+        const box = new THREE.Box3().setFromObject(humanModel);
+        const size = box.getSize(new THREE.Vector3());
+        const center = box.getCenter(new THREE.Vector3());
+        const targetHeight = 1.95;
+        const scale = targetHeight / (size.y || 1);
+        humanModel.scale.set(scale, scale, scale);
+        humanModel.position.set(-center.x * scale, -center.y * scale - 0.08, -center.z * scale);
+
+        // Professional Athletic Musculoskeletal PBR Materials
+        const muscleMaterial = new THREE.MeshStandardMaterial({
+          color: 0x8b2535, // Deep anatomical athletic muscle crimson
+          roughness: 0.38,
+          metalness: 0.15,
+          flatShading: false,
+        });
+
+        const boneMaterial = new THREE.MeshStandardMaterial({
+          color: 0xd6d1c4, // Polished bone ivory
           roughness: 0.32,
-          metalness: 0.22,
+          metalness: 0.08,
           flatShading: false,
         });
 
@@ -199,7 +218,10 @@ export default function InteractiveBodyVisualizer({
           if (child.isMesh) {
             child.castShadow = true;
             child.receiveShadow = true;
-            child.material = athleticSkinMaterial;
+            const isMuscle = /muscle|oblique|rectus|glute|biceps|deltoid|pectoral|quad|hamstring|gastro|soleus|trapezius|latissimus|adductor|flexor|extensor/i.test(
+              child.name
+            );
+            child.material = isMuscle ? muscleMaterial : boneMaterial;
           }
         });
 
@@ -208,7 +230,16 @@ export default function InteractiveBodyVisualizer({
       },
       undefined,
       (err) => {
-        console.error("Failed to load human glb model, fallback active:", err);
+        console.warn("body_anatomy.glb loading error, falling back to xbot.glb:", err);
+        // Fallback to xbot if needed
+        const fallbackLoader = new GLTFLoader();
+        fallbackLoader.load("/assets/models/xbot.glb", (fallbackGltf) => {
+          const model = fallbackGltf.scene;
+          model.scale.set(1.18, 1.18, 1.18);
+          model.position.set(0, -1.12, 0);
+          modelGroup.add(model);
+          setModelLoaded(true);
+        });
       }
     );
 

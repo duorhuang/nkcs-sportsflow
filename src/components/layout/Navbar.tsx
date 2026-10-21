@@ -130,57 +130,43 @@ export const Navbar: React.FC = () => {
             </div>
           </Link>
 
-          {/* Center: 3-Sport Classical Channel Switchers (ADMIN ONLY) vs Dedicated Sport Lock (COACH / ATHLETE) */}
-          {user?.role === "ADMIN" ? (
-            <nav className="flex items-center space-x-1.5 md:space-x-2 bg-stone-900/90 p-1 rounded-full border border-stone-800">
-              {sports.map((item) => {
-                const isSelected = sport === item.key;
-                return (
-                  <button
-                    key={item.key}
-                    onClick={() => setSport(item.key)}
-                    className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-200 ${
-                      isSelected
-                        ? item.key === "FOOTBALL"
-                          ? "bg-emerald-800 text-stone-100 border border-emerald-700/80 shadow-sm"
-                          : item.key === "VOLLEYBALL"
-                          ? "bg-amber-800 text-stone-100 border border-amber-700/80 shadow-sm"
-                          : "bg-amber-700 text-stone-100 border border-amber-600/80 shadow-sm"
-                        : "text-stone-400 hover:text-stone-200 hover:bg-stone-800/50"
-                    }`}
-                  >
-                    <span className="text-sm">{item.icon}</span>
-                    <span className="hidden sm:inline">
-                      {isZh ? item.labelZh : item.labelEn}
-                    </span>
-                  </button>
-                );
-              })}
-            </nav>
-          ) : (
-            <div className="flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-stone-900 border border-stone-800 text-xs font-bold text-stone-200 shadow-sm">
-              <span className="text-base">
-                {sport === "FOOTBALL" ? "⚽" : sport === "VOLLEYBALL" ? "🏐" : "🏀"}
-              </span>
-              <span className="tracking-wide uppercase text-amber-400 font-serif font-black">
-                {sport} VARSITY
-              </span>
-              <span className="hidden sm:inline text-stone-400 text-[10px] font-mono">
-                {isZh ? "独立专区已锁定" : "Channel Locked"}
-              </span>
-            </div>
-          )}
+          {/* Center: 3-Sport Classical Channel Switchers (Accessible for all users to test and inspect) */}
+          <nav className="flex items-center space-x-1.5 md:space-x-2 bg-stone-900/90 p-1 rounded-full border border-stone-800">
+            {sports.map((item) => {
+              const isSelected = sport === item.key;
+              return (
+                <button
+                  key={item.key}
+                  onClick={() => setSport(item.key)}
+                  className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-200 ${
+                    isSelected
+                      ? item.key === "FOOTBALL"
+                        ? "bg-emerald-800 text-stone-100 border border-emerald-700/80 shadow-sm"
+                        : item.key === "VOLLEYBALL"
+                        ? "bg-amber-800 text-stone-100 border border-amber-700/80 shadow-sm"
+                        : "bg-amber-700 text-stone-100 border border-amber-600/80 shadow-sm"
+                      : "text-stone-400 hover:text-stone-200 hover:bg-stone-800/50"
+                  }`}
+                >
+                  <span className="text-sm">{item.icon}</span>
+                  <span className="hidden sm:inline">
+                    {isZh ? item.labelZh : item.labelEn}
+                  </span>
+                </button>
+              );
+            })}
+          </nav>
 
           {/* Right Tools: Language Toggle & Profile/Logout */}
           <div className="flex items-center space-x-2.5 shrink-0">
             {/* Language Switcher */}
             <button
               onClick={() => setLocale(locale === "zh" ? "en" : "zh")}
-              className="flex items-center space-x-1 px-2.5 py-1 rounded-md bg-stone-900 hover:bg-stone-800 text-xs text-stone-300 border border-stone-800 transition-colors"
+              className="flex items-center space-x-1 px-2.5 py-1.5 rounded-lg bg-stone-900 hover:bg-stone-800 text-xs font-bold text-amber-300 border border-white/10 transition-colors"
               title={isZh ? "Switch to English" : "切换为中文"}
             >
-              <Globe className="w-3.5 h-3.5 text-stone-400" />
-              <span className="font-semibold">{locale === "zh" ? "EN" : "中"}</span>
+              <Globe className="w-3.5 h-3.5 text-amber-400" />
+              <span>{locale === "zh" ? "🇨🇳 中文" : "🇬🇧 English"}</span>
             </button>
 
             {/* Notification Bell Dropdown */}
@@ -253,7 +239,7 @@ export const Navbar: React.FC = () => {
               <div className="flex items-center space-x-2">
                 <Link
                   href="/profile"
-                  className="flex items-center space-x-2 px-2.5 py-1 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-colors text-xs text-gray-200"
+                  className="flex items-center space-x-2 px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-colors text-xs text-gray-200"
                 >
                   {user.avatarUrl ? (
                     <img
@@ -264,28 +250,29 @@ export const Navbar: React.FC = () => {
                   ) : (
                     <User className="w-3.5 h-3.5 text-heritage-antiqueGold" />
                   )}
-                  <span className="font-medium hidden md:inline">
+                  <span className="font-bold hidden md:inline">
                     {isZh ? user.nameZh : user.nameEn}
                   </span>
-                  <span className="text-[10px] px-1.5 py-0.2 rounded bg-white/10 text-heritage-gold font-bold">
-                    {user.role}
+                  <span className="text-[10px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-bold border border-amber-500/40">
+                    {user.role === "COACH" ? (isZh ? "教练" : "COACH") : user.role === "ADMIN" ? (isZh ? "总监" : "ADMIN") : (isZh ? "队员" : "PLAYER")}
                   </span>
                 </Link>
 
                 <button
                   onClick={logout}
-                  title={t("logout")}
-                  className="p-1.5 rounded-md text-gray-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+                  className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-rose-950/80 hover:bg-rose-900 border border-rose-700/60 text-rose-200 text-xs font-bold transition-all shadow-sm"
+                  title="退出当前账号并切换队伍"
                 >
-                  <LogOut className="w-4 h-4" />
+                  <LogOut className="w-3.5 h-3.5 text-rose-400" />
+                  <span className="hidden sm:inline">{isZh ? "退出登录" : "Sign Out"}</span>
                 </button>
               </div>
             ) : (
               <Link
                 href="/login"
-                className="px-3 py-1 rounded-md bg-heritage-gold/20 text-heritage-gold border border-heritage-gold/40 text-xs font-bold hover:bg-heritage-gold/30 transition-colors"
+                className="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-stone-950 text-xs font-bold transition-colors shadow-sm"
               >
-                {t("login")}
+                {isZh ? "登录" : "Log In"}
               </Link>
             )}
           </div>

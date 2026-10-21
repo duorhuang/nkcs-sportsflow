@@ -310,23 +310,23 @@ export default function CharacterTray({
             </button>
 
             <button
-              onClick={() => handleAddMarker("OPPONENT", "对位防守人 (X1)")}
+              onClick={() => handleAddMarker("OPPONENT", "对位防守人 (防守 1)")}
               className="p-3 rounded-xl bg-white/5 border border-white/10 hover:border-rose-500 flex flex-col items-center justify-center text-center space-y-2 group transition-all"
             >
-              <div className="w-10 h-10 rounded-full bg-rose-700 border-2 border-rose-500 flex items-center justify-center text-white font-black text-sm shadow-md">
-                X1
+              <div className="w-10 h-10 rounded-full bg-rose-700 border-2 border-rose-500 flex items-center justify-center text-white font-black text-xs shadow-md">
+                防1
               </div>
-              <span className="text-xs font-bold text-rose-300">防守人 X1</span>
+              <span className="text-xs font-bold text-rose-300">防守人 1</span>
             </button>
 
             <button
-              onClick={() => handleAddMarker("OPPONENT", "协防中卫 (X2)")}
+              onClick={() => handleAddMarker("OPPONENT", "协防中卫 (防守 2)")}
               className="p-3 rounded-xl bg-white/5 border border-white/10 hover:border-rose-500 flex flex-col items-center justify-center text-center space-y-2 group transition-all"
             >
-              <div className="w-10 h-10 rounded-full bg-rose-700 border-2 border-rose-500 flex items-center justify-center text-white font-black text-sm shadow-md">
-                X2
+              <div className="w-10 h-10 rounded-full bg-rose-700 border-2 border-rose-500 flex items-center justify-center text-white font-black text-xs shadow-md">
+                防2
               </div>
-              <span className="text-xs font-bold text-rose-300">协防人 X2</span>
+              <span className="text-xs font-bold text-rose-300">防守人 2</span>
             </button>
 
             <button

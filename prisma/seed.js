@@ -281,8 +281,8 @@ async function main() {
               { id: "p4", type: "PLAYER", label: "后腰", jerseyNumber: 6, position: "CDM", x: 420, y: 350, dutyZh: "回撤形成出球支点，接球后快速转移弱侧", dutyEn: "Pivot presence, receive under pressure and switch" },
               { id: "p5", type: "PLAYER", label: "前锋", jerseyNumber: 9, position: "ST", x: 740, y: 350, dutyZh: "压制对手双中卫，准备随时前插反越位", dutyEn: "Pin opposition center-backs on offside line" },
               { id: "ball", type: "BALL", label: "⚽", jerseyNumber: 0, position: "BALL", x: 275, y: 250, dutyZh: "皮球位于持球中卫脚下", dutyEn: "Possession with center-back" },
-              { id: "opp1", type: "OPPONENT", label: "X1", jerseyNumber: 0, position: "FW", x: 380, y: 280, dutyZh: "对手前锋上前逼抢持球队员", dutyEn: "Pressing front-man" },
-              { id: "opp2", type: "OPPONENT", label: "X2", jerseyNumber: 0, position: "DF", x: 760, y: 330, dutyZh: "对手中卫贴身盯防前锋", dutyEn: "Marking striker" }
+              { id: "opp1", type: "OPPONENT", label: "防守 1", jerseyNumber: 0, position: "FW", x: 380, y: 280, dutyZh: "对手前锋上前逼抢持球队员", dutyEn: "Pressing front-man" },
+              { id: "opp2", type: "OPPONENT", label: "防守 2", jerseyNumber: 0, position: "DF", x: 760, y: 330, dutyZh: "对手中卫贴身盯防前锋", dutyEn: "Marking striker" }
             ]),
             trajectoriesJson: JSON.stringify([
               { id: "t1", type: "PASS", startX: 280, startY: 250, controlX: 350, controlY: 300, endX: 410, endY: 340, label: "精准斜传" },
@@ -302,8 +302,8 @@ async function main() {
               { id: "p4", type: "PLAYER", label: "后腰", jerseyNumber: 6, position: "CDM", x: 540, y: 330, dutyZh: "送出手术刀直塞，随后前压保护弧顶", dutyEn: "Play through-ball then protect edge of box" },
               { id: "p5", type: "PLAYER", label: "边卫", jerseyNumber: 2, position: "RB", x: 680, y: 550, dutyZh: "外侧极速下底，准备传中", dutyEn: "Drive to byline on overlap" },
               { id: "ball", type: "BALL", label: "⚽", jerseyNumber: 0, position: "BALL", x: 555, y: 340, dutyZh: "皮球精准穿透肋部防线", dutyEn: "Ball travelling into half-space" },
-              { id: "opp1", type: "OPPONENT", label: "X1", jerseyNumber: 0, position: "FW", x: 440, y: 290, dutyZh: "回追逼抢", dutyEn: "Tracking back" },
-              { id: "opp2", type: "OPPONENT", label: "X2", jerseyNumber: 0, position: "DF", x: 660, y: 390, dutyZh: "防守重心被内切扯动", dutyEn: "Drawn out of shape" }
+              { id: "opp1", type: "OPPONENT", label: "防守 1", jerseyNumber: 0, position: "FW", x: 440, y: 290, dutyZh: "回追逼抢", dutyEn: "Tracking back" },
+              { id: "opp2", type: "OPPONENT", label: "防守 2", jerseyNumber: 0, position: "DF", x: 660, y: 390, dutyZh: "防守重心被内切扯动", dutyEn: "Drawn out of shape" }
             ]),
             trajectoriesJson: JSON.stringify([
               { id: "t3", type: "PASS", startX: 550, startY: 330, controlX: 620, controlY: 420, endX: 670, endY: 530, label: "致命直塞" },
@@ -323,8 +323,8 @@ async function main() {
               { id: "p4", type: "PLAYER", label: "后插上", jerseyNumber: 8, position: "CM", x: 760, y: 350, dutyZh: "点球点前沿迎球爆射死角！", dutyEn: "First-time strike into corner!" },
               { id: "p5", type: "PLAYER", label: "下底边卫", jerseyNumber: 2, position: "RB", x: 860, y: 560, dutyZh: "底线送出精准倒三角地面球", dutyEn: "Accurate low cutback delivery" },
               { id: "ball", type: "BALL", label: "⚽", jerseyNumber: 0, position: "BALL", x: 775, y: 360, dutyZh: "球贴地急速滚向推射落点", dutyEn: "Ball cut back to shooting zone" },
-              { id: "opp1", type: "OPPONENT", label: "X1", jerseyNumber: 0, position: "DF", x: 800, y: 280, dutyZh: "被前点前锋带走", dutyEn: "Drawn to front post" },
-              { id: "opp2", type: "OPPONENT", label: "X2", jerseyNumber: 0, position: "GK", x: 920, y: 350, dutyZh: "对方门将扑救不及", dutyEn: "Beaten goalkeeper" }
+              { id: "opp1", type: "OPPONENT", label: "防守 1", jerseyNumber: 0, position: "DF", x: 800, y: 280, dutyZh: "被前点前锋带走", dutyEn: "Drawn to front post" },
+              { id: "opp2", type: "OPPONENT", label: "防守 2", jerseyNumber: 0, position: "GK", x: 920, y: 350, dutyZh: "对方门将扑救不及", dutyEn: "Beaten goalkeeper" }
             ]),
             trajectoriesJson: JSON.stringify([
               { id: "t5", type: "PASS", startX: 860, startY: 550, controlX: 820, controlY: 450, endX: 770, endY: 360, label: "倒三角传中" },
@@ -439,7 +439,7 @@ async function main() {
               { id: "b4", type: "PLAYER", label: "大前", jerseyNumber: 4, position: "PF", x: 800, y: 180, dutyZh: "左侧底角三分线拉开空间", dutyEn: "Corner floor spacing" },
               { id: "b5", type: "PLAYER", label: "小前", jerseyNumber: 3, position: "SF", x: 800, y: 520, dutyZh: "右侧底角三分线拉开空间", dutyEn: "Corner floor spacing" },
               { id: "ball", type: "BALL", label: "🏀", jerseyNumber: 0, position: "BALL", x: 555, y: 350, dutyZh: "皮球位于控卫手中", dutyEn: "Ball in point guard hands" },
-              { id: "opp1", type: "OPPONENT", label: "X1", jerseyNumber: 0, position: "PG", x: 600, y: 350, dutyZh: "领防控卫", dutyEn: "Point of attack defender" }
+              { id: "opp1", type: "OPPONENT", label: "防守 1", jerseyNumber: 0, position: "PG", x: 600, y: 350, dutyZh: "领防控卫", dutyEn: "Point of attack defender" }
             ]),
             trajectoriesJson: JSON.stringify([
               { id: "bt1", type: "RUN", startX: 680, startY: 260, controlX: 640, controlY: 300, endX: 580, endY: 330, label: "上前掩护" }

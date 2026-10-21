@@ -129,17 +129,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, [pathname]);
 
-  // Channel Isolation: Lock non-admin users strictly to their assigned sport
+  // Channel Selection: Set initial sport on login, but allow freedom to switch and inspect all 3 sports
   useEffect(() => {
     if (user && user.role !== "ADMIN") {
-      let allowedSport: SportChannel = "FOOTBALL";
-      if (user.username === "volleyball") allowedSport = "VOLLEYBALL";
-      else if (user.username === "basketball") allowedSport = "BASKETBALL";
-      else if (user.username === "football") allowedSport = "FOOTBALL";
-      else if (user.playerProfiles?.[0]?.sport) allowedSport = user.playerProfiles[0].sport;
-
-      if (sport !== allowedSport) {
-        setSport(allowedSport);
+      // Default to user assigned sport on first load if on generic route
+      if (pathname === "/") {
+        let initialSport: SportChannel = "FOOTBALL";
+        if (user.username === "volleyball") initialSport = "VOLLEYBALL";
+        else if (user.username === "basketball") initialSport = "BASKETBALL";
+        else if (user.username === "football") initialSport = "FOOTBALL";
+        setSport(initialSport);
       }
     }
   }, [user]);
